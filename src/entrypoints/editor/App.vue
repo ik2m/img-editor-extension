@@ -1,9 +1,19 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { Canvas, FabricImage, Rect } from 'fabric';
 
 const imageUrl = ref<string>('');
-const canvas = ref<HTMLCanvasElement | null>(null);
+const canvasElement = ref<HTMLCanvasElement | null>(null);
+const fabricCanvas = ref<Canvas | null>(null);
 const originalImage = ref<HTMLImageElement | null>(null);
+
+onMounted(() => {
+  if (canvasElement.value) {
+    fabricCanvas.value = new Canvas(canvasElement.value, {
+      backgroundColor: '#ffffff'
+    });
+  }
+});
 
 const handleImageUpload = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -20,44 +30,98 @@ const handleImageUpload = (event: Event) => {
 };
 
 const loadImageToCanvas = (url: string) => {
-  if (!canvas.value) return;
+  if (!fabricCanvas.value) return;
 
-  const ctx = canvas.value.getContext('2d');
   const img = new Image();
 
   img.onload = () => {
     originalImage.value = img;
-    canvas.value!.width = img.width;
-    canvas.value!.height = img.height;
-    ctx?.drawImage(img, 0, 0);
+
+    // Canvasのサイズを画像に合わせる
+    fabricCanvas.value!.setDimensions({
+      width: img.width,
+      height: img.height
+    });
+
+    // Fabric.jsのImage objectを作成
+    FabricImage.fromURL(url).then((fabricImg) => {
+      fabricImg.set({
+        left: 0,
+        top: 0,
+        selectable: false,
+        evented: false
+      });
+
+      // 既存のオブジェクトをクリア
+      fabricCanvas.value!.clear();
+      // 背景画像として追加
+      fabricCanvas.value!.add(fabricImg);
+      fabricCanvas.value!.sendObjectToBack(fabricImg);
+      fabricCanvas.value!.renderAll();
+    });
   };
 
   img.src = url;
 };
 
 const resizeToMaxWidth840 = () => {
-  if (!canvas.value || !originalImage.value) return;
+  if (!fabricCanvas.value || !originalImage.value) return;
 
   const img = originalImage.value;
   const maxWidth = 840;
-  
+
   let width = img.width;
   let height = img.height;
-  
+
   // max-width: 840pxでリサイズ計算
   if (width > maxWidth) {
     const ratio = maxWidth / width;
     width = maxWidth;
     height = Math.round(height * ratio);
   }
-  
-  // キャンバスのサイズを変更
-  canvas.value.width = width;
-  canvas.value.height = height;
-  
-  // リサイズした画像を描画
-  const ctx = canvas.value.getContext('2d');
-  ctx?.drawImage(img, 0, 0, width, height);
+
+  // スケール比率を計算
+  const scaleX = width / img.width;
+  const scaleY = height / img.height;
+
+  // Canvasのサイズを変更
+  fabricCanvas.value.setDimensions({
+    width: width,
+    height: height
+  });
+
+  // すべてのオブジェクトをスケール
+  const objects = fabricCanvas.value.getObjects();
+  objects.forEach((obj) => {
+    obj.scaleX = (obj.scaleX || 1) * scaleX;
+    obj.scaleY = (obj.scaleY || 1) * scaleY;
+    obj.left = (obj.left || 0) * scaleX;
+    obj.top = (obj.top || 0) * scaleY;
+    obj.setCoords();
+  });
+
+  fabricCanvas.value.renderAll();
+};
+
+const addRectangle = () => {
+  if (!fabricCanvas.value) return;
+
+  const rect = new Rect({
+    left: 100,
+    top: 100,
+    width: 200,
+    height: 150,
+    fill: 'rgba(255, 0, 0, 0.3)',
+    stroke: '#ff0000',
+    strokeWidth: 3,
+    cornerColor: '#42b883',
+    cornerSize: 10,
+    transparentCorners: false
+  });
+
+  fabricCanvas.value.add(rect);
+  fabricCanvas.value.setActiveObject(rect);
+  fabricCanvas.value.renderAll();
 };
 </script>
 
@@ -82,12 +146,23 @@ const resizeToMaxWidth840 = () => {
 
         <div class="tool-section">
           <h3>リサイズ</h3>
-          <button 
-            class="button button-primary" 
-            @click="resizeToMaxWidth840"
-            :disabled="!imageUrl"
+          <button
+              class="button button-primary"
+              @click="resizeToMaxWidth840"
+              :disabled="!imageUrl"
           >
             max-width: 840pxにリサイズ
+          </button>
+        </div>
+
+        <div class="tool-section">
+          <h3>図形</h3>
+          <button
+              class="button"
+              @click="addRectangle"
+              :disabled="!imageUrl"
+          >
+            矩形を追加
           </button>
         </div>
 
@@ -101,7 +176,7 @@ const resizeToMaxWidth840 = () => {
       </aside>
 
       <main class="canvas-area">
-        <canvas ref="canvas" class="edit-canvas"></canvas>
+        <canvas ref="canvasElement" class="edit-canvas"></canvas>
         <div v-if="!imageUrl" class="placeholder">
           <p>画像をアップロードしてください</p>
         </div>
@@ -120,6 +195,9 @@ const resizeToMaxWidth840 = () => {
 }
 
 .editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 1rem 2rem;
   background: #2d2d2d;
   border-bottom: 1px solid #3d3d3d;
@@ -128,6 +206,27 @@ const resizeToMaxWidth840 = () => {
 .editor-header h1 {
   margin: 0;
   font-size: 1.5rem;
+}
+
+.resolution-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #1e1e1e;
+  border-radius: 4px;
+}
+
+.resolution-label {
+  color: #aaa;
+  font-size: 0.875rem;
+}
+
+.resolution-value {
+  color: #42b883;
+  font-weight: 600;
+  font-size: 1rem;
+  font-family: 'Courier New', monospace;
 }
 
 .editor-workspace {
@@ -203,8 +302,6 @@ const resizeToMaxWidth840 = () => {
 }
 
 .edit-canvas {
-  max-width: 100%;
-  max-height: 100%;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
