@@ -3,6 +3,7 @@ import { ref } from 'vue';
 
 const imageUrl = ref<string>('');
 const canvas = ref<HTMLCanvasElement | null>(null);
+const originalImage = ref<HTMLImageElement | null>(null);
 
 const handleImageUpload = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -25,12 +26,38 @@ const loadImageToCanvas = (url: string) => {
   const img = new Image();
 
   img.onload = () => {
+    originalImage.value = img;
     canvas.value!.width = img.width;
     canvas.value!.height = img.height;
     ctx?.drawImage(img, 0, 0);
   };
 
   img.src = url;
+};
+
+const resizeToMaxWidth840 = () => {
+  if (!canvas.value || !originalImage.value) return;
+
+  const img = originalImage.value;
+  const maxWidth = 840;
+  
+  let width = img.width;
+  let height = img.height;
+  
+  // max-width: 840pxでリサイズ計算
+  if (width > maxWidth) {
+    const ratio = maxWidth / width;
+    width = maxWidth;
+    height = Math.round(height * ratio);
+  }
+  
+  // キャンバスのサイズを変更
+  canvas.value.width = width;
+  canvas.value.height = height;
+  
+  // リサイズした画像を描画
+  const ctx = canvas.value.getContext('2d');
+  ctx?.drawImage(img, 0, 0, width, height);
 };
 </script>
 
@@ -51,6 +78,17 @@ const loadImageToCanvas = (url: string) => {
               id="file-input"
           />
           <label for="file-input" class="button">画像を開く</label>
+        </div>
+
+        <div class="tool-section">
+          <h3>リサイズ</h3>
+          <button 
+            class="button button-primary" 
+            @click="resizeToMaxWidth840"
+            :disabled="!imageUrl"
+          >
+            max-width: 840pxにリサイズ
+          </button>
         </div>
 
         <div class="tool-section">
@@ -133,6 +171,21 @@ const loadImageToCanvas = (url: string) => {
 
 .button:hover {
   background: #4d4d4d;
+}
+
+.button:disabled {
+  background: #2d2d2d;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.button-primary {
+  background: #42b883;
+  font-weight: 600;
+}
+
+.button-primary:hover:not(:disabled) {
+  background: #359268;
 }
 
 #file-input {
