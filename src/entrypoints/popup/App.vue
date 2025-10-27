@@ -1,5 +1,11 @@
 <script lang="ts" setup>
 import HelloWorld from '@/components/HelloWorld.vue';
+
+const openEditor = () => {
+  browser.tabs.create({
+    url: browser.runtime.getURL('/editor.html')
+  });
+};
 </script>
 
 <template>
@@ -12,6 +18,12 @@ import HelloWorld from '@/components/HelloWorld.vue';
     </a>
   </div>
   <HelloWorld msg="WXT + Vue" />
+  <div class="card">
+    <button type="button" @click="openEditor" class="open-editor-btn">
+      画像エディターを開く
+    </button>
+    <p>新しいタブで画像編集ページが開きます</p>
+  </div>
 </template>
 
 <style scoped>
