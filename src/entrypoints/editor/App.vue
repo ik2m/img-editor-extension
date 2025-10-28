@@ -1,18 +1,36 @@
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import { Canvas, FabricImage, Rect } from 'fabric';
+import { ref, onMounted, computed } from 'vue';
 
 const imageUrl = ref<string>('');
-const canvasElement = ref<HTMLCanvasElement | null>(null);
-const fabricCanvas = ref<Canvas | null>(null);
 const originalImage = ref<HTMLImageElement | null>(null);
 
+// Konva 用の状態
+const stageWidth = ref<number>(0);
+const stageHeight = ref<number>(0);
+const layerScale = ref<{ x: number; y: number }>({ x: 1, y: 1 });
+
+// <v-image> に渡す生の HTMLImageElement
+const imageElement = ref<HTMLImageElement | null>(null);
+
+// 追加した矩形を配列で管理（座標は元画像の座標系で保持）
+type RectShape = {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fill: string;
+  stroke: string;
+  strokeWidth: number;
+  draggable: boolean;
+};
+const rects = ref<RectShape[]>([]);
+
+// ステージの背景色を計算（背景を塗るために下敷きの <v-rect> を使う）
+const stageBgFill = computed(() => '#ffffff');
+
 onMounted(() => {
-  if (canvasElement.value) {
-    fabricCanvas.value = new Canvas(canvasElement.value, {
-      backgroundColor: '#ffffff'
-    });
-  }
+  // 初期はプレースホルダのみ表示。画像読み込み後にサイズを確定します。
 });
 
 const handleImageUpload = (event: Event) => {
@@ -23,49 +41,33 @@ const handleImageUpload = (event: Event) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       imageUrl.value = e.target?.result as string;
-      loadImageToCanvas(e.target?.result as string);
+      loadImageToStage(imageUrl.value);
     };
     reader.readAsDataURL(file);
   }
 };
 
-const loadImageToCanvas = (url: string) => {
-  if (!fabricCanvas.value) return;
-
+const loadImageToStage = (url: string) => {
   const img = new Image();
-
   img.onload = () => {
     originalImage.value = img;
+    imageElement.value = img;
 
-    // Canvasのサイズを画像に合わせる
-    fabricCanvas.value!.setDimensions({
-      width: img.width,
-      height: img.height
-    });
+    // ステージサイズを画像サイズに合わせる
+    stageWidth.value = img.width;
+    stageHeight.value = img.height;
 
-    // Fabric.jsのImage objectを作成
-    FabricImage.fromURL(url).then((fabricImg) => {
-      fabricImg.set({
-        left: 0,
-        top: 0,
-        selectable: false,
-        evented: false
-      });
+    // 初期スケールは 1
+    layerScale.value = { x: 1, y: 1 };
 
-      // 既存のオブジェクトをクリア
-      fabricCanvas.value!.clear();
-      // 背景画像として追加
-      fabricCanvas.value!.add(fabricImg);
-      fabricCanvas.value!.sendObjectToBack(fabricImg);
-      fabricCanvas.value!.renderAll();
-    });
+    // 既存の図形は維持する場合はそのまま。初期動作を Fabric に合わせるならクリア。
+    rects.value = [];
   };
-
   img.src = url;
 };
 
 const resizeToMaxWidth840 = () => {
-  if (!fabricCanvas.value || !originalImage.value) return;
+  if (!originalImage.value) return;
 
   const img = originalImage.value;
   const maxWidth = 840;
@@ -73,55 +75,42 @@ const resizeToMaxWidth840 = () => {
   let width = img.width;
   let height = img.height;
 
-  // max-width: 840pxでリサイズ計算
   if (width > maxWidth) {
     const ratio = maxWidth / width;
     width = maxWidth;
     height = Math.round(height * ratio);
+
+    // レイヤー全体をスケール（全オブジェクトに一括で効く）
+    layerScale.value = { x: ratio, y: ratio };
+
+    // ステージ（表示サイズ）も変更
+    stageWidth.value = width;
+    stageHeight.value = height;
+  } else {
+    // もともと 840 以下ならスケール変更不要
+    layerScale.value = { x: 1, y: 1 };
+    stageWidth.value = width;
+    stageHeight.value = height;
   }
-
-  // スケール比率を計算
-  const scaleX = width / img.width;
-  const scaleY = height / img.height;
-
-  // Canvasのサイズを変更
-  fabricCanvas.value.setDimensions({
-    width: width,
-    height: height
-  });
-
-  // すべてのオブジェクトをスケール
-  const objects = fabricCanvas.value.getObjects();
-  objects.forEach((obj) => {
-    obj.scaleX = (obj.scaleX || 1) * scaleX;
-    obj.scaleY = (obj.scaleY || 1) * scaleY;
-    obj.left = (obj.left || 0) * scaleX;
-    obj.top = (obj.top || 0) * scaleY;
-    obj.setCoords();
-  });
-
-  fabricCanvas.value.renderAll();
 };
 
 const addRectangle = () => {
-  if (!fabricCanvas.value) return;
+  if (!imageElement.value) return;
 
-  const rect = new Rect({
-    left: 100,
-    top: 100,
+  // 元画像の座標系で矩形を追加
+  const rect: RectShape = {
+    id: `rect-${Date.now()}`,
+    x: 100,
+    y: 100,
     width: 200,
     height: 150,
     fill: 'rgba(255, 0, 0, 0.3)',
     stroke: '#ff0000',
     strokeWidth: 3,
-    cornerColor: '#42b883',
-    cornerSize: 10,
-    transparentCorners: false
-  });
+    draggable: true
+  };
 
-  fabricCanvas.value.add(rect);
-  fabricCanvas.value.setActiveObject(rect);
-  fabricCanvas.value.renderAll();
+  rects.value.push(rect);
 };
 </script>
 
@@ -176,8 +165,51 @@ const addRectangle = () => {
       </aside>
 
       <main class="canvas-area">
-        <canvas ref="canvasElement" class="edit-canvas"></canvas>
-        <div v-if="!imageUrl" class="placeholder">
+        <!-- Fabric の <canvas> は廃止し、Konva のステージ/レイヤーを使用 -->
+        <v-stage
+            v-if="imageElement"
+            :config="{ width: stageWidth, height: stageHeight }"
+            class="edit-canvas"
+        >
+          <v-layer :config="{ scaleX: layerScale.x, scaleY: layerScale.y }">
+            <!-- 背景相当（Fabric の backgroundColor の代替） -->
+            <v-rect
+                :config="{
+                x: 0,
+                y: 0,
+                width: originalImage?.width || 0,
+                height: originalImage?.height || 0,
+                fill: stageBgFill
+              }"
+            />
+            <!-- 画像 -->
+            <v-image
+                :config="{
+                x: 0,
+                y: 0,
+                image: imageElement,
+                listening: false
+              }"
+            />
+            <!-- 矩形たち -->
+            <v-rect
+                v-for="r in rects"
+                :key="r.id"
+                :config="{
+                x: r.x,
+                y: r.y,
+                width: r.width,
+                height: r.height,
+                fill: r.fill,
+                stroke: r.stroke,
+                strokeWidth: r.strokeWidth,
+                draggable: r.draggable
+              }"
+            />
+          </v-layer>
+        </v-stage>
+
+        <div v-else class="placeholder">
           <p>画像をアップロードしてください</p>
         </div>
       </main>
