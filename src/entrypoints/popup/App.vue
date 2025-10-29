@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import HelloWorld from '@/components/HelloWorld.vue';
+import HelloWorld from "@/components/HelloWorld.vue";
 
 const openEditor = () => {
   browser.tabs.create({
-    url: browser.runtime.getURL('/editor.html')
+    url: browser.runtime.getURL("/editor.html"),
   });
 };
 </script>

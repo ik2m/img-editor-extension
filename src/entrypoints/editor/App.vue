@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed } from "vue";
 
-const imageUrl = ref<string>('');
+const imageUrl = ref<string>("");
 const originalImage = ref<HTMLImageElement | null>(null);
 
 // Konva 用の状態
@@ -27,7 +27,7 @@ type RectShape = {
 const rects = ref<RectShape[]>([]);
 
 // ステージの背景色を計算（背景を塗るために下敷きの <v-rect> を使う）
-const stageBgFill = computed(() => '#ffffff');
+const stageBgFill = computed(() => "#ffffff");
 
 onMounted(() => {
   // 初期はプレースホルダのみ表示。画像読み込み後にサイズを確定します。
@@ -104,10 +104,10 @@ const addRectangle = () => {
     y: 100,
     width: 200,
     height: 150,
-    fill: 'rgba(255, 0, 0, 0.3)',
-    stroke: '#ff0000',
+    fill: "rgba(255, 0, 0, 0.3)",
+    stroke: "#ff0000",
     strokeWidth: 3,
-    draggable: true
+    draggable: true,
   };
 
   rects.value.push(rect);
@@ -125,10 +125,10 @@ const addRectangle = () => {
         <div class="tool-section">
           <h3>ファイル</h3>
           <input
-              type="file"
-              accept="image/*"
-              @change="handleImageUpload"
-              id="file-input"
+            type="file"
+            accept="image/*"
+            @change="handleImageUpload"
+            id="file-input"
           />
           <label for="file-input" class="button">画像を開く</label>
         </div>
@@ -136,9 +136,9 @@ const addRectangle = () => {
         <div class="tool-section">
           <h3>リサイズ</h3>
           <button
-              class="button button-primary"
-              @click="resizeToMaxWidth840"
-              :disabled="!imageUrl"
+            class="button button-primary"
+            @click="resizeToMaxWidth840"
+            :disabled="!imageUrl"
           >
             max-width: 840pxにリサイズ
           </button>
@@ -146,11 +146,7 @@ const addRectangle = () => {
 
         <div class="tool-section">
           <h3>図形</h3>
-          <button
-              class="button"
-              @click="addRectangle"
-              :disabled="!imageUrl"
-          >
+          <button class="button" @click="addRectangle" :disabled="!imageUrl">
             矩形を追加
           </button>
         </div>
@@ -167,35 +163,35 @@ const addRectangle = () => {
       <main class="canvas-area">
         <!-- Fabric の <canvas> は廃止し、Konva のステージ/レイヤーを使用 -->
         <v-stage
-            v-if="imageElement"
-            :config="{ width: stageWidth, height: stageHeight }"
-            class="edit-canvas"
+          v-if="imageElement"
+          :config="{ width: stageWidth, height: stageHeight }"
+          class="edit-canvas"
         >
           <v-layer :config="{ scaleX: layerScale.x, scaleY: layerScale.y }">
             <!-- 背景相当（Fabric の backgroundColor の代替） -->
             <v-rect
-                :config="{
+              :config="{
                 x: 0,
                 y: 0,
                 width: originalImage?.width || 0,
                 height: originalImage?.height || 0,
-                fill: stageBgFill
+                fill: stageBgFill,
               }"
             />
             <!-- 画像 -->
             <v-image
-                :config="{
+              :config="{
                 x: 0,
                 y: 0,
                 image: imageElement,
-                listening: false
+                listening: false,
               }"
             />
             <!-- 矩形たち -->
             <v-rect
-                v-for="r in rects"
-                :key="r.id"
-                :config="{
+              v-for="r in rects"
+              :key="r.id"
+              :config="{
                 x: r.x,
                 y: r.y,
                 width: r.width,
@@ -203,7 +199,7 @@ const addRectangle = () => {
                 fill: r.fill,
                 stroke: r.stroke,
                 strokeWidth: r.strokeWidth,
-                draggable: r.draggable
+                draggable: r.draggable,
               }"
             />
           </v-layer>
@@ -258,7 +254,7 @@ const addRectangle = () => {
   color: #42b883;
   font-weight: 600;
   font-size: 1rem;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
 }
 
 .editor-workspace {
