@@ -27,6 +27,7 @@ const emit = defineEmits<{
 }>();
 
 const transformer = ref<{ getNode(): Konva.Transformer } | null>(null);
+const stage = ref<{ getNode(): Konva.Stage } | null>(null);
 const stageBgFill = computed(() => '#ffffff');
 
 const updateTransformer = () => {
@@ -105,6 +106,10 @@ watch(
 onMounted(() => {
   updateTransformer();
 });
+
+defineExpose({
+  getStage: () => stage.value?.getNode(),
+});
 </script>
 
 <template>
@@ -113,6 +118,7 @@ onMounted(() => {
   >
     <v-stage
       v-if="imageElement"
+      ref="stage"
       :config="{ width: stageWidth, height: stageHeight }"
       :class="[
         'shadow-[0_4px_20px_rgba(0,0,0,0.5)]',

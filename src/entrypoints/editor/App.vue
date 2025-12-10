@@ -27,6 +27,7 @@ const layerNameInput = ref<HTMLInputElement | null>(null);
 const drawingMode = ref<boolean>(false);
 const currentDrawing = ref<DrawingShape | null>(null);
 const textMode = ref<boolean>(false);
+const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
 
 // 全ての関数をそのまま保持
 const getNextRectName = () => `矩形 ${rectCounter.value++}`;
@@ -270,6 +271,33 @@ const addText = (pos: { x: number; y: number }) => {
   selectLayer(text.id);
   textMode.value = false;
 };
+
+const copyImageToClipboard = async () => {
+  if (!canvasRef.value) return;
+  const stage = canvasRef.value.getStage();
+  if (!stage) return;
+
+  try {
+    // Stageを画像に変換
+    const dataURL = stage.toDataURL({ pixelRatio: 1 });
+
+    // DataURLをBlobに変換
+    const response = await fetch(dataURL);
+    const blob = await response.blob();
+
+    // クリップボードにコピー
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'image/png': blob,
+      }),
+    ]);
+
+    alert('画像をクリップボードにコピーしました');
+  } catch (error) {
+    console.error('クリップボードへのコピーに失敗しました:', error);
+    alert('クリップボードへのコピーに失敗しました');
+  }
+};
 </script>
 
 <template>
@@ -287,9 +315,11 @@ const addText = (pos: { x: number; y: number }) => {
         @add-arrow="addArrow"
         @toggle-drawing-mode="toggleDrawingMode"
         @toggle-text-mode="toggleTextMode"
+        @copy-image="copyImageToClipboard"
       />
 
       <EditorCanvas
+        ref="canvasRef"
         :image-element="imageElement"
         :stage-width="stageWidth"
         :stage-height="stageHeight"

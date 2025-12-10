@@ -15,6 +15,7 @@ const emit = defineEmits<{
   addArrow: [];
   toggleDrawingMode: [];
   toggleTextMode: [];
+  copyImage: [];
 }>();
 
 const handleFileChange = (event: Event) => {
@@ -83,6 +84,16 @@ const handleFileChange = (event: Event) => {
         @click="emit('toggleTextMode')"
       >
         {{ textMode ? 'テキスト入力中...' : 'テキストツール' }}
+      </BaseButton>
+    </BaseSection>
+
+    <BaseSection title="エクスポート">
+      <BaseButton
+        variant="primary"
+        :disabled="!imageUrl"
+        @click="emit('copyImage')"
+      >
+        クリップボードにコピー
       </BaseButton>
     </BaseSection>
   </aside>
