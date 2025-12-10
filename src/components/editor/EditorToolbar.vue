@@ -45,7 +45,7 @@ const emit = defineEmits<{
       </div>
     </BaseSection>
 
-    <BaseSection title="描画ツール">
+    <BaseSection title="お絵描き">
       <BaseButton
         :color="drawingMode ? 'primary' : 'tertiary'"
         :disabled="!imageUrl"
@@ -53,6 +53,9 @@ const emit = defineEmits<{
       >
         🖊️ {{ drawingMode ? 'ペン (ON)' : 'ペン' }}
       </BaseButton>
+    </BaseSection>
+
+    <BaseSection title="図形・テキスト">
       <BaseButton
         :color="textMode ? 'primary' : 'tertiary'"
         :disabled="!imageUrl"
