@@ -21,62 +21,40 @@ const emit = defineEmits<{
 
 <template>
   <aside
-    class="w-sidebar bg-dark-panel border-dark-border overflow-y-auto border-r p-4"
+    class="w-sidebar bg-dark-panel border-dark-border flex flex-col overflow-y-auto border-r p-4"
   >
     <BaseSection title="ファイル">
       <BaseButton color="primary" @click="emit('openImageSourceModal')">
-        画像を開く
+        📁 画像を開く
+      </BaseButton>
+      <BaseButton :disabled="!imageUrl" @click="emit('resizeImage')">
+        🔍 リサイズ (840px)
+      </BaseButton>
+      <BaseButton color="primary" :disabled="!imageUrl" @click="emit('copyImage')">
+        💾 クリップボードに保存
       </BaseButton>
     </BaseSection>
 
-    <BaseSection title="リサイズ">
-      <BaseButton
-        color="primary"
-        :disabled="!imageUrl"
-        @click="emit('resizeImage')"
-      >
-        max-width: 840pxにリサイズ
-      </BaseButton>
-    </BaseSection>
-
-    <BaseSection title="図形">
-      <BaseButton
-        color="tertiary"
-        :disabled="!imageUrl"
-        @click="emit('addRectangle')"
-      >
-        矩形を追加
-      </BaseButton>
-      <BaseButton
-        color="tertiary"
-        :disabled="!imageUrl"
-        @click="emit('addArrow')"
-      >
-        矢印を追加
-      </BaseButton>
+    <BaseSection title="描画ツール">
       <BaseButton
         :color="drawingMode ? 'primary' : 'tertiary'"
         :disabled="!imageUrl"
         @click="emit('toggleDrawingMode')"
       >
-        {{ drawingMode ? '描画中...' : 'ペンツール' }}
+        🖊️ {{ drawingMode ? 'ペン (ON)' : 'ペン' }}
       </BaseButton>
       <BaseButton
         :color="textMode ? 'primary' : 'tertiary'"
         :disabled="!imageUrl"
         @click="emit('toggleTextMode')"
       >
-        {{ textMode ? 'テキスト入力中...' : 'テキストツール' }}
+        A {{ textMode ? 'テキスト (ON)' : 'テキスト' }}
       </BaseButton>
-    </BaseSection>
-
-    <BaseSection title="エクスポート">
-      <BaseButton
-        color="primary"
-        :disabled="!imageUrl"
-        @click="emit('copyImage')"
-      >
-        クリップボードにコピー
+      <BaseButton :disabled="!imageUrl" @click="emit('addRectangle')">
+        ▭ 矩形
+      </BaseButton>
+      <BaseButton :disabled="!imageUrl" @click="emit('addArrow')">
+        ➜ 矢印
       </BaseButton>
     </BaseSection>
   </aside>
