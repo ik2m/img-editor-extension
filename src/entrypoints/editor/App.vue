@@ -8,6 +8,7 @@ import EditorCanvas from '@/components/editor/EditorCanvas.vue';
 import LayerPanel from '@/components/editor/LayerPanel.vue';
 import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
 import TextInputModal from '@/components/editor/TextInputModal.vue';
+import InfoPanel from '@/components/editor/InfoPanel.vue';
 import { useShapeNameCounters } from '@/composables/editor/useShapeNameCounters';
 import { useLayerManagement } from '@/composables/editor/useLayerManagement';
 import { useImageManagement } from '@/composables/editor/useImageManagement';
@@ -208,5 +209,7 @@ const handleCopyImage = async () => {
     />
 
     <Toaster position="top-center" />
+
+    <InfoPanel :width="image.stageWidth.value" :height="image.stageHeight.value" />
   </div>
 </template>
