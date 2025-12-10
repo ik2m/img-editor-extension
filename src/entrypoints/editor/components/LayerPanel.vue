@@ -28,16 +28,8 @@ const emit = defineEmits<{
   <aside
     class="w-sidebar bg-dark-panel border-dark-border flex flex-col overflow-y-auto border-l p-4"
   >
-    <div class="mb-4 flex items-center justify-between">
+    <div class="mb-4">
       <h3 class="text-dark-text m-0 text-base">レイヤー</h3>
-      <BaseButton
-        variant="primary"
-        :disabled="!imageUrl"
-        @click="emit('addRectangle')"
-        class="text-xl leading-none"
-      >
-        +
-      </BaseButton>
     </div>
 
     <div class="flex flex-col gap-1">
