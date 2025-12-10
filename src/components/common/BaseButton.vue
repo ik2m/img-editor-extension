@@ -28,7 +28,7 @@ const colorCls = computed(() => {
 
 const sizeCls = computed(() => {
   const map = {
-    md: 'px-4 py-2 text-base mb-2',
+    md: 'px-4 py-2 text-base mb-2 rounded',
     sm: 'px-2 py-1 text-xs rounded-sm',
   };
   return map[props.size];
@@ -39,7 +39,7 @@ const sizeCls = computed(() => {
   <button
     :type="type"
     :disabled="disabled"
-    class="block w-full cursor-pointer rounded text-white transition-colors duration-200 disabled:cursor-not-allowed"
+    class="block w-full cursor-pointer text-white transition-colors duration-200 disabled:cursor-not-allowed"
     :class="[colorCls, sizeCls]"
   >
     <slot />
