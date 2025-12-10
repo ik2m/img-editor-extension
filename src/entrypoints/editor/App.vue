@@ -144,6 +144,7 @@ const handleCopyImage = () => {
         :shapes="layers.shapes.value"
         :selected-shape-id="layers.selectedShapeId.value"
         :image-url="image.imageUrl.value"
+        :drawing-mode="drawing.drawingMode.value"
         @add-rectangle="rectangle.addRectangle"
         @select-layer="layers.selectLayer"
         @move-layer-up="layers.moveLayerUp"

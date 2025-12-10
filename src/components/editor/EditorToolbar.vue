@@ -55,13 +55,13 @@ const emit = defineEmits<{
     </BaseSection>
 
     <BaseSection title="図形・テキスト">
-      <BaseButton :disabled="!imageUrl" @click="emit('addText')">
+      <BaseButton :disabled="!imageUrl || drawingMode" @click="emit('addText')">
         A テキスト
       </BaseButton>
-      <BaseButton :disabled="!imageUrl" @click="emit('addRectangle')">
+      <BaseButton :disabled="!imageUrl || drawingMode" @click="emit('addRectangle')">
         ▭ 矩形
       </BaseButton>
-      <BaseButton :disabled="!imageUrl" @click="emit('addArrow')">
+      <BaseButton :disabled="!imageUrl || drawingMode" @click="emit('addArrow')">
         ➜ 矢印
       </BaseButton>
     </BaseSection>

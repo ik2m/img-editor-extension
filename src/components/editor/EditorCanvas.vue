@@ -34,6 +34,12 @@ const updateTransformer = () => {
   const stage = transformerNode.getStage();
   if (!stage) return;
 
+  // お絵描きモード時はトランスフォーマーを無効化
+  if (props.drawingMode) {
+    transformerNode.nodes([]);
+    return;
+  }
+
   const selectedNode = stage.findOne('.' + props.selectedShapeId);
   const currentNodes = transformerNode.nodes();
 
@@ -85,9 +91,9 @@ const handleStageMouseUp = () => {
   emit('finishDrawing');
 };
 
-// selectedShapeIdが変わったらtransformerを更新
+// selectedShapeIdまたはdrawingModeが変わったらtransformerを更新
 watch(
-  () => props.selectedShapeId,
+  () => [props.selectedShapeId, props.drawingMode],
   () => {
     updateTransformer();
   }

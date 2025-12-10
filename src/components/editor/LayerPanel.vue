@@ -9,6 +9,7 @@ const props = defineProps<{
   shapes: Shape[];
   selectedShapeId: string;
   imageUrl: string;
+  drawingMode: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -76,6 +77,7 @@ const handleDragEnd = () => {
         :is-first="editableLayers[0].id === s.id"
         :is-last="editableLayers[editableLayers.length - 1].id === s.id"
         :is-being-dragged="draggedIndex === editableLayers.length - 1 - reversedIndex"
+        :disabled="drawingMode"
         @select="emit('selectLayer', $event)"
         @move-up="emit('moveLayerUp', $event)"
         @move-down="emit('moveLayerDown', $event)"

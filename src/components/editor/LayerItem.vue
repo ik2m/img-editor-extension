@@ -10,6 +10,7 @@ const props = defineProps<{
   isFirst: boolean;
   isLast: boolean;
   isBeingDragged: boolean;
+  disabled: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -45,14 +46,14 @@ const layerColor = computed(() => {
         ? 'bg-dark-elevated border-primary shadow-sm'
         : 'bg-dark-bg border-dark-border hover:bg-dark-elevated hover:border-[#4d4d4d]',
       isBeingDragged ? 'opacity-40 scale-95' : 'opacity-100 scale-100',
-      'cursor-move',
+      disabled ? 'cursor-not-allowed opacity-50' : 'cursor-move',
     ]"
-    draggable="true"
-    @click="emit('select', layer.id)"
-    @dragstart="emit('dragStart')"
-    @dragover="emit('dragOver', $event)"
-    @drop="emit('drop')"
-    @dragend="emit('dragEnd')"
+    :draggable="!disabled"
+    @click="!disabled && emit('select', layer.id)"
+    @dragstart="!disabled && emit('dragStart')"
+    @dragover="!disabled && emit('dragOver', $event)"
+    @drop="!disabled && emit('drop')"
+    @dragend="!disabled && emit('dragEnd')"
   >
     <div class="flex items-center gap-2">
       <div
@@ -67,6 +68,7 @@ const layerColor = computed(() => {
       </span>
 
       <div
+        v-if="!disabled"
         class="flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
       >
         <BaseButton
