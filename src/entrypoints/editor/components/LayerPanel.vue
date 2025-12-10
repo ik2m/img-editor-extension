@@ -7,8 +7,6 @@ const props = defineProps<{
   shapes: Shape[];
   selectedShapeId: string;
   imageUrl: string;
-  editingLayerId: string;
-  editingLayerName: string;
 }>();
 
 const emit = defineEmits<{
@@ -17,10 +15,6 @@ const emit = defineEmits<{
   moveLayerUp: [id: string];
   moveLayerDown: [id: string];
   deleteLayer: [id: string];
-  startEditName: [layer: Shape];
-  finishEditName: [];
-  cancelEditName: [];
-  updateEditingName: [name: string];
 }>();
 </script>
 
@@ -48,16 +42,10 @@ const emit = defineEmits<{
         :selected="selectedShapeId === s.id"
         :is-first="shapes[0].id === s.id"
         :is-last="shapes[shapes.length - 1].id === s.id"
-        :editing="editingLayerId === s.id"
-        :editing-name="editingLayerName"
         @select="emit('selectLayer', $event)"
         @move-up="emit('moveLayerUp', $event)"
         @move-down="emit('moveLayerDown', $event)"
         @delete="emit('deleteLayer', $event)"
-        @start-edit="emit('startEditName', $event)"
-        @finish-edit="emit('finishEditName')"
-        @cancel-edit="emit('cancelEditName')"
-        @update-editing-name="emit('updateEditingName', $event)"
       />
 
       <!-- 画像レイヤー（表示のみ） -->

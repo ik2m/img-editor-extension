@@ -14,7 +14,6 @@ import { useRectangleShape } from './composables/useRectangleShape';
 import { useArrowShape } from './composables/useArrowShape';
 import { useDrawingMode } from './composables/useDrawingMode';
 import { useTextMode } from './composables/useTextMode';
-import { useLayerNameEditing } from './composables/useLayerNameEditing';
 import { useClipboardImage } from './composables/useClipboardImage';
 
 // Composables（Phase 1-4 完全版）
@@ -47,7 +46,6 @@ const text = useTextMode(
   nameCounters.getNextTextName,
   image.layerScale
 );
-const layerEdit = useLayerNameEditing(layers.renameLayer);
 const clipboard = useClipboardImage(canvasRef);
 
 const handleStageClick = (targetId: string) => {
@@ -97,17 +95,11 @@ const handleStageClick = (targetId: string) => {
         :shapes="layers.shapes.value"
         :selected-shape-id="layers.selectedShapeId.value"
         :image-url="image.imageUrl.value"
-        :editing-layer-id="layerEdit.editingLayerId.value"
-        :editing-layer-name="layerEdit.editingLayerName.value"
         @add-rectangle="rectangle.addRectangle"
         @select-layer="layers.selectLayer"
         @move-layer-up="layers.moveLayerUp"
         @move-layer-down="layers.moveLayerDown"
         @delete-layer="layers.deleteLayer"
-        @start-edit-name="layerEdit.startEditLayerName"
-        @finish-edit-name="layerEdit.finishEditLayerName"
-        @cancel-edit-name="layerEdit.cancelEditLayerName"
-        @update-editing-name="(name) => (layerEdit.editingLayerName.value = name)"
       />
     </div>
     <Toaster position="bottom-right" />

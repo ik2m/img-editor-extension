@@ -42,13 +42,6 @@ export function useLayerManagement() {
     }
   };
 
-  const renameLayer = (id: string, newName: string) => {
-    const shape = shapes.value.find((s) => s.id === id);
-    if (shape) {
-      shape.name = newName;
-    }
-  };
-
   return {
     shapes,
     selectedShapeId,
@@ -56,6 +49,5 @@ export function useLayerManagement() {
     moveLayerUp,
     moveLayerDown,
     deleteLayer,
-    renameLayer,
   };
 }

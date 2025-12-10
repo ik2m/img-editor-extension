@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import BaseButton from '@/components/BaseButton.vue';
 import type { Shape } from '../types';
 import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from '../types';
@@ -9,8 +9,6 @@ const props = defineProps<{
   selected: boolean;
   isFirst: boolean;
   isLast: boolean;
-  editing: boolean;
-  editingName: string;
 }>();
 
 const emit = defineEmits<{
@@ -18,10 +16,6 @@ const emit = defineEmits<{
   moveUp: [id: string];
   moveDown: [id: string];
   delete: [id: string];
-  startEdit: [layer: Shape];
-  finishEdit: [];
-  cancelEdit: [];
-  updateEditingName: [name: string];
 }>();
 
 const layerColor = computed(() => {
@@ -36,8 +30,6 @@ const layerColor = computed(() => {
   }
   return '#000000';
 });
-
-const layerNameInput = ref<HTMLInputElement | null>(null);
 </script>
 
 <template>
@@ -57,24 +49,10 @@ const layerNameInput = ref<HTMLInputElement | null>(null);
       ></div>
 
       <span
-        v-if="!editing"
         class="flex-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap text-white"
-        @dblclick="emit('startEdit', layer)"
       >
         {{ layer.name }}
       </span>
-      <input
-        v-else
-        :value="editingName"
-        @input="
-          emit('updateEditingName', ($event.target as HTMLInputElement).value)
-        "
-        class="bg-dark-border border-primary flex-1 rounded border px-2 py-1 text-sm text-white outline-none"
-        @blur="emit('finishEdit')"
-        @keyup.enter="emit('finishEdit')"
-        @keyup.esc="emit('cancelEdit')"
-        ref="layerNameInput"
-      />
 
       <div
         class="flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
