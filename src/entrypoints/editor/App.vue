@@ -16,7 +16,10 @@ import { useRectangleShape } from '@/composables/editor/useRectangleShape';
 import { useArrowShape } from '@/composables/editor/useArrowShape';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 import { useTextMode } from '@/composables/editor/useTextMode';
-import { useClipboardImage } from '@/composables/editor/useClipboardImage';
+import {
+  downloadImageFromStage,
+  copyImageFromStageToClipboard,
+} from '@/utils/imageExport';
 
 // Composables（Phase 1-4 完全版）
 const nameCounters = useShapeNameCounters();
@@ -48,8 +51,6 @@ const text = useTextMode(
   nameCounters.getNextTextName,
   image.layerScale
 );
-const clipboard = useClipboardImage(canvasRef);
-
 // Modal state
 const isImageSourceModalOpen = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -92,6 +93,18 @@ const handleTextSubmit = (inputText: string) => {
 const handleTextCancel = () => {
   text.cancelAddText();
 };
+
+const handleSaveImage = () => {
+  const stage = canvasRef.value?.getStage();
+  if (!stage) return;
+  downloadImageFromStage(stage);
+};
+
+const handleCopyImage = () => {
+  const stage = canvasRef.value?.getStage();
+  if (!stage) return;
+  copyImageFromStageToClipboard(stage);
+};
 </script>
 
 <template>
@@ -105,8 +118,8 @@ const handleTextCancel = () => {
         :text-mode="text.textMode.value"
         @open-image-source-modal="openImageSourceModal"
         @resize-image="image.resizeToMaxWidth840"
-        @save-image="clipboard.downloadImage"
-        @copy-image="clipboard.copyImageToClipboard"
+        @save-image="handleSaveImage"
+        @copy-image="handleCopyImage"
         @add-rectangle="rectangle.addRectangle"
         @add-arrow="arrow.addArrow"
         @toggle-drawing-mode="drawing.toggleDrawingMode"
