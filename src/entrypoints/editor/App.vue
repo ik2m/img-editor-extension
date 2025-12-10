@@ -105,11 +105,12 @@ const handleTextCancel = () => {
         :text-mode="text.textMode.value"
         @open-image-source-modal="openImageSourceModal"
         @resize-image="image.resizeToMaxWidth840"
+        @save-image="clipboard.downloadImage"
+        @copy-image="clipboard.copyImageToClipboard"
         @add-rectangle="rectangle.addRectangle"
         @add-arrow="arrow.addArrow"
         @toggle-drawing-mode="drawing.toggleDrawingMode"
         @toggle-text-mode="text.toggleTextMode"
-        @copy-image="clipboard.copyImageToClipboard"
       />
 
       <EditorCanvas

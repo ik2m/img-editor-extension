@@ -11,11 +11,12 @@ defineProps<{
 const emit = defineEmits<{
   openImageSourceModal: [];
   resizeImage: [];
+  saveImage: [];
+  copyImage: [];
   addRectangle: [];
   addArrow: [];
   toggleDrawingMode: [];
   toggleTextMode: [];
-  copyImage: [];
 }>();
 </script>
 
@@ -30,9 +31,18 @@ const emit = defineEmits<{
       <BaseButton :disabled="!imageUrl" @click="emit('resizeImage')">
         🔍 リサイズ (840px)
       </BaseButton>
-      <BaseButton color="primary" :disabled="!imageUrl" @click="emit('copyImage')">
-        💾 クリップボードに保存
-      </BaseButton>
+      <div class="flex gap-2">
+        <BaseButton :disabled="!imageUrl" @click="emit('saveImage')">
+          💾 保存
+        </BaseButton>
+        <BaseButton
+          :disabled="!imageUrl"
+          @click="emit('copyImage')"
+          title="クリップボードにコピー"
+        >
+          📋
+        </BaseButton>
+      </div>
     </BaseSection>
 
     <BaseSection title="描画ツール">
