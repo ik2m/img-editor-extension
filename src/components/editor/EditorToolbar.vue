@@ -5,7 +5,6 @@ import BaseSection from '@/components/common/BaseSection.vue';
 defineProps<{
   imageUrl: string;
   drawingMode: boolean;
-  textMode: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -16,7 +15,7 @@ const emit = defineEmits<{
   addRectangle: [];
   addArrow: [];
   toggleDrawingMode: [];
-  toggleTextMode: [];
+  addText: [];
 }>();
 </script>
 
@@ -56,12 +55,8 @@ const emit = defineEmits<{
     </BaseSection>
 
     <BaseSection title="図形・テキスト">
-      <BaseButton
-        :color="textMode ? 'primary' : 'tertiary'"
-        :disabled="!imageUrl"
-        @click="emit('toggleTextMode')"
-      >
-        A {{ textMode ? 'テキスト (ON)' : 'テキスト' }}
+      <BaseButton :disabled="!imageUrl" @click="emit('addText')">
+        A テキスト
       </BaseButton>
       <BaseButton :disabled="!imageUrl" @click="emit('addRectangle')">
         ▭ 矩形

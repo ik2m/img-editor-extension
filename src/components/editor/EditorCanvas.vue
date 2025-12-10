@@ -14,7 +14,6 @@ const props = defineProps<{
   originalImage: HTMLImageElement | null;
   drawingMode: boolean;
   currentDrawing: DrawingShape | null;
-  textMode: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -23,7 +22,6 @@ const emit = defineEmits<{
   startDrawing: [pos: { x: number; y: number }];
   continueDrawing: [pos: { x: number; y: number }];
   finishDrawing: [];
-  addText: [pos: { x: number; y: number }];
 }>();
 
 const transformer = ref<{ getNode(): Konva.Transformer } | null>(null);
@@ -56,14 +54,6 @@ const handleStageMouseDown = (e: any) => {
     const stage = e.target.getStage();
     const pos = stage.getPointerPosition();
     emit('startDrawing', { x: pos.x, y: pos.y });
-    return;
-  }
-
-  // テキストモードの場合
-  if (props.textMode) {
-    const stage = e.target.getStage();
-    const pos = stage.getPointerPosition();
-    emit('addText', { x: pos.x, y: pos.y });
     return;
   }
 
@@ -123,7 +113,6 @@ defineExpose({
       :class="[
         'shadow-[0_4px_20px_rgba(0,0,0,0.5)]',
         drawingMode ? 'cursor-crosshair' : '',
-        textMode ? 'cursor-text' : '',
       ]"
       @mousedown="handleStageMouseDown"
       @mousemove="handleStageMouseMove"

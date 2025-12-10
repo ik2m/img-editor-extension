@@ -49,7 +49,7 @@ const text = useTextMode(
   layers.shapes,
   layers.selectLayer,
   nameCounters.getNextTextName,
-  image.layerScale
+  image.originalImage
 );
 // Modal state
 const isImageSourceModalOpen = ref(false);
@@ -83,11 +83,8 @@ const handleOpenClipboardImage = (blob: Blob) => {
   image.loadImageFromBlob(blob);
 };
 
-// Text input modal
-const isTextInputModalOpen = computed(() => text.pendingTextPosition.value !== null);
-
 const handleTextSubmit = (inputText: string) => {
-  text.finishAddText(inputText);
+  text.addText(inputText);
 };
 
 const handleTextCancel = () => {
@@ -115,7 +112,6 @@ const handleCopyImage = () => {
       <EditorToolbar
         :image-url="image.imageUrl.value"
         :drawing-mode="drawing.drawingMode.value"
-        :text-mode="text.textMode.value"
         @open-image-source-modal="openImageSourceModal"
         @resize-image="image.resizeToMaxWidth840"
         @save-image="handleSaveImage"
@@ -123,7 +119,7 @@ const handleCopyImage = () => {
         @add-rectangle="rectangle.addRectangle"
         @add-arrow="arrow.addArrow"
         @toggle-drawing-mode="drawing.toggleDrawingMode"
-        @toggle-text-mode="text.toggleTextMode"
+        @add-text="text.openTextInput"
       />
 
       <EditorCanvas
@@ -137,13 +133,11 @@ const handleCopyImage = () => {
         :original-image="image.originalImage.value"
         :drawing-mode="drawing.drawingMode.value"
         :current-drawing="drawing.currentDrawing.value"
-        :text-mode="text.textMode.value"
         @transform-end="transform.handleTransformEnd"
         @stage-click="handleStageClick"
         @start-drawing="drawing.startDrawing"
         @continue-drawing="drawing.continueDrawing"
         @finish-drawing="drawing.finishDrawing"
-        @add-text="text.startAddText"
       />
 
       <LayerPanel
@@ -167,7 +161,7 @@ const handleCopyImage = () => {
     />
 
     <TextInputModal
-      :is-open="isTextInputModalOpen"
+      :is-open="text.isTextInputOpen.value"
       @close="handleTextCancel"
       @submit="handleTextSubmit"
     />
