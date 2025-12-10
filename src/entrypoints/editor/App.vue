@@ -1,5 +1,8 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from 'vue';
+import Konva from "konva";
+import {KonvaNodeConstructor} from "vue-konva";
+
 
 const imageUrl = ref<string>('');
 const originalImage = ref<HTMLImageElement | null>(null);
@@ -22,9 +25,76 @@ type RectShape = {
   fill: string;
   stroke: string;
   strokeWidth: number;
-  draggable: boolean;
+  draggable: true;
 };
 const rects = ref<RectShape[]>([]);
+const selectedShapeId = ref('');
+const transformer = ref<{ getNode(): Konva.Transformer } |null>(null);
+
+const handleTransformEnd = (e) => {
+  // find element in our state
+  const rect = rects.value.find(
+      (r) => r.id === selectedShapeId.value
+  );
+  if (!rect) return;
+
+  // update the state with new properties
+  rect.x = e.target.x();
+  rect.y = e.target.y();
+  // rect.rotation = e.target.rotation();
+  // rect.scaleX = e.target.scaleX();
+  // rect.scaleY = e.target.scaleY();
+
+  // change fill color randomly
+  rect.fill = Konva.Util.getRandomColor();
+};
+
+const updateTransformer = () => {
+  if(!transformer.value) return;
+  const transformerNode = transformer.value.getNode();
+  const stage = transformerNode.getStage();
+  const selected = selectedShapeId.value;
+
+  const selectedNode = stage.findOne('.' + selected);
+  // do nothing if selected node is already attached
+  if (selectedNode === transformerNode.node()) {
+    return;
+  }
+
+  if (selectedNode) {
+    // attach to selected node
+    transformerNode.nodes([selectedNode]);
+  } else {
+    // remove transformer
+    transformerNode.nodes([]);
+  }
+};
+
+const handleStageMouseDown = (e) => {
+  // clicked on stage - clear selection
+  if (e.target === e.target.getStage()) {
+    selectedShapeId.value = '';
+    updateTransformer();
+    return;
+  }
+
+  // clicked on transformer - do nothing
+  const clickedOnTransformer =
+      e.target.getParent().className === 'Transformer';
+  if (clickedOnTransformer) {
+    return;
+  }
+
+  // find clicked rect by its name
+  const name = e.target.name();
+  const rect = rects.value.find((r) => r.id === name);
+  if (rect) {
+    selectedShapeId.value = name;
+  } else {
+    selectedShapeId.value = '';
+  }
+  updateTransformer();
+};
 
 // ステージの背景色を計算（背景を塗るために下敷きの <v-rect> を使う）
 const stageBgFill = computed(() => '#ffffff');
@@ -170,6 +240,8 @@ const addRectangle = () => {
             v-if="imageElement"
             :config="{ width: stageWidth, height: stageHeight }"
             class="edit-canvas"
+            @mousedown="handleStageMouseDown"
+            @touchstart="handleStageMouseDown"
         >
           <v-layer :config="{ scaleX: layerScale.x, scaleY: layerScale.y }">
             <!-- 背景相当（Fabric の backgroundColor の代替） -->
@@ -205,7 +277,9 @@ const addRectangle = () => {
                 strokeWidth: r.strokeWidth,
                 draggable: r.draggable
               }"
+                @transformend="handleTransformEnd"
             />
+            <v-transformer ref="transformer" />
           </v-layer>
         </v-stage>
 
