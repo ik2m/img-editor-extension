@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, nextTick } from 'vue';
+import { useClipboardItems } from '@vueuse/core';
 import Konva from 'konva';
 import EditorHeader from './components/EditorHeader.vue';
 import EditorToolbar from './components/EditorToolbar.vue';
@@ -28,6 +29,9 @@ const drawingMode = ref<boolean>(false);
 const currentDrawing = ref<DrawingShape | null>(null);
 const textMode = ref<boolean>(false);
 const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
+
+// クリップボード機能
+const { copy: copyToClipboard, copied, isSupported } = useClipboardItems();
 
 // 全ての関数をそのまま保持
 const getNextRectName = () => `矩形 ${rectCounter.value++}`;
@@ -273,6 +277,11 @@ const addText = (pos: { x: number; y: number }) => {
 };
 
 const copyImageToClipboard = async () => {
+  if (!isSupported.value) {
+    alert('お使いのブラウザはクリップボード機能に対応していません');
+    return;
+  }
+
   if (!canvasRef.value) return;
   const stage = canvasRef.value.getStage();
   if (!stage) return;
@@ -286,13 +295,15 @@ const copyImageToClipboard = async () => {
     const blob = await response.blob();
 
     // クリップボードにコピー
-    await navigator.clipboard.write([
+    await copyToClipboard([
       new ClipboardItem({
         'image/png': blob,
       }),
     ]);
 
-    alert('画像をクリップボードにコピーしました');
+    if (copied.value) {
+      alert('画像をクリップボードにコピーしました');
+    }
   } catch (error) {
     console.error('クリップボードへのコピーに失敗しました:', error);
     alert('クリップボードへのコピーに失敗しました');
