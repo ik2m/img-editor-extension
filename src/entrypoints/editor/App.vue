@@ -10,20 +10,16 @@ import EditorCanvas from './components/EditorCanvas.vue';
 import LayerPanel from './components/LayerPanel.vue';
 import type { RectShape, ArrowShape, DrawingShape, TextShape, Shape } from './types';
 import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from './types';
+import { useShapeNameCounters } from './composables/useShapeNameCounters';
+import { useLayerManagement } from './composables/useLayerManagement';
+import { useImageManagement } from './composables/useImageManagement';
 
-// 全ての状態変数をそのまま保持
-const imageUrl = ref<string>('');
-const originalImage = ref<HTMLImageElement | null>(null);
-const stageWidth = ref<number>(0);
-const stageHeight = ref<number>(0);
-const layerScale = ref<{ x: number; y: number }>({ x: 1, y: 1 });
-const imageElement = ref<HTMLImageElement | null>(null);
-const shapes = ref<Shape[]>([]);
-const selectedShapeId = ref('');
-const rectCounter = ref(1);
-const arrowCounter = ref(1);
-const drawingCounter = ref(1);
-const textCounter = ref(1);
+// Composables（Phase 1-2）
+const nameCounters = useShapeNameCounters();
+const layers = useLayerManagement();
+const image = useImageManagement(nameCounters, layers.shapes);
+
+// 既存のロジック（そのまま維持）
 const editingLayerId = ref<string>('');
 const editingLayerName = ref<string>('');
 const layerNameInput = ref<HTMLInputElement | null>(null);
@@ -35,14 +31,8 @@ const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
 // クリップボード機能
 const { copy: copyToClipboard, copied, isSupported } = useClipboardItems();
 
-// 全ての関数をそのまま保持
-const getNextRectName = () => `矩形 ${rectCounter.value++}`;
-const getNextArrowName = () => `矢印 ${arrowCounter.value++}`;
-const getNextDrawingName = () => `お絵描き ${drawingCounter.value++}`;
-const getNextTextName = () => `テキスト ${textCounter.value++}`;
-
 const handleTransformEnd = (e: any) => {
-  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
+  const shape = layers.shapes.value.find((s) => s.id === layers.selectedShapeId.value);
   if (!shape) return;
 
   if (isRectShape(shape)) {
@@ -64,95 +54,7 @@ const handleTransformEnd = (e: any) => {
 };
 
 const handleStageClick = (targetId: string) => {
-  selectedShapeId.value = targetId;
-};
-
-const handleImageUpload = (file: File) => {
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    imageUrl.value = e.target?.result as string;
-    loadImageToStage(imageUrl.value);
-  };
-  reader.readAsDataURL(file);
-};
-
-const loadImageToStage = (url: string) => {
-  const img = new Image();
-  img.onload = () => {
-    originalImage.value = img;
-    imageElement.value = img;
-    stageWidth.value = img.width;
-    stageHeight.value = img.height;
-    layerScale.value = { x: 1, y: 1 };
-    shapes.value = [];
-    rectCounter.value = 1;
-    arrowCounter.value = 1;
-    drawingCounter.value = 1;
-    textCounter.value = 1;
-  };
-  img.src = url;
-};
-
-const resizeToMaxWidth840 = () => {
-  if (!originalImage.value) return;
-  const img = originalImage.value;
-  const maxWidth = 840;
-  let width = img.width;
-  let height = img.height;
-
-  if (width > maxWidth) {
-    const ratio = maxWidth / width;
-    width = maxWidth;
-    height = Math.round(height * ratio);
-    layerScale.value = { x: ratio, y: ratio };
-    stageWidth.value = width;
-    stageHeight.value = height;
-  } else {
-    layerScale.value = { x: 1, y: 1 };
-    stageWidth.value = width;
-    stageHeight.value = height;
-  }
-};
-
-const moveLayerUp = (id: string) => {
-  const index = shapes.value.findIndex((s) => s.id === id);
-  if (index < shapes.value.length - 1) {
-    [shapes.value[index], shapes.value[index + 1]] = [
-      shapes.value[index + 1],
-      shapes.value[index],
-    ];
-  }
-};
-
-const moveLayerDown = (id: string) => {
-  const index = shapes.value.findIndex((s) => s.id === id);
-  if (index > 0) {
-    [shapes.value[index], shapes.value[index - 1]] = [
-      shapes.value[index - 1],
-      shapes.value[index],
-    ];
-  }
-};
-
-const deleteLayer = (id: string) => {
-  const index = shapes.value.findIndex((s) => s.id === id);
-  if (index !== -1) {
-    shapes.value.splice(index, 1);
-    if (selectedShapeId.value === id) {
-      selectedShapeId.value = '';
-    }
-  }
-};
-
-const selectLayer = (id: string) => {
-  selectedShapeId.value = id;
-};
-
-const renameLayer = (id: string, newName: string) => {
-  const shape = shapes.value.find((s) => s.id === id);
-  if (shape) {
-    shape.name = newName;
-  }
+  layers.selectLayer(targetId);
 };
 
 const startEditLayerName = async (layer: Shape) => {
@@ -164,7 +66,7 @@ const startEditLayerName = async (layer: Shape) => {
 
 const finishEditLayerName = () => {
   if (editingLayerId.value) {
-    renameLayer(editingLayerId.value, editingLayerName.value);
+    layers.renameLayer(editingLayerId.value, editingLayerName.value);
     editingLayerId.value = '';
   }
 };
@@ -175,10 +77,10 @@ const cancelEditLayerName = () => {
 };
 
 const addRectangle = () => {
-  if (!imageElement.value) return;
+  if (!image.imageElement.value) return;
   const rect: RectShape = {
     id: `rect-${Date.now()}`,
-    name: getNextRectName(),
+    name: nameCounters.getNextRectName(),
     x: 100,
     y: 100,
     width: 200,
@@ -188,15 +90,15 @@ const addRectangle = () => {
     strokeWidth: 3,
     draggable: true,
   };
-  shapes.value.push(rect);
-  selectLayer(rect.id);
+  layers.shapes.value.push(rect);
+  layers.selectLayer(rect.id);
 };
 
 const addArrow = () => {
-  if (!imageElement.value) return;
+  if (!image.imageElement.value) return;
   const arrow: ArrowShape = {
     id: `arrow-${Date.now()}`,
-    name: getNextArrowName(),
+    name: nameCounters.getNextArrowName(),
     points: [100, 100, 300, 200],
     stroke: '#ff0000',
     strokeWidth: 3,
@@ -205,8 +107,8 @@ const addArrow = () => {
     pointerWidth: 20,
     draggable: true,
   };
-  shapes.value.push(arrow);
-  selectLayer(arrow.id);
+  layers.shapes.value.push(arrow);
+  layers.selectLayer(arrow.id);
 };
 
 const toggleDrawingMode = () => {
@@ -220,8 +122,8 @@ const startDrawing = (pos: { x: number; y: number }) => {
   if (!drawingMode.value) return;
   const drawing: DrawingShape = {
     id: `drawing-${Date.now()}`,
-    name: getNextDrawingName(),
-    points: [pos.x / layerScale.value.x, pos.y / layerScale.value.y],
+    name: nameCounters.getNextDrawingName(),
+    points: [pos.x / image.layerScale.value.x, pos.y / image.layerScale.value.y],
     stroke: '#000000',
     strokeWidth: 2,
     tension: 0.5,
@@ -235,16 +137,16 @@ const startDrawing = (pos: { x: number; y: number }) => {
 const continueDrawing = (pos: { x: number; y: number }) => {
   if (!currentDrawing.value) return;
   currentDrawing.value.points.push(
-    pos.x / layerScale.value.x,
-    pos.y / layerScale.value.y
+    pos.x / image.layerScale.value.x,
+    pos.y / image.layerScale.value.y
   );
 };
 
 const finishDrawing = () => {
   if (!currentDrawing.value) return;
   if (currentDrawing.value.points.length >= 4) {
-    shapes.value.push(currentDrawing.value);
-    selectLayer(currentDrawing.value.id);
+    layers.shapes.value.push(currentDrawing.value);
+    layers.selectLayer(currentDrawing.value.id);
   }
   currentDrawing.value = null;
   drawingMode.value = false;
@@ -263,9 +165,9 @@ const addText = (pos: { x: number; y: number }) => {
   }
   const text: TextShape = {
     id: `text-${Date.now()}`,
-    name: getNextTextName(),
-    x: pos.x / layerScale.value.x,
-    y: pos.y / layerScale.value.y,
+    name: nameCounters.getNextTextName(),
+    x: pos.x / image.layerScale.value.x,
+    y: pos.y / image.layerScale.value.y,
     text: inputText,
     fontSize: 24,
     fontFamily: 'Noto Sans JP',
@@ -273,8 +175,8 @@ const addText = (pos: { x: number; y: number }) => {
     align: 'left',
     draggable: true,
   };
-  shapes.value.push(text);
-  selectLayer(text.id);
+  layers.shapes.value.push(text);
+  layers.selectLayer(text.id);
   textMode.value = false;
 };
 
@@ -319,11 +221,11 @@ const copyImageToClipboard = async () => {
 
     <div class="flex flex-1 overflow-hidden">
       <EditorToolbar
-        :image-url="imageUrl"
+        :image-url="image.imageUrl.value"
         :drawing-mode="drawingMode"
         :text-mode="textMode"
-        @upload-image="handleImageUpload"
-        @resize-image="resizeToMaxWidth840"
+        @upload-image="image.handleImageUpload"
+        @resize-image="image.resizeToMaxWidth840"
         @add-rectangle="addRectangle"
         @add-arrow="addArrow"
         @toggle-drawing-mode="toggleDrawingMode"
@@ -333,13 +235,13 @@ const copyImageToClipboard = async () => {
 
       <EditorCanvas
         ref="canvasRef"
-        :image-element="imageElement"
-        :stage-width="stageWidth"
-        :stage-height="stageHeight"
-        :layer-scale="layerScale"
-        :shapes="shapes"
-        :selected-shape-id="selectedShapeId"
-        :original-image="originalImage"
+        :image-element="image.imageElement.value"
+        :stage-width="image.stageWidth.value"
+        :stage-height="image.stageHeight.value"
+        :layer-scale="image.layerScale.value"
+        :shapes="layers.shapes.value"
+        :selected-shape-id="layers.selectedShapeId.value"
+        :original-image="image.originalImage.value"
         :drawing-mode="drawingMode"
         :current-drawing="currentDrawing"
         :text-mode="textMode"
@@ -352,16 +254,16 @@ const copyImageToClipboard = async () => {
       />
 
       <LayerPanel
-        :shapes="shapes"
-        :selected-shape-id="selectedShapeId"
-        :image-url="imageUrl"
+        :shapes="layers.shapes.value"
+        :selected-shape-id="layers.selectedShapeId.value"
+        :image-url="image.imageUrl.value"
         :editing-layer-id="editingLayerId"
         :editing-layer-name="editingLayerName"
         @add-rectangle="addRectangle"
-        @select-layer="selectLayer"
-        @move-layer-up="moveLayerUp"
-        @move-layer-down="moveLayerDown"
-        @delete-layer="deleteLayer"
+        @select-layer="layers.selectLayer"
+        @move-layer-up="layers.moveLayerUp"
+        @move-layer-down="layers.moveLayerDown"
+        @delete-layer="layers.deleteLayer"
         @start-edit-name="startEditLayerName"
         @finish-edit-name="finishEditLayerName"
         @cancel-edit-name="cancelEditLayerName"
