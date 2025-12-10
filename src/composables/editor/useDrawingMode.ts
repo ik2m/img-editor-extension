@@ -8,7 +8,6 @@ import { isDrawingShape } from '@/components/editor/types';
 export function useDrawingMode(
   shapes: Ref<Shape[]>,
   selectLayer: (id: string) => void,
-  getNextDrawingName: () => string,
   layerScale: Ref<{ x: number; y: number }>
 ) {
   const drawingMode = ref<boolean>(false);
@@ -24,7 +23,7 @@ export function useDrawingMode(
     if (!layer) {
       layer = {
         id: 'drawing-layer',
-        name: getNextDrawingName(),
+        name: 'お絵描き',
         lines: [],
         tension: 0.5,
         lineCap: 'round',

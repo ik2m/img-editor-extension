@@ -47,7 +47,6 @@ const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
 const drawing = useDrawingMode(
   layers.shapes,
   layers.selectLayer,
-  nameCounters.getNextDrawingName,
   image.layerScale
 );
 const text = useTextMode(
