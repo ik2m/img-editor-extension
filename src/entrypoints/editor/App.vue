@@ -8,15 +8,15 @@ import EditorCanvas from '@/components/editor/EditorCanvas.vue';
 import LayerPanel from '@/components/editor/LayerPanel.vue';
 import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
 import TextInputModal from '@/components/editor/TextInputModal.vue';
-import { useShapeNameCounters } from './composables/useShapeNameCounters';
-import { useLayerManagement } from './composables/useLayerManagement';
-import { useImageManagement } from './composables/useImageManagement';
-import { useShapeTransform } from './composables/useShapeTransform';
-import { useRectangleShape } from './composables/useRectangleShape';
-import { useArrowShape } from './composables/useArrowShape';
-import { useDrawingMode } from './composables/useDrawingMode';
-import { useTextMode } from './composables/useTextMode';
-import { useClipboardImage } from './composables/useClipboardImage';
+import { useShapeNameCounters } from '@/composables/editor/useShapeNameCounters';
+import { useLayerManagement } from '@/composables/editor/useLayerManagement';
+import { useImageManagement } from '@/composables/editor/useImageManagement';
+import { useShapeTransform } from '@/composables/editor/useShapeTransform';
+import { useRectangleShape } from '@/composables/editor/useRectangleShape';
+import { useArrowShape } from '@/composables/editor/useArrowShape';
+import { useDrawingMode } from '@/composables/editor/useDrawingMode';
+import { useTextMode } from '@/composables/editor/useTextMode';
+import { useClipboardImage } from '@/composables/editor/useClipboardImage';
 
 // Composables（Phase 1-4 完全版）
 const nameCounters = useShapeNameCounters();
