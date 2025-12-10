@@ -10,7 +10,7 @@ type UseShapeNameCounters = ReturnType<typeof import('./useShapeNameCounters').u
 export function useImageManagement(
   nameCounters: UseShapeNameCounters,
   shapes: Ref<Shape[]>,
-  targetWidth: Ref<number | null>
+  targetWidth: Ref<number | 'original'>
 ) {
   const imageUrl = ref<string>('');
   const originalImage = ref<HTMLImageElement | null>(null);
@@ -38,7 +38,7 @@ export function useImageManagement(
       shapes.value = [];
 
       // ターゲット幅が指定されている場合はリサイズ
-      if (targetWidth.value !== null && img.width !== targetWidth.value) {
+      if (targetWidth.value !== 'original' && img.width !== targetWidth.value) {
         resizeImage(img, targetWidth.value);
       } else {
         // リサイズなしの場合はそのまま設定
@@ -128,10 +128,10 @@ export function useImageManagement(
     toast.success('クリップボードから画像を読み込みました');
   };
 
-  const applyTargetWidth = (newTargetWidth: number | null) => {
+  const applyTargetWidth = (newTargetWidth: number | 'original') => {
     if (!originalImage.value) return;
 
-    if (newTargetWidth === null) {
+    if (newTargetWidth === 'original') {
       // 元画像に戻す - originalImageを再読み込み
       imageElement.value = originalImage.value;
       stageWidth.value = originalImage.value.width;

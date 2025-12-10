@@ -21,7 +21,7 @@ import { useShapeColor } from '@/composables/editor/useShapeColor';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 
 // Target width for image resizing
-const targetWidth = ref<number | null>(null);
+const targetWidth = ref<number | 'original'>('original');
 
 // Composables（Phase 1-4 完全版）
 const nameCounters = useShapeNameCounters();
