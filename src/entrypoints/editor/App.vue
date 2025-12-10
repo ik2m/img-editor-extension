@@ -81,23 +81,27 @@ const resizeToMaxWidth840 = () => {
 };
 
 const moveLayerUp = (id: string) => {
-  const index = rects.value.findIndex(r => r.id === id);
+  const index = rects.value.findIndex((r) => r.id === id);
   if (index < rects.value.length - 1) {
-    [rects.value[index], rects.value[index + 1]] =
-    [rects.value[index + 1], rects.value[index]];
+    [rects.value[index], rects.value[index + 1]] = [
+      rects.value[index + 1],
+      rects.value[index],
+    ];
   }
 };
 
 const moveLayerDown = (id: string) => {
-  const index = rects.value.findIndex(r => r.id === id);
+  const index = rects.value.findIndex((r) => r.id === id);
   if (index > 0) {
-    [rects.value[index], rects.value[index - 1]] =
-    [rects.value[index - 1], rects.value[index]];
+    [rects.value[index], rects.value[index - 1]] = [
+      rects.value[index - 1],
+      rects.value[index],
+    ];
   }
 };
 
 const deleteLayer = (id: string) => {
-  const index = rects.value.findIndex(r => r.id === id);
+  const index = rects.value.findIndex((r) => r.id === id);
   if (index !== -1) {
     rects.value.splice(index, 1);
     if (selectedShapeId.value === id) {
@@ -111,7 +115,7 @@ const selectLayer = (id: string) => {
 };
 
 const renameLayer = (id: string, newName: string) => {
-  const rect = rects.value.find(r => r.id === id);
+  const rect = rects.value.find((r) => r.id === id);
   if (rect) {
     rect.name = newName;
   }
@@ -148,7 +152,7 @@ const addRectangle = () => {
     fill: 'rgba(255, 0, 0, 0.3)',
     stroke: '#ff0000',
     strokeWidth: 3,
-    draggable: true
+    draggable: true,
   };
   rects.value.push(rect);
   selectLayer(rect.id);
@@ -156,7 +160,7 @@ const addRectangle = () => {
 </script>
 
 <template>
-  <div class="flex flex-col h-screen bg-dark-bg text-white">
+  <div class="bg-dark-bg flex h-screen flex-col text-white">
     <EditorHeader />
 
     <div class="flex flex-1 overflow-hidden">
@@ -193,7 +197,7 @@ const addRectangle = () => {
         @start-edit-name="startEditLayerName"
         @finish-edit-name="finishEditLayerName"
         @cancel-edit-name="cancelEditLayerName"
-        @update-editing-name="(name) => editingLayerName = name"
+        @update-editing-name="(name) => (editingLayerName = name)"
       />
     </div>
   </div>

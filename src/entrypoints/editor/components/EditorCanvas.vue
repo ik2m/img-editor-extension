@@ -58,9 +58,12 @@ const handleStageMouseDown = (e: any) => {
 };
 
 // selectedShapeIdが変わったらtransformerを更新
-watch(() => props.selectedShapeId, () => {
-  updateTransformer();
-});
+watch(
+  () => props.selectedShapeId,
+  () => {
+    updateTransformer();
+  }
+);
 
 onMounted(() => {
   updateTransformer();
@@ -68,7 +71,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="flex-1 flex items-center justify-center bg-[#1a1a1a] overflow-auto relative">
+  <main
+    class="relative flex flex-1 items-center justify-center overflow-auto bg-[#1a1a1a]"
+  >
     <v-stage
       v-if="imageElement"
       :config="{ width: stageWidth, height: stageHeight }"
@@ -83,7 +88,7 @@ onMounted(() => {
             y: 0,
             width: originalImage?.width || 0,
             height: originalImage?.height || 0,
-            fill: stageBgFill
+            fill: stageBgFill,
           }"
         />
         <v-image
@@ -91,7 +96,7 @@ onMounted(() => {
             x: 0,
             y: 0,
             image: imageElement,
-            listening: false
+            listening: false,
           }"
         />
         <v-rect
@@ -106,7 +111,7 @@ onMounted(() => {
             fill: r.fill,
             stroke: r.stroke,
             strokeWidth: r.strokeWidth,
-            draggable: r.draggable
+            draggable: r.draggable,
           }"
           @transformend="(e: any) => emit('transformEnd', e)"
         />
@@ -114,7 +119,7 @@ onMounted(() => {
       </v-layer>
     </v-stage>
 
-    <div v-else class="text-center text-dark-muted">
+    <div v-else class="text-dark-muted text-center">
       <p class="text-xl">画像をアップロードしてください</p>
     </div>
   </main>

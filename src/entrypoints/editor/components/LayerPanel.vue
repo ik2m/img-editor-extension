@@ -26,19 +26,26 @@ const layerNameInput = ref<HTMLInputElement | null>(null);
 </script>
 
 <template>
-  <aside class="w-sidebar bg-dark-panel border-l border-dark-border p-4 overflow-y-auto flex flex-col">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="m-0 text-base text-dark-text">レイヤー</h3>
+  <aside
+    class="w-sidebar bg-dark-panel border-dark-border flex flex-col overflow-y-auto border-l p-4"
+  >
+    <div class="mb-4 flex items-center justify-between">
+      <h3 class="text-dark-text m-0 text-base">レイヤー</h3>
       <button
         @click="emit('addRectangle')"
         :disabled="!imageUrl"
-        class="py-1 px-3 text-xl leading-none block w-full py-2 px-4 mb-2 bg-primary text-white border-none rounded cursor-pointer text-center transition-colors duration-200 font-semibold hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted disabled:cursor-not-allowed"
-      >+</button>
+        class="bg-primary hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted mb-2 block w-full cursor-pointer rounded border-none px-3 px-4 py-1 py-2 text-center text-xl leading-none font-semibold text-white transition-colors duration-200 disabled:cursor-not-allowed"
+      >
+        +
+      </button>
     </div>
 
     <div class="flex flex-col gap-1">
-      <div v-if="rects.length === 0" class="text-center text-dark-muted py-8 px-4 text-sm">
-        レイヤーなし<br>
+      <div
+        v-if="rects.length === 0"
+        class="text-dark-muted px-4 py-8 text-center text-sm"
+      >
+        レイヤーなし<br />
         <small class="text-xs">矩形を追加してください</small>
       </div>
 
@@ -46,22 +53,22 @@ const layerNameInput = ref<HTMLInputElement | null>(null);
         v-for="r in [...rects].reverse()"
         :key="r.id"
         :class="[
-          'p-2 bg-dark-bg border rounded cursor-pointer transition-all duration-200 group',
+          'bg-dark-bg group cursor-pointer rounded border p-2 transition-all duration-200',
           selectedShapeId === r.id
             ? 'bg-dark-elevated border-primary'
-            : 'border-dark-border hover:bg-dark-elevated'
+            : 'border-dark-border hover:bg-dark-elevated',
         ]"
         @click="emit('selectLayer', r.id)"
       >
         <div class="flex items-center gap-2">
           <div
-            class="w-5 h-5 border border-dark-border rounded-sm flex-shrink-0"
+            class="border-dark-border h-5 w-5 flex-shrink-0 rounded-sm border"
             :style="{ backgroundColor: r.fill }"
           ></div>
 
           <span
             v-if="editingLayerId !== r.id"
-            class="flex-1 text-white text-sm overflow-hidden text-ellipsis whitespace-nowrap"
+            class="flex-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap text-white"
             @dblclick="emit('startEditName', r)"
           >
             {{ r.name }}
@@ -69,19 +76,26 @@ const layerNameInput = ref<HTMLInputElement | null>(null);
           <input
             v-else
             :value="editingLayerName"
-            @input="emit('updateEditingName', ($event.target as HTMLInputElement).value)"
-            class="flex-1 bg-dark-border text-white border border-primary rounded px-2 py-1 text-sm outline-none"
+            @input="
+              emit(
+                'updateEditingName',
+                ($event.target as HTMLInputElement).value
+              )
+            "
+            class="bg-dark-border border-primary flex-1 rounded border px-2 py-1 text-sm text-white outline-none"
             @blur="emit('finishEditName')"
             @keyup.enter="emit('finishEditName')"
             @keyup.esc="emit('cancelEditName')"
             ref="layerNameInput"
           />
 
-          <div class="flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+          <div
+            class="flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+          >
             <button
               @click.stop="emit('moveLayerUp', r.id)"
               :disabled="rects[rects.length - 1].id === r.id"
-              class="py-1 px-2 bg-dark-border text-white border-none rounded-sm cursor-pointer text-xs transition-colors duration-200 hover:bg-[#4d4d4d] disabled:opacity-30 disabled:cursor-not-allowed"
+              class="bg-dark-border cursor-pointer rounded-sm border-none px-2 py-1 text-xs text-white transition-colors duration-200 hover:bg-[#4d4d4d] disabled:cursor-not-allowed disabled:opacity-30"
               title="前面へ"
             >
               ↑
@@ -89,14 +103,14 @@ const layerNameInput = ref<HTMLInputElement | null>(null);
             <button
               @click.stop="emit('moveLayerDown', r.id)"
               :disabled="rects[0].id === r.id"
-              class="py-1 px-2 bg-dark-border text-white border-none rounded-sm cursor-pointer text-xs transition-colors duration-200 hover:bg-[#4d4d4d] disabled:opacity-30 disabled:cursor-not-allowed"
+              class="bg-dark-border cursor-pointer rounded-sm border-none px-2 py-1 text-xs text-white transition-colors duration-200 hover:bg-[#4d4d4d] disabled:cursor-not-allowed disabled:opacity-30"
               title="背面へ"
             >
               ↓
             </button>
             <button
               @click.stop="emit('deleteLayer', r.id)"
-              class="py-1 px-2 bg-dark-border text-danger border-none rounded-sm cursor-pointer text-xs transition-colors duration-200 hover:bg-danger hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              class="bg-dark-border text-danger hover:bg-danger cursor-pointer rounded-sm border-none px-2 py-1 text-xs transition-colors duration-200 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
               title="削除"
             >
               ×

@@ -19,9 +19,11 @@ const handleFileChange = (event: Event) => {
 </script>
 
 <template>
-  <aside class="w-sidebar bg-dark-panel border-r border-dark-border p-4 overflow-y-auto">
+  <aside
+    class="w-sidebar bg-dark-panel border-dark-border overflow-y-auto border-r p-4"
+  >
     <div class="mb-8">
-      <h3 class="mt-0 mb-4 text-base text-dark-text">ファイル</h3>
+      <h3 class="text-dark-text mt-0 mb-4 text-base">ファイル</h3>
       <input
         type="file"
         accept="image/*"
@@ -29,13 +31,17 @@ const handleFileChange = (event: Event) => {
         id="file-input"
         class="hidden"
       />
-      <label for="file-input" class="block w-full py-2 px-4 mb-2 bg-dark-border text-white border-none rounded cursor-pointer text-center transition-colors duration-200 hover:bg-[#4d4d4d]">画像を開く</label>
+      <label
+        for="file-input"
+        class="bg-dark-border mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d]"
+        >画像を開く</label
+      >
     </div>
 
     <div class="mb-8">
-      <h3 class="mt-0 mb-4 text-base text-dark-text">リサイズ</h3>
+      <h3 class="text-dark-text mt-0 mb-4 text-base">リサイズ</h3>
       <button
-        class="block w-full py-2 px-4 mb-2 bg-primary text-white border-none rounded cursor-pointer text-center transition-colors duration-200 font-semibold hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted disabled:cursor-not-allowed"
+        class="bg-primary hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center font-semibold text-white transition-colors duration-200 disabled:cursor-not-allowed"
         @click="emit('resizeImage')"
         :disabled="!imageUrl"
       >
@@ -44,9 +50,9 @@ const handleFileChange = (event: Event) => {
     </div>
 
     <div class="mb-8">
-      <h3 class="mt-0 mb-4 text-base text-dark-text">図形</h3>
+      <h3 class="text-dark-text mt-0 mb-4 text-base">図形</h3>
       <button
-        class="block w-full py-2 px-4 mb-2 bg-dark-border text-white border-none rounded cursor-pointer text-center transition-colors duration-200 hover:bg-[#4d4d4d] disabled:bg-dark-elevated disabled:text-dark-muted disabled:cursor-not-allowed"
+        class="bg-dark-border disabled:bg-dark-elevated disabled:text-dark-muted mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d] disabled:cursor-not-allowed"
         @click="emit('addRectangle')"
         :disabled="!imageUrl"
       >
@@ -55,11 +61,27 @@ const handleFileChange = (event: Event) => {
     </div>
 
     <div class="mb-8">
-      <h3 class="mt-0 mb-4 text-base text-dark-text">編集ツール</h3>
-      <button class="block w-full py-2 px-4 mb-2 bg-dark-border text-white border-none rounded cursor-pointer text-center transition-colors duration-200 hover:bg-[#4d4d4d]">切り抜き</button>
-      <button class="block w-full py-2 px-4 mb-2 bg-dark-border text-white border-none rounded cursor-pointer text-center transition-colors duration-200 hover:bg-[#4d4d4d]">リサイズ</button>
-      <button class="block w-full py-2 px-4 mb-2 bg-dark-border text-white border-none rounded cursor-pointer text-center transition-colors duration-200 hover:bg-[#4d4d4d]">フィルター</button>
-      <button class="block w-full py-2 px-4 mb-2 bg-dark-border text-white border-none rounded cursor-pointer text-center transition-colors duration-200 hover:bg-[#4d4d4d]">回転</button>
+      <h3 class="text-dark-text mt-0 mb-4 text-base">編集ツール</h3>
+      <button
+        class="bg-dark-border mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d]"
+      >
+        切り抜き
+      </button>
+      <button
+        class="bg-dark-border mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d]"
+      >
+        リサイズ
+      </button>
+      <button
+        class="bg-dark-border mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d]"
+      >
+        フィルター
+      </button>
+      <button
+        class="bg-dark-border mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d]"
+      >
+        回転
+      </button>
     </div>
   </aside>
 </template>
