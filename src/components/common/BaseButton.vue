@@ -4,13 +4,13 @@ import { computed } from 'vue';
 const props = withDefaults(
   defineProps<{
     size?: 'md' | 'sm';
-    color?: 'primary' | 'secondary' | 'danger';
+    color?: 'primary' | 'tertiary' | 'danger';
     disabled?: boolean;
     type?: 'button' | 'submit' | 'reset';
   }>(),
   {
     size: 'md',
-    color: 'primary',
+    color: 'tertiary',
     disabled: false,
     type: 'button',
   }
@@ -20,7 +20,7 @@ const colorCls = computed(() => {
   const map = {
     primary:
       'bg-primary hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted font-semibold',
-    secondary: 'bg-dark-border hover:bg-[#4d4d4d] disabled:opacity-30',
+    tertiary: 'bg-dark-border hover:bg-[#4d4d4d] disabled:opacity-30',
     danger: 'bg-danger hover:bg-danger-hover text-white disabled:opacity-30',
   };
   return map[props.color];

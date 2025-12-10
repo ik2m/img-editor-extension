@@ -71,7 +71,7 @@ const layerColor = computed(() => {
       >
         <BaseButton
           size="sm"
-          color="secondary"
+          color="tertiary"
           :disabled="isLast"
           @click.stop="emit('moveUp', layer.id)"
           title="前面へ"
@@ -80,7 +80,7 @@ const layerColor = computed(() => {
         </BaseButton>
         <BaseButton
           size="sm"
-          color="secondary"
+          color="tertiary"
           :disabled="isFirst"
           @click.stop="emit('moveDown', layer.id)"
           title="背面へ"

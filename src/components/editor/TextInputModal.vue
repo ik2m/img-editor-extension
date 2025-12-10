@@ -74,11 +74,11 @@ const handleKeydown = (event: KeyboardEvent) => {
       />
 
       <div class="flex gap-4">
-        <BaseButton @click="handleSubmit" class="flex-1">
+        <BaseButton color="primary" @click="handleSubmit" class="flex-1">
           OK
         </BaseButton>
 
-        <BaseButton color="secondary" @click="handleCancel" class="flex-1">
+        <BaseButton color="tertiary" @click="handleCancel" class="flex-1">
           キャンセル
         </BaseButton>
       </div>
