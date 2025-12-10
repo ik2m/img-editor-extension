@@ -17,15 +17,10 @@ const props = withDefaults(
 );
 
 const colorCls = computed(() => {
-  const map = {
-    primary:
-      'bg-primary hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted',
-    secondary: 'bg-dark-border hover:bg-[#4d4d4d] disabled:opacity-30',
-    icon: 'bg-dark-border hover:bg-[#4d4d4d] disabled:opacity-30',
-    label: 'bg-dark-border hover:bg-[#4d4d4d]',
-  };
-
-  let result = map[props.variant];
+  let result =
+    props.variant === 'primary'
+      ? 'bg-primary hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted font-semibold'
+      : 'bg-dark-border hover:bg-[#4d4d4d] disabled:opacity-30';
 
   if (props.danger && props.variant === 'icon') {
     result += 'text-danger hover:bg-danger hover:text-white';
@@ -34,13 +29,9 @@ const colorCls = computed(() => {
 });
 
 const sizeCls = computed(() => {
-  const map = {
-    primary: 'px-4 py-2 text-base font-semibold mb-2',
-    secondary: 'px-4 py-2 text-base mb-2',
-    icon: 'px-2 py-1 text-xs rounded-sm',
-    label: 'px-4 py-2 text-base mb-2',
-  };
-  return map[props.variant];
+  return props.variant === 'icon'
+    ? 'px-2 py-1 text-xs rounded-sm'
+    : 'px-4 py-2 text-base mb-2';
 });
 </script>
 
