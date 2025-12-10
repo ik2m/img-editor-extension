@@ -9,19 +9,19 @@ const count = ref(0);
 </script>
 
 <template>
-  <h1>{{ msg }}</h1>
+  <h1 class="text-3xl font-bold">{{ msg }}</h1>
 
-  <div class="card">
-    <button type="button" @click="count++">count is {{ count }}</button>
-    <p>
+  <div class="p-8">
+    <button type="button" @click="count++" class="px-4 py-2 bg-[#646cff] text-white rounded hover:bg-[#535bf2] transition-colors duration-200">count is {{ count }}</button>
+    <p class="mt-4">
       Edit
-      <code>components/HelloWorld.vue</code> to test HMR
+      <code class="bg-[#1a1a1a] px-2 py-1 rounded text-sm">components/HelloWorld.vue</code> to test HMR
     </p>
   </div>
 
   <p>
     Install
-    <a href="https://github.com/vuejs/language-tools" target="_blank">Volar</a>
+    <a href="https://github.com/vuejs/language-tools" target="_blank" class="text-[#646cff] hover:text-[#535bf2]">Volar</a>
     in your IDE for a better DX
   </p>
   <p class="text-[#888]">Click on the WXT and Vue logos to learn more</p>

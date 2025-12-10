@@ -9,7 +9,7 @@ const openEditor = () => {
 </script>
 
 <template>
-  <div>
+  <div class="flex justify-center gap-8">
     <a href="https://wxt.dev" target="_blank">
       <img src="/wxt.svg" class="h-24 p-6 will-change-[filter] transition-[filter] duration-300 hover:drop-shadow-[0_0_2em_#54bc4ae0]" alt="WXT logo" />
     </a>
@@ -18,10 +18,10 @@ const openEditor = () => {
     </a>
   </div>
   <HelloWorld msg="WXT + Vue" />
-  <div class="card">
-    <button type="button" @click="openEditor" class="open-editor-btn">
+  <div class="p-8">
+    <button type="button" @click="openEditor" class="px-6 py-3 bg-[#42b883] text-white rounded-lg font-medium hover:bg-[#359268] transition-colors duration-200">
       画像エディターを開く
     </button>
-    <p>新しいタブで画像編集ページが開きます</p>
+    <p class="mt-4 text-sm text-[#888]">新しいタブで画像編集ページが開きます</p>
   </div>
 </template>
