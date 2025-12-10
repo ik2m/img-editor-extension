@@ -178,20 +178,21 @@ defineExpose({
             }"
             @transformend="(e: any) => emit('transformEnd', e)"
           />
-          <v-line
-            v-else-if="isDrawingShape(shape)"
-            :config="{
-              name: shape.id,
-              points: shape.points,
-              stroke: shape.stroke,
-              strokeWidth: shape.strokeWidth,
-              tension: shape.tension,
-              lineCap: shape.lineCap,
-              lineJoin: shape.lineJoin,
-              draggable: shape.draggable,
-            }"
-            @transformend="(e: any) => emit('transformEnd', e)"
-          />
+          <template v-else-if="isDrawingShape(shape)">
+            <v-line
+              v-for="(line, index) in shape.lines"
+              :key="`${shape.id}-line-${index}`"
+              :config="{
+                points: line.points,
+                stroke: line.stroke,
+                strokeWidth: line.strokeWidth,
+                tension: shape.tension,
+                lineCap: shape.lineCap,
+                lineJoin: shape.lineJoin,
+                listening: false,
+              }"
+            />
+          </template>
           <v-text
             v-else-if="isTextShape(shape)"
             :config="{

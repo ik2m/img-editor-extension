@@ -1,5 +1,6 @@
-import { ref, type Ref } from 'vue';
-import type { DrawingShape, Shape } from '@/components/editor/types';
+import { ref, computed, type Ref } from 'vue';
+import type { DrawingShape, DrawingLine, Shape } from '@/components/editor/types';
+import { isDrawingShape } from '@/components/editor/types';
 
 /**
  * お絵描きモード（フリーハンド描画）を管理するcomposable
@@ -11,52 +12,80 @@ export function useDrawingMode(
   layerScale: Ref<{ x: number; y: number }>
 ) {
   const drawingMode = ref<boolean>(false);
-  const currentDrawing = ref<DrawingShape | null>(null);
+  const currentLine = ref<number[]>([]);
+
+  // お絵描きレイヤーを取得または作成
+  const drawingLayer = computed(() => {
+    return shapes.value.find(isDrawingShape);
+  });
+
+  const getOrCreateDrawingLayer = (): DrawingShape => {
+    let layer = drawingLayer.value;
+    if (!layer) {
+      layer = {
+        id: 'drawing-layer',
+        name: getNextDrawingName(),
+        lines: [],
+        tension: 0.5,
+        lineCap: 'round',
+        lineJoin: 'round',
+        draggable: false,
+      };
+      // 画像レイヤーの直前に配置（配列の先頭）
+      shapes.value.unshift(layer);
+    }
+    return layer;
+  };
 
   const toggleDrawingMode = () => {
     drawingMode.value = !drawingMode.value;
     if (!drawingMode.value) {
-      currentDrawing.value = null;
+      currentLine.value = [];
     }
   };
 
   const startDrawing = (pos: { x: number; y: number }) => {
     if (!drawingMode.value) return;
-    const drawing: DrawingShape = {
-      id: `drawing-${Date.now()}`,
-      name: getNextDrawingName(),
-      points: [pos.x / layerScale.value.x, pos.y / layerScale.value.y],
-      stroke: '#000000',
-      strokeWidth: 2,
-      tension: 0.5,
-      lineCap: 'round',
-      lineJoin: 'round',
-      draggable: true,
-    };
-    currentDrawing.value = drawing;
+    currentLine.value = [pos.x / layerScale.value.x, pos.y / layerScale.value.y];
   };
 
   const continueDrawing = (pos: { x: number; y: number }) => {
-    if (!currentDrawing.value) return;
-    currentDrawing.value.points.push(
+    if (currentLine.value.length === 0) return;
+    currentLine.value.push(
       pos.x / layerScale.value.x,
       pos.y / layerScale.value.y
     );
   };
 
   const finishDrawing = () => {
-    if (!currentDrawing.value) return;
-    if (currentDrawing.value.points.length >= 4) {
-      shapes.value.push(currentDrawing.value);
-      selectLayer(currentDrawing.value.id);
+    if (currentLine.value.length < 4) {
+      currentLine.value = [];
+      return;
     }
-    currentDrawing.value = null;
-    drawingMode.value = false;
+
+    const layer = getOrCreateDrawingLayer();
+    const newLine: DrawingLine = {
+      points: [...currentLine.value],
+      stroke: '#000000',
+      strokeWidth: 2,
+    };
+    layer.lines.push(newLine);
+    selectLayer(layer.id);
+    currentLine.value = [];
   };
+
+  const currentDrawingLine = computed(() => {
+    if (currentLine.value.length === 0) return null;
+    return {
+      points: currentLine.value,
+      stroke: '#000000',
+      strokeWidth: 2,
+    };
+  });
 
   return {
     drawingMode,
-    currentDrawing,
+    currentDrawing: currentDrawingLine,
     toggleDrawingMode,
     startDrawing,
     continueDrawing,

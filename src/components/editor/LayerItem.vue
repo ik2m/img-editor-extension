@@ -29,7 +29,7 @@ const layerColor = computed(() => {
   } else if (isArrowShape(props.layer)) {
     return props.layer.stroke;
   } else if (isDrawingShape(props.layer)) {
-    return props.layer.stroke;
+    return props.layer.lines[0]?.stroke || '#000000';
   } else if (isTextShape(props.layer)) {
     return props.layer.fill;
   }

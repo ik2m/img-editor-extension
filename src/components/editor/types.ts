@@ -23,16 +23,20 @@ export type ArrowShape = {
   draggable: true;
 };
 
-export type DrawingShape = {
-  id: string;
-  name: string;
+export type DrawingLine = {
   points: number[]; // [x1, y1, x2, y2, x3, y3, ...]
   stroke: string;
   strokeWidth: number;
+};
+
+export type DrawingShape = {
+  id: string;
+  name: string;
+  lines: DrawingLine[];
   tension: number; // 曲線の滑らかさ (0-1)
   lineCap: 'butt' | 'round' | 'square';
   lineJoin: 'miter' | 'round' | 'bevel';
-  draggable: true;
+  draggable: false; // お絵描きレイヤーはドラッグ不可
 };
 
 export type TextShape = {
@@ -60,7 +64,7 @@ export function isArrowShape(shape: Shape): shape is ArrowShape {
 }
 
 export function isDrawingShape(shape: Shape): shape is DrawingShape {
-  return 'tension' in shape;
+  return 'lines' in shape;
 }
 
 export function isTextShape(shape: Shape): shape is TextShape {

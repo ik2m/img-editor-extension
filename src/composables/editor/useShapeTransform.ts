@@ -21,10 +21,6 @@ export function useShapeTransform(
       const node = e.target;
       const newPoints = node.points();
       shape.points = newPoints as [number, number, number, number];
-    } else if (isDrawingShape(shape)) {
-      const node = e.target;
-      const newPoints = node.points();
-      shape.points = newPoints;
     } else if (isTextShape(shape)) {
       shape.x = e.target.x();
       shape.y = e.target.y();
