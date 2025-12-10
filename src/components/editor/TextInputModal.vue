@@ -56,7 +56,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
     @click="handleBackdropClick"
   >
     <div
@@ -68,7 +68,7 @@ const handleKeydown = (event: KeyboardEvent) => {
         ref="inputRef"
         v-model="inputText"
         type="text"
-        class="bg-dark-bg border-dark-border mb-6 w-full rounded border px-4 py-2 text-white outline-none focus:border-primary"
+        class="bg-dark-bg border-dark-border focus:border-primary mb-6 w-full rounded border px-4 py-2 text-white outline-none"
         placeholder="テキストを入力してください"
         @keydown="handleKeydown"
       />

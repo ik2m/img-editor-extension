@@ -74,7 +74,7 @@ const handleBackdropClick = (event: MouseEvent) => {
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
     @click="handleBackdropClick"
   >
     <div
@@ -99,14 +99,17 @@ const handleBackdropClick = (event: MouseEvent) => {
             <button
               @click="loadClipboardImages"
               :disabled="isLoadingClipboard"
-              class="hover:bg-dark-elevated text-dark-text disabled:opacity-50 rounded px-3 py-1 text-xs transition-colors duration-200 hover:text-white disabled:cursor-not-allowed"
+              class="hover:bg-dark-elevated text-dark-text rounded px-3 py-1 text-xs transition-colors duration-200 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
               title="クリップボードを再読み込み"
             >
               🔄 リロード
             </button>
           </div>
 
-          <div v-if="isLoadingClipboard" class="text-dark-text py-8 text-center">
+          <div
+            v-if="isLoadingClipboard"
+            class="text-dark-text py-8 text-center"
+          >
             読み込み中...
           </div>
 
