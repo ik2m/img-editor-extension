@@ -78,8 +78,8 @@ const handleFileChange = (event: Event) => {
   }
 };
 
-const handleOpenClipboard = () => {
-  image.loadImageFromClipboard();
+const handleOpenClipboardImage = (blob: Blob) => {
+  image.loadImageFromBlob(blob);
 };
 
 // Text input modal
@@ -149,7 +149,7 @@ const handleTextCancel = () => {
       :is-open="isImageSourceModalOpen"
       @close="closeImageSourceModal"
       @open-file="handleOpenFile"
-      @open-clipboard="handleOpenClipboard"
+      @open-clipboard-image="handleOpenClipboardImage"
     />
 
     <TextInputModal

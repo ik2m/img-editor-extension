@@ -64,25 +64,11 @@ export function useImageManagement(
     }
   };
 
-  const loadImageFromClipboard = async () => {
-    try {
-      const clipboardItems = await navigator.clipboard.read();
-      for (const item of clipboardItems) {
-        const imageTypes = item.types.filter((type) => type.startsWith('image/'));
-        if (imageTypes.length === 0) continue;
-
-        const blob = await item.getType(imageTypes[0]);
-        const url = URL.createObjectURL(blob);
-        imageUrl.value = url;
-        loadImageToStage(url);
-        toast.success('クリップボードから画像を読み込みました');
-        return;
-      }
-      toast.error('クリップボードに画像がありません');
-    } catch (error) {
-      console.error('クリップボードからの読み込みに失敗しました:', error);
-      toast.error('クリップボードからの読み込みに失敗しました');
-    }
+  const loadImageFromBlob = (blob: Blob) => {
+    const url = URL.createObjectURL(blob);
+    imageUrl.value = url;
+    loadImageToStage(url);
+    toast.success('クリップボードから画像を読み込みました');
   };
 
   return {
@@ -95,6 +81,6 @@ export function useImageManagement(
     handleImageUpload,
     loadImageToStage,
     resizeToMaxWidth840,
-    loadImageFromClipboard,
+    loadImageFromBlob,
   };
 }
