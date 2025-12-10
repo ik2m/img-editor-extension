@@ -17,10 +17,7 @@ import { useArrowShape } from '@/composables/editor/useArrowShape';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 import { useTextMode } from '@/composables/editor/useTextMode';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
-import {
-  downloadImageFromStage,
-  copyImageFromStageToClipboard,
-} from '@/utils/imageExport';
+import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 
 // Composables（Phase 1-4 完全版）
 const nameCounters = useShapeNameCounters();
@@ -99,13 +96,37 @@ const handleTextCancel = () => {
 const handleSaveImage = () => {
   const stage = canvasRef.value?.getStage();
   if (!stage) return;
-  downloadImageFromStage(stage);
+
+  // トランスフォーマーを一時的に非表示
+  const transformers = stage.find('Transformer');
+  const transformerVisibilities = transformers.map((t) => t.visible());
+  transformers.forEach((t) => t.visible(false));
+
+  try {
+    const dataURL = stage.toDataURL({ pixelRatio: 1 });
+    downloadImage(dataURL);
+  } finally {
+    // トランスフォーマーを元に戻す
+    transformers.forEach((t, i) => t.visible(transformerVisibilities[i]));
+  }
 };
 
-const handleCopyImage = () => {
+const handleCopyImage = async () => {
   const stage = canvasRef.value?.getStage();
   if (!stage) return;
-  copyImageFromStageToClipboard(stage);
+
+  // トランスフォーマーを一時的に非表示
+  const transformers = stage.find('Transformer');
+  const transformerVisibilities = transformers.map((t) => t.visible());
+  transformers.forEach((t) => t.visible(false));
+
+  try {
+    const dataURL = stage.toDataURL({ pixelRatio: 1 });
+    await copyImageToClipboard(dataURL);
+  } finally {
+    // トランスフォーマーを元に戻す
+    transformers.forEach((t, i) => t.visible(transformerVisibilities[i]));
+  }
 };
 </script>
 
