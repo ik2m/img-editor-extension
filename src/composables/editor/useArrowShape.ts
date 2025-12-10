@@ -8,17 +8,19 @@ export function useArrowShape(
   shapes: Ref<Shape[]>,
   selectLayer: (id: string) => void,
   getNextArrowName: () => string,
-  imageElement: Ref<HTMLImageElement | null>
+  imageElement: Ref<HTMLImageElement | null>,
+  selectedColor: Ref<string>
 ) {
   const addArrow = () => {
     if (!imageElement.value) return;
+    const color = selectedColor.value;
     const arrow: ArrowShape = {
       id: `arrow-${Date.now()}`,
       name: getNextArrowName(),
       points: [100, 100, 300, 200],
-      stroke: '#ff0000',
+      stroke: color,
       strokeWidth: 3,
-      fill: '#ff0000',
+      fill: color,
       pointerLength: 20,
       pointerWidth: 20,
       draggable: true,

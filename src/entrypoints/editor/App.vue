@@ -16,6 +16,7 @@ import { useRectangleShape } from '@/composables/editor/useRectangleShape';
 import { useArrowShape } from '@/composables/editor/useArrowShape';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 import { useTextMode } from '@/composables/editor/useTextMode';
+import { useShapeColor } from '@/composables/editor/useShapeColor';
 import {
   downloadImageFromStage,
   copyImageFromStageToClipboard,
@@ -26,17 +27,20 @@ const nameCounters = useShapeNameCounters();
 const layers = useLayerManagement();
 const image = useImageManagement(nameCounters, layers.shapes);
 const transform = useShapeTransform(layers.shapes, layers.selectedShapeId);
+const shapeColor = useShapeColor();
 const rectangle = useRectangleShape(
   layers.shapes,
   layers.selectLayer,
   nameCounters.getNextRectName,
-  image.imageElement
+  image.imageElement,
+  shapeColor.rectangleColor
 );
 const arrow = useArrowShape(
   layers.shapes,
   layers.selectLayer,
   nameCounters.getNextArrowName,
-  image.imageElement
+  image.imageElement,
+  shapeColor.arrowColor
 );
 const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
 const drawing = useDrawingMode(
@@ -49,7 +53,8 @@ const text = useTextMode(
   layers.shapes,
   layers.selectLayer,
   nameCounters.getNextTextName,
-  image.originalImage
+  image.originalImage,
+  shapeColor.textColor
 );
 // Modal state
 const isImageSourceModalOpen = ref(false);
@@ -112,6 +117,9 @@ const handleCopyImage = () => {
       <EditorToolbar
         :image-url="image.imageUrl.value"
         :drawing-mode="drawing.drawingMode.value"
+        :rectangle-color="shapeColor.rectangleColor.value"
+        :arrow-color="shapeColor.arrowColor.value"
+        :text-color="shapeColor.textColor.value"
         @open-image-source-modal="openImageSourceModal"
         @resize-image="image.resizeToMaxWidth840"
         @save-image="handleSaveImage"
@@ -120,6 +128,9 @@ const handleCopyImage = () => {
         @add-arrow="arrow.addArrow"
         @toggle-drawing-mode="drawing.toggleDrawingMode"
         @add-text="text.openTextInput"
+        @select-rectangle-color="shapeColor.setRectangleColor"
+        @select-arrow-color="shapeColor.setArrowColor"
+        @select-text-color="shapeColor.setTextColor"
       />
 
       <EditorCanvas

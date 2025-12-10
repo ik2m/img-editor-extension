@@ -8,7 +8,8 @@ export function useTextMode(
   shapes: Ref<Shape[]>,
   selectLayer: (id: string) => void,
   getNextTextName: () => string,
-  originalImage: Ref<HTMLImageElement | null>
+  originalImage: Ref<HTMLImageElement | null>,
+  selectedColor: Ref<string>
 ) {
   const isTextInputOpen = ref<boolean>(false);
 
@@ -31,7 +32,7 @@ export function useTextMode(
       text: inputText,
       fontSize: 24,
       fontFamily: 'Noto Sans JP',
-      fill: '#000000',
+      fill: selectedColor.value,
       align: 'center',
       draggable: true,
     };

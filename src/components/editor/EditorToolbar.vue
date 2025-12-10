@@ -1,10 +1,14 @@
 <script lang="ts" setup>
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseSection from '@/components/common/BaseSection.vue';
+import ColorPicker from './ColorPicker.vue';
 
 defineProps<{
   imageUrl: string;
   drawingMode: boolean;
+  rectangleColor: string;
+  arrowColor: string;
+  textColor: string;
 }>();
 
 const emit = defineEmits<{
@@ -16,6 +20,9 @@ const emit = defineEmits<{
   addArrow: [];
   toggleDrawingMode: [];
   addText: [];
+  selectRectangleColor: [color: string];
+  selectArrowColor: [color: string];
+  selectTextColor: [color: string];
 }>();
 </script>
 
@@ -55,15 +62,45 @@ const emit = defineEmits<{
     </BaseSection>
 
     <BaseSection title="図形・テキスト">
-      <BaseButton :disabled="!imageUrl || drawingMode" @click="emit('addText')">
-        A テキスト
-      </BaseButton>
-      <BaseButton :disabled="!imageUrl || drawingMode" @click="emit('addRectangle')">
-        ▭ 矩形
-      </BaseButton>
-      <BaseButton :disabled="!imageUrl || drawingMode" @click="emit('addArrow')">
-        ➜ 矢印
-      </BaseButton>
+      <div class="flex items-center gap-2">
+        <BaseButton
+          :disabled="!imageUrl || drawingMode"
+          @click="emit('addText')"
+          class="flex-1"
+        >
+          A テキスト
+        </BaseButton>
+        <ColorPicker
+          :selected-color="textColor"
+          @select-color="emit('selectTextColor', $event)"
+        />
+      </div>
+      <div class="flex items-center gap-2">
+        <BaseButton
+          :disabled="!imageUrl || drawingMode"
+          @click="emit('addRectangle')"
+          class="flex-1"
+        >
+          ▭ 矩形
+        </BaseButton>
+        <ColorPicker
+          :selected-color="rectangleColor"
+          @select-color="emit('selectRectangleColor', $event)"
+        />
+      </div>
+      <div class="flex items-center gap-2">
+        <BaseButton
+          :disabled="!imageUrl || drawingMode"
+          @click="emit('addArrow')"
+          class="flex-1"
+        >
+          ➜ 矢印
+        </BaseButton>
+        <ColorPicker
+          :selected-color="arrowColor"
+          @select-color="emit('selectArrowColor', $event)"
+        />
+      </div>
     </BaseSection>
   </aside>
 </template>
