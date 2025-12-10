@@ -1,14 +1,15 @@
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import Konva from 'konva';
-import type { RectShape } from '../types';
+import type { Shape } from '../types';
+import { isRectShape, isArrowShape } from '../types';
 
 const props = defineProps<{
   imageElement: HTMLImageElement | null;
   stageWidth: number;
   stageHeight: number;
   layerScale: { x: number; y: number };
-  rects: RectShape[];
+  shapes: Shape[];
   selectedShapeId: string;
   originalImage: HTMLImageElement | null;
 }>();
@@ -53,8 +54,8 @@ const handleStageMouseDown = (e: any) => {
   }
 
   const name = e.target.name();
-  const rect = props.rects.find((r) => r.id === name);
-  emit('stageClick', rect ? name : '');
+  const shape = props.shapes.find((s) => s.id === name);
+  emit('stageClick', shape ? name : '');
 };
 
 // selectedShapeIdが変わったらtransformerを更新
@@ -99,22 +100,37 @@ onMounted(() => {
             listening: false,
           }"
         />
-        <v-rect
-          v-for="r in rects"
-          :key="r.id"
-          :config="{
-            name: r.id,
-            x: r.x,
-            y: r.y,
-            width: r.width,
-            height: r.height,
-            fill: r.fill,
-            stroke: r.stroke,
-            strokeWidth: r.strokeWidth,
-            draggable: r.draggable,
-          }"
-          @transformend="(e: any) => emit('transformEnd', e)"
-        />
+        <template v-for="shape in shapes" :key="shape.id">
+          <v-rect
+            v-if="isRectShape(shape)"
+            :config="{
+              name: shape.id,
+              x: shape.x,
+              y: shape.y,
+              width: shape.width,
+              height: shape.height,
+              fill: shape.fill,
+              stroke: shape.stroke,
+              strokeWidth: shape.strokeWidth,
+              draggable: shape.draggable,
+            }"
+            @transformend="(e: any) => emit('transformEnd', e)"
+          />
+          <v-arrow
+            v-else-if="isArrowShape(shape)"
+            :config="{
+              name: shape.id,
+              points: shape.points,
+              stroke: shape.stroke,
+              strokeWidth: shape.strokeWidth,
+              fill: shape.fill,
+              pointerLength: shape.pointerLength,
+              pointerWidth: shape.pointerWidth,
+              draggable: shape.draggable,
+            }"
+            @transformend="(e: any) => emit('transformEnd', e)"
+          />
+        </template>
         <v-transformer ref="transformer" />
       </v-layer>
     </v-stage>

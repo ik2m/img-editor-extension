@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import BaseButton from '@/components/BaseButton.vue';
 import LayerItem from './LayerItem.vue';
-import type { RectShape } from '../types';
+import type { Shape } from '../types';
 
 const props = defineProps<{
-  rects: RectShape[];
+  shapes: Shape[];
   selectedShapeId: string;
   imageUrl: string;
   editingLayerId: string;
@@ -17,7 +17,7 @@ const emit = defineEmits<{
   moveLayerUp: [id: string];
   moveLayerDown: [id: string];
   deleteLayer: [id: string];
-  startEditName: [layer: RectShape];
+  startEditName: [layer: Shape];
   finishEditName: [];
   cancelEditName: [];
   updateEditingName: [name: string];
@@ -34,21 +34,21 @@ const emit = defineEmits<{
 
     <div class="flex flex-col gap-1">
       <div
-        v-if="rects.length === 0"
+        v-if="shapes.length === 0"
         class="text-dark-muted px-4 py-8 text-center text-sm"
       >
         レイヤーなし<br />
-        <small class="text-xs">矩形を追加してください</small>
+        <small class="text-xs">図形を追加してください</small>
       </div>
 
       <LayerItem
-        v-for="r in [...rects].reverse()"
-        :key="r.id"
-        :layer="r"
-        :selected="selectedShapeId === r.id"
-        :is-first="rects[0].id === r.id"
-        :is-last="rects[rects.length - 1].id === r.id"
-        :editing="editingLayerId === r.id"
+        v-for="s in [...shapes].reverse()"
+        :key="s.id"
+        :layer="s"
+        :selected="selectedShapeId === s.id"
+        :is-first="shapes[0].id === s.id"
+        :is-last="shapes[shapes.length - 1].id === s.id"
+        :editing="editingLayerId === s.id"
         :editing-name="editingLayerName"
         @select="emit('selectLayer', $event)"
         @move-up="emit('moveLayerUp', $event)"

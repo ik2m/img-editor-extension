@@ -10,6 +10,7 @@ const emit = defineEmits<{
   uploadImage: [file: File];
   resizeImage: [];
   addRectangle: [];
+  addArrow: [];
 }>();
 
 const handleFileChange = (event: Event) => {
@@ -57,6 +58,13 @@ const handleFileChange = (event: Event) => {
         @click="emit('addRectangle')"
       >
         矩形を追加
+      </BaseButton>
+      <BaseButton
+        variant="secondary"
+        :disabled="!imageUrl"
+        @click="emit('addArrow')"
+      >
+        矢印を追加
       </BaseButton>
     </BaseSection>
   </aside>

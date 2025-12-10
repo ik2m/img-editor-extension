@@ -5,7 +5,8 @@ import EditorHeader from './components/EditorHeader.vue';
 import EditorToolbar from './components/EditorToolbar.vue';
 import EditorCanvas from './components/EditorCanvas.vue';
 import LayerPanel from './components/LayerPanel.vue';
-import type { RectShape } from './types';
+import type { RectShape, ArrowShape, Shape } from './types';
+import { isRectShape, isArrowShape } from './types';
 
 // 全ての状態変数をそのまま保持
 const imageUrl = ref<string>('');
@@ -14,22 +15,31 @@ const stageWidth = ref<number>(0);
 const stageHeight = ref<number>(0);
 const layerScale = ref<{ x: number; y: number }>({ x: 1, y: 1 });
 const imageElement = ref<HTMLImageElement | null>(null);
-const rects = ref<RectShape[]>([]);
+const shapes = ref<Shape[]>([]);
 const selectedShapeId = ref('');
 const rectCounter = ref(1);
+const arrowCounter = ref(1);
 const editingLayerId = ref<string>('');
 const editingLayerName = ref<string>('');
 const layerNameInput = ref<HTMLInputElement | null>(null);
 
 // 全ての関数をそのまま保持
-const getNextLayerName = () => `矩形 ${rectCounter.value++}`;
+const getNextRectName = () => `矩形 ${rectCounter.value++}`;
+const getNextArrowName = () => `矢印 ${arrowCounter.value++}`;
 
 const handleTransformEnd = (e: any) => {
-  const rect = rects.value.find((r) => r.id === selectedShapeId.value);
-  if (!rect) return;
-  rect.x = e.target.x();
-  rect.y = e.target.y();
-  rect.fill = Konva.Util.getRandomColor();
+  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
+  if (!shape) return;
+
+  if (isRectShape(shape)) {
+    shape.x = e.target.x();
+    shape.y = e.target.y();
+    shape.fill = Konva.Util.getRandomColor();
+  } else if (isArrowShape(shape)) {
+    const node = e.target;
+    const newPoints = node.points();
+    shape.points = newPoints as [number, number, number, number];
+  }
 };
 
 const handleStageClick = (targetId: string) => {
@@ -53,8 +63,9 @@ const loadImageToStage = (url: string) => {
     stageWidth.value = img.width;
     stageHeight.value = img.height;
     layerScale.value = { x: 1, y: 1 };
-    rects.value = [];
+    shapes.value = [];
     rectCounter.value = 1;
+    arrowCounter.value = 1;
   };
   img.src = url;
 };
@@ -81,29 +92,29 @@ const resizeToMaxWidth840 = () => {
 };
 
 const moveLayerUp = (id: string) => {
-  const index = rects.value.findIndex((r) => r.id === id);
-  if (index < rects.value.length - 1) {
-    [rects.value[index], rects.value[index + 1]] = [
-      rects.value[index + 1],
-      rects.value[index],
+  const index = shapes.value.findIndex((s) => s.id === id);
+  if (index < shapes.value.length - 1) {
+    [shapes.value[index], shapes.value[index + 1]] = [
+      shapes.value[index + 1],
+      shapes.value[index],
     ];
   }
 };
 
 const moveLayerDown = (id: string) => {
-  const index = rects.value.findIndex((r) => r.id === id);
+  const index = shapes.value.findIndex((s) => s.id === id);
   if (index > 0) {
-    [rects.value[index], rects.value[index - 1]] = [
-      rects.value[index - 1],
-      rects.value[index],
+    [shapes.value[index], shapes.value[index - 1]] = [
+      shapes.value[index - 1],
+      shapes.value[index],
     ];
   }
 };
 
 const deleteLayer = (id: string) => {
-  const index = rects.value.findIndex((r) => r.id === id);
+  const index = shapes.value.findIndex((s) => s.id === id);
   if (index !== -1) {
-    rects.value.splice(index, 1);
+    shapes.value.splice(index, 1);
     if (selectedShapeId.value === id) {
       selectedShapeId.value = '';
     }
@@ -115,13 +126,13 @@ const selectLayer = (id: string) => {
 };
 
 const renameLayer = (id: string, newName: string) => {
-  const rect = rects.value.find((r) => r.id === id);
-  if (rect) {
-    rect.name = newName;
+  const shape = shapes.value.find((s) => s.id === id);
+  if (shape) {
+    shape.name = newName;
   }
 };
 
-const startEditLayerName = async (layer: RectShape) => {
+const startEditLayerName = async (layer: Shape) => {
   editingLayerId.value = layer.id;
   editingLayerName.value = layer.name;
   await nextTick();
@@ -144,7 +155,7 @@ const addRectangle = () => {
   if (!imageElement.value) return;
   const rect: RectShape = {
     id: `rect-${Date.now()}`,
-    name: getNextLayerName(),
+    name: getNextRectName(),
     x: 100,
     y: 100,
     width: 200,
@@ -154,8 +165,25 @@ const addRectangle = () => {
     strokeWidth: 3,
     draggable: true,
   };
-  rects.value.push(rect);
+  shapes.value.push(rect);
   selectLayer(rect.id);
+};
+
+const addArrow = () => {
+  if (!imageElement.value) return;
+  const arrow: ArrowShape = {
+    id: `arrow-${Date.now()}`,
+    name: getNextArrowName(),
+    points: [100, 100, 300, 200],
+    stroke: '#ff0000',
+    strokeWidth: 3,
+    fill: '#ff0000',
+    pointerLength: 20,
+    pointerWidth: 20,
+    draggable: true,
+  };
+  shapes.value.push(arrow);
+  selectLayer(arrow.id);
 };
 </script>
 
@@ -169,6 +197,7 @@ const addRectangle = () => {
         @upload-image="handleImageUpload"
         @resize-image="resizeToMaxWidth840"
         @add-rectangle="addRectangle"
+        @add-arrow="addArrow"
       />
 
       <EditorCanvas
@@ -176,7 +205,7 @@ const addRectangle = () => {
         :stage-width="stageWidth"
         :stage-height="stageHeight"
         :layer-scale="layerScale"
-        :rects="rects"
+        :shapes="shapes"
         :selected-shape-id="selectedShapeId"
         :original-image="originalImage"
         @transform-end="handleTransformEnd"
@@ -184,7 +213,7 @@ const addRectangle = () => {
       />
 
       <LayerPanel
-        :rects="rects"
+        :shapes="shapes"
         :selected-shape-id="selectedShapeId"
         :image-url="imageUrl"
         :editing-layer-id="editingLayerId"

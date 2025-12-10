@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import BaseButton from '@/components/BaseButton.vue';
-import type { RectShape } from '../types';
+import type { Shape } from '../types';
+import { isRectShape, isArrowShape } from '../types';
 
-defineProps<{
-  layer: RectShape;
+const props = defineProps<{
+  layer: Shape;
   selected: boolean;
   isFirst: boolean;
   isLast: boolean;
@@ -17,11 +18,20 @@ const emit = defineEmits<{
   moveUp: [id: string];
   moveDown: [id: string];
   delete: [id: string];
-  startEdit: [layer: RectShape];
+  startEdit: [layer: Shape];
   finishEdit: [];
   cancelEdit: [];
   updateEditingName: [name: string];
 }>();
+
+const layerColor = computed(() => {
+  if (isRectShape(props.layer)) {
+    return props.layer.fill;
+  } else if (isArrowShape(props.layer)) {
+    return props.layer.stroke;
+  }
+  return '#000000';
+});
 
 const layerNameInput = ref<HTMLInputElement | null>(null);
 </script>
@@ -39,7 +49,7 @@ const layerNameInput = ref<HTMLInputElement | null>(null);
     <div class="flex items-center gap-2">
       <div
         class="border-dark-border h-5 w-5 flex-shrink-0 rounded-sm border"
-        :style="{ backgroundColor: layer.fill }"
+        :style="{ backgroundColor: layerColor }"
       ></div>
 
       <span
