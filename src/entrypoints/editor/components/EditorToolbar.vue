@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import BaseButton from '@/components/BaseButton.vue';
+import BaseSection from '@/components/BaseSection.vue';
 
 defineProps<{
   imageUrl: string;
@@ -24,8 +25,7 @@ const handleFileChange = (event: Event) => {
   <aside
     class="w-sidebar bg-dark-panel border-dark-border overflow-y-auto border-r p-4"
   >
-    <div class="mb-8">
-      <h3 class="text-dark-text mt-0 mb-4 text-base">ファイル</h3>
+    <BaseSection title="ファイル">
       <input
         type="file"
         accept="image/*"
@@ -38,10 +38,9 @@ const handleFileChange = (event: Event) => {
         class="bg-dark-border mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d]"
         >画像を開く</label
       >
-    </div>
+    </BaseSection>
 
-    <div class="mb-8">
-      <h3 class="text-dark-text mt-0 mb-4 text-base">リサイズ</h3>
+    <BaseSection title="リサイズ">
       <BaseButton
         variant="primary"
         :disabled="!imageUrl"
@@ -49,10 +48,9 @@ const handleFileChange = (event: Event) => {
       >
         max-width: 840pxにリサイズ
       </BaseButton>
-    </div>
+    </BaseSection>
 
-    <div class="mb-8">
-      <h3 class="text-dark-text mt-0 mb-4 text-base">図形</h3>
+    <BaseSection title="図形">
       <BaseButton
         variant="secondary"
         :disabled="!imageUrl"
@@ -60,6 +58,6 @@ const handleFileChange = (event: Event) => {
       >
         矩形を追加
       </BaseButton>
-    </div>
+    </BaseSection>
   </aside>
 </template>
