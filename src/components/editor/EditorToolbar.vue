@@ -24,14 +24,13 @@ const emit = defineEmits<{
     class="w-sidebar bg-dark-panel border-dark-border overflow-y-auto border-r p-4"
   >
     <BaseSection title="ファイル">
-      <BaseButton variant="primary" @click="emit('openImageSourceModal')">
+      <BaseButton @click="emit('openImageSourceModal')">
         画像を開く
       </BaseButton>
     </BaseSection>
 
     <BaseSection title="リサイズ">
       <BaseButton
-        variant="primary"
         :disabled="!imageUrl"
         @click="emit('resizeImage')"
       >
@@ -41,28 +40,28 @@ const emit = defineEmits<{
 
     <BaseSection title="図形">
       <BaseButton
-        variant="secondary"
+        color="secondary"
         :disabled="!imageUrl"
         @click="emit('addRectangle')"
       >
         矩形を追加
       </BaseButton>
       <BaseButton
-        variant="secondary"
+        color="secondary"
         :disabled="!imageUrl"
         @click="emit('addArrow')"
       >
         矢印を追加
       </BaseButton>
       <BaseButton
-        :variant="drawingMode ? 'primary' : 'secondary'"
+        :color="drawingMode ? 'primary' : 'secondary'"
         :disabled="!imageUrl"
         @click="emit('toggleDrawingMode')"
       >
         {{ drawingMode ? '描画中...' : 'ペンツール' }}
       </BaseButton>
       <BaseButton
-        :variant="textMode ? 'primary' : 'secondary'"
+        :color="textMode ? 'primary' : 'secondary'"
         :disabled="!imageUrl"
         @click="emit('toggleTextMode')"
       >
@@ -72,7 +71,6 @@ const emit = defineEmits<{
 
     <BaseSection title="エクスポート">
       <BaseButton
-        variant="primary"
         :disabled="!imageUrl"
         @click="emit('copyImage')"
       >

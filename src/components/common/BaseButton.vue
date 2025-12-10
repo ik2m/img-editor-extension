@@ -3,35 +3,35 @@ import { computed } from 'vue';
 
 const props = withDefaults(
   defineProps<{
-    variant?: 'primary' | 'secondary' | 'icon' | 'label';
-    danger?: boolean;
+    size?: 'md' | 'sm';
+    color?: 'primary' | 'secondary' | 'danger';
     disabled?: boolean;
     type?: 'button' | 'submit' | 'reset';
   }>(),
   {
-    variant: 'primary',
-    danger: false,
+    size: 'md',
+    color: 'primary',
     disabled: false,
     type: 'button',
   }
 );
 
 const colorCls = computed(() => {
-  let result =
-    props.variant === 'primary'
-      ? 'bg-primary hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted font-semibold'
-      : 'bg-dark-border hover:bg-[#4d4d4d] disabled:opacity-30';
-
-  if (props.danger && props.variant === 'icon') {
-    result += 'text-danger hover:bg-danger hover:text-white';
-  }
-  return result;
+  const map = {
+    primary:
+      'bg-primary hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted font-semibold',
+    secondary: 'bg-dark-border hover:bg-[#4d4d4d] disabled:opacity-30',
+    danger: 'bg-danger hover:bg-danger-hover text-white disabled:opacity-30',
+  };
+  return map[props.color];
 });
 
 const sizeCls = computed(() => {
-  return props.variant === 'icon'
-    ? 'px-2 py-1 text-xs rounded-sm'
-    : 'px-4 py-2 text-base mb-2';
+  const map = {
+    md: 'px-4 py-2 text-base mb-2',
+    sm: 'px-2 py-1 text-xs rounded-sm',
+  };
+  return map[props.size];
 });
 </script>
 

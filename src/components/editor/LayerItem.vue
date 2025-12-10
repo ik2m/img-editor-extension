@@ -70,7 +70,8 @@ const layerColor = computed(() => {
         class="flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
       >
         <BaseButton
-          variant="icon"
+          size="sm"
+          color="secondary"
           :disabled="isLast"
           @click.stop="emit('moveUp', layer.id)"
           title="前面へ"
@@ -78,7 +79,8 @@ const layerColor = computed(() => {
           ↑
         </BaseButton>
         <BaseButton
-          variant="icon"
+          size="sm"
+          color="secondary"
           :disabled="isFirst"
           @click.stop="emit('moveDown', layer.id)"
           title="背面へ"
@@ -86,8 +88,8 @@ const layerColor = computed(() => {
           ↓
         </BaseButton>
         <BaseButton
-          variant="icon"
-          danger
+          size="sm"
+          color="danger"
           @click.stop="emit('delete', layer.id)"
           title="削除"
         >

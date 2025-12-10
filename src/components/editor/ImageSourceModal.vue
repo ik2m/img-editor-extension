@@ -85,7 +85,7 @@ const handleBackdropClick = (event: MouseEvent) => {
       <div class="flex flex-col gap-6">
         <!-- File button -->
         <div>
-          <BaseButton variant="primary" @click="handleOpenFile" class="w-full">
+          <BaseButton @click="handleOpenFile" class="w-full">
             ファイルから画像を開く
           </BaseButton>
         </div>
@@ -134,7 +134,7 @@ const handleBackdropClick = (event: MouseEvent) => {
         </div>
 
         <!-- Cancel button -->
-        <BaseButton variant="secondary" @click="emit('close')" class="w-full">
+        <BaseButton color="secondary" @click="emit('close')" class="w-full">
           キャンセル
         </BaseButton>
       </div>
