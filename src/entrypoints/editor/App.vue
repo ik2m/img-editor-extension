@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { ref, nextTick } from 'vue';
 import { useClipboardItems } from '@vueuse/core';
+import { toast } from 'vue-sonner';
+import { Toaster } from 'vue-sonner';
 import Konva from 'konva';
 import EditorHeader from './components/EditorHeader.vue';
 import EditorToolbar from './components/EditorToolbar.vue';
@@ -278,7 +280,7 @@ const addText = (pos: { x: number; y: number }) => {
 
 const copyImageToClipboard = async () => {
   if (!isSupported.value) {
-    alert('お使いのブラウザはクリップボード機能に対応していません');
+    toast.error('お使いのブラウザはクリップボード機能に対応していません');
     return;
   }
 
@@ -302,11 +304,11 @@ const copyImageToClipboard = async () => {
     ]);
 
     if (copied.value) {
-      alert('画像をクリップボードにコピーしました');
+      toast.success('画像をクリップボードにコピーしました');
     }
   } catch (error) {
     console.error('クリップボードへのコピーに失敗しました:', error);
-    alert('クリップボードへのコピーに失敗しました');
+    toast.error('クリップボードへのコピーに失敗しました');
   }
 };
 </script>
@@ -366,5 +368,6 @@ const copyImageToClipboard = async () => {
         @update-editing-name="(name) => (editingLayerName = name)"
       />
     </div>
+    <Toaster position="bottom-right" />
   </div>
 </template>
