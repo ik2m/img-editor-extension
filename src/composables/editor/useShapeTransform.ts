@@ -17,7 +17,6 @@ export function useShapeTransform(
     if (isRectShape(shape)) {
       shape.x = e.target.x();
       shape.y = e.target.y();
-      shape.fill = Konva.Util.getRandomColor();
     } else if (isArrowShape(shape)) {
       const node = e.target;
       const newPoints = node.points();
