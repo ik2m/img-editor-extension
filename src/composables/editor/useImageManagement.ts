@@ -9,7 +9,8 @@ type UseShapeNameCounters = ReturnType<typeof import('./useShapeNameCounters').u
  */
 export function useImageManagement(
   nameCounters: UseShapeNameCounters,
-  shapes: Ref<Shape[]>
+  shapes: Ref<Shape[]>,
+  targetWidth: Ref<number | null>
 ) {
   const imageUrl = ref<string>('');
   const originalImage = ref<HTMLImageElement | null>(null);
@@ -31,33 +32,40 @@ export function useImageManagement(
     const img = new Image();
     img.onload = () => {
       originalImage.value = img;
-      imageElement.value = img;
-      stageWidth.value = img.width;
-      stageHeight.value = img.height;
-      layerScale.value = { x: 1, y: 1 };
 
       // カウンターとshapes配列をリセット
       nameCounters.resetCounters();
       shapes.value = [];
+
+      // ターゲット幅が指定されている場合はリサイズ
+      if (targetWidth.value !== null && img.width !== targetWidth.value) {
+        resizeImage(img, targetWidth.value);
+      } else {
+        // リサイズなしの場合はそのまま設定
+        imageElement.value = img;
+        stageWidth.value = img.width;
+        stageHeight.value = img.height;
+        layerScale.value = { x: 1, y: 1 };
+      }
     };
     img.src = url;
   };
 
-  const resizeToMaxWidth840 = () => {
-    if (!originalImage.value) return;
-    const img = originalImage.value;
-    const targetWidth = 840;
+  const resizeImage = (img: HTMLImageElement, newTargetWidth: number) => {
     const currentWidth = img.width;
     const currentHeight = img.height;
 
-    if (currentWidth === targetWidth) {
-      toast.info('画像はすでに840pxです');
+    if (currentWidth === newTargetWidth) {
+      imageElement.value = img;
+      stageWidth.value = img.width;
+      stageHeight.value = img.height;
+      layerScale.value = { x: 1, y: 1 };
       return;
     }
 
     // リサイズ比率を計算
-    const ratio = targetWidth / currentWidth;
-    const newWidth = targetWidth;
+    const ratio = newTargetWidth / currentWidth;
+    const newWidth = newTargetWidth;
     const newHeight = Math.round(currentHeight * ratio);
 
     // キャンバスで画像をリサイズ
@@ -120,6 +128,20 @@ export function useImageManagement(
     toast.success('クリップボードから画像を読み込みました');
   };
 
+  const applyTargetWidth = (newTargetWidth: number | null) => {
+    if (!originalImage.value) return;
+
+    if (newTargetWidth === null) {
+      // 元画像に戻す - originalImageを再読み込み
+      imageElement.value = originalImage.value;
+      stageWidth.value = originalImage.value.width;
+      stageHeight.value = originalImage.value.height;
+      layerScale.value = { x: 1, y: 1 };
+    } else {
+      resizeImage(originalImage.value, newTargetWidth);
+    }
+  };
+
   return {
     imageUrl,
     originalImage,
@@ -129,7 +151,7 @@ export function useImageManagement(
     layerScale,
     handleImageUpload,
     loadImageToStage,
-    resizeToMaxWidth840,
     loadImageFromBlob,
+    applyTargetWidth,
   };
 }

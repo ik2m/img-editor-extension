@@ -9,11 +9,11 @@ defineProps<{
   rectangleColor: string;
   arrowColor: string;
   textColor: string;
+  targetWidth: number | null;
 }>();
 
 const emit = defineEmits<{
   openImageSourceModal: [];
-  resizeImage: [];
   saveImage: [];
   copyImage: [];
   addRectangle: [];
@@ -23,7 +23,15 @@ const emit = defineEmits<{
   selectRectangleColor: [color: string];
   selectArrowColor: [color: string];
   selectTextColor: [color: string];
+  selectTargetWidth: [width: number | null];
 }>();
+
+const sizeOptions = [
+  { label: '元画像', value: null },
+  { label: '640px', value: 640 },
+  { label: '1080px', value: 1080 },
+  { label: '1920px', value: 1920 },
+];
 </script>
 
 <template>
@@ -34,9 +42,23 @@ const emit = defineEmits<{
       <BaseButton color="primary" @click="emit('openImageSourceModal')">
         📁 画像を開く
       </BaseButton>
-      <BaseButton :disabled="!imageUrl" @click="emit('resizeImage')">
-        🔍 リサイズ (840px)
-      </BaseButton>
+
+      <div class="grid grid-cols-2 gap-1">
+        <button
+          v-for="option in sizeOptions"
+          :key="option.value"
+          @click="emit('selectTargetWidth', option.value)"
+          class="border-dark-border rounded border px-2 py-1 text-xs transition-colors"
+          :class="
+            targetWidth === option.value
+              ? 'bg-primary text-white'
+              : 'bg-dark-panel hover:bg-dark-hover'
+          "
+        >
+          {{ option.label }}
+        </button>
+      </div>
+
       <div class="flex gap-2">
         <BaseButton :disabled="!imageUrl" @click="emit('saveImage')">
           💾 保存

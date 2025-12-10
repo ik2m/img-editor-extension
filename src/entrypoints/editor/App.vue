@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Toaster } from 'vue-sonner';
 import type Konva from 'konva';
 import EditorHeader from '@/components/editor/EditorHeader.vue';
@@ -20,10 +20,13 @@ import { useTextMode } from '@/composables/editor/useTextMode';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 
+// Target width for image resizing
+const targetWidth = ref<number | null>(null);
+
 // Composables（Phase 1-4 完全版）
 const nameCounters = useShapeNameCounters();
 const layers = useLayerManagement();
-const image = useImageManagement(nameCounters, layers.shapes);
+const image = useImageManagement(nameCounters, layers.shapes, targetWidth);
 const transform = useShapeTransform(layers.shapes, layers.selectedShapeId);
 const shapeColor = useShapeColor();
 const rectangle = useRectangleShape(
@@ -57,6 +60,13 @@ const text = useTextMode(
 // Modal state
 const isImageSourceModalOpen = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
+
+// targetWidthの変更を監視して、画像が読み込まれている場合はリサイズ
+watch(targetWidth, (newWidth) => {
+  if (image.originalImage.value) {
+    image.applyTargetWidth(newWidth);
+  }
+});
 
 const handleStageClick = (targetId: string) => {
   layers.selectLayer(targetId);
@@ -142,8 +152,8 @@ const handleCopyImage = async () => {
         :rectangle-color="shapeColor.rectangleColor.value"
         :arrow-color="shapeColor.arrowColor.value"
         :text-color="shapeColor.textColor.value"
+        :target-width="targetWidth"
         @open-image-source-modal="openImageSourceModal"
-        @resize-image="image.resizeToMaxWidth840"
         @save-image="handleSaveImage"
         @copy-image="handleCopyImage"
         @add-rectangle="rectangle.addRectangle"
@@ -153,6 +163,7 @@ const handleCopyImage = async () => {
         @select-rectangle-color="shapeColor.setRectangleColor"
         @select-arrow-color="shapeColor.setArrowColor"
         @select-text-color="shapeColor.setTextColor"
+        @select-target-width="targetWidth = $event"
       />
 
       <EditorCanvas
