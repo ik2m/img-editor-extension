@@ -262,28 +262,29 @@ const addRectangle = () => {
 </script>
 
 <template>
-  <div class="editor-container">
-    <header class="editor-header">
-      <h1>画像エディター</h1>
+  <div class="flex flex-col h-screen bg-dark-bg text-white">
+    <header class="flex items-center justify-between px-8 py-4 bg-dark-elevated border-b border-dark-border">
+      <h1 class="text-2xl m-0">画像エディター</h1>
     </header>
 
-    <div class="editor-workspace">
-      <aside class="toolbar">
-        <div class="tool-section">
-          <h3>ファイル</h3>
+    <div class="flex flex-1 overflow-hidden">
+      <aside class="w-sidebar bg-dark-panel border-r border-dark-border p-4 overflow-y-auto">
+        <div class="mb-8">
+          <h3 class="mt-0 mb-4 text-base text-dark-text">ファイル</h3>
           <input
               type="file"
               accept="image/*"
               @change="handleImageUpload"
               id="file-input"
+              class="hidden"
           />
-          <label for="file-input" class="button">画像を開く</label>
+          <label for="file-input" class="block w-full py-2 px-4 mb-2 bg-dark-border text-white border-none rounded cursor-pointer text-center transition-colors duration-200 hover:bg-[#4d4d4d]">画像を開く</label>
         </div>
 
-        <div class="tool-section">
-          <h3>リサイズ</h3>
+        <div class="mb-8">
+          <h3 class="mt-0 mb-4 text-base text-dark-text">リサイズ</h3>
           <button
-              class="button button-primary"
+              class="block w-full py-2 px-4 mb-2 bg-primary text-white border-none rounded cursor-pointer text-center transition-colors duration-200 font-semibold hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted disabled:cursor-not-allowed"
               @click="resizeToMaxWidth840"
               :disabled="!imageUrl"
           >
@@ -291,10 +292,10 @@ const addRectangle = () => {
           </button>
         </div>
 
-        <div class="tool-section">
-          <h3>図形</h3>
+        <div class="mb-8">
+          <h3 class="mt-0 mb-4 text-base text-dark-text">図形</h3>
           <button
-              class="button"
+              class="block w-full py-2 px-4 mb-2 bg-dark-border text-white border-none rounded cursor-pointer text-center transition-colors duration-200 hover:bg-[#4d4d4d] disabled:bg-dark-elevated disabled:text-dark-muted disabled:cursor-not-allowed"
               @click="addRectangle"
               :disabled="!imageUrl"
           >
@@ -302,21 +303,21 @@ const addRectangle = () => {
           </button>
         </div>
 
-        <div class="tool-section">
-          <h3>編集ツール</h3>
-          <button class="button">切り抜き</button>
-          <button class="button">リサイズ</button>
-          <button class="button">フィルター</button>
-          <button class="button">回転</button>
+        <div class="mb-8">
+          <h3 class="mt-0 mb-4 text-base text-dark-text">編集ツール</h3>
+          <button class="block w-full py-2 px-4 mb-2 bg-dark-border text-white border-none rounded cursor-pointer text-center transition-colors duration-200 hover:bg-[#4d4d4d]">切り抜き</button>
+          <button class="block w-full py-2 px-4 mb-2 bg-dark-border text-white border-none rounded cursor-pointer text-center transition-colors duration-200 hover:bg-[#4d4d4d]">リサイズ</button>
+          <button class="block w-full py-2 px-4 mb-2 bg-dark-border text-white border-none rounded cursor-pointer text-center transition-colors duration-200 hover:bg-[#4d4d4d]">フィルター</button>
+          <button class="block w-full py-2 px-4 mb-2 bg-dark-border text-white border-none rounded cursor-pointer text-center transition-colors duration-200 hover:bg-[#4d4d4d]">回転</button>
         </div>
       </aside>
 
-      <main class="canvas-area">
+      <main class="flex-1 flex items-center justify-center bg-[#1a1a1a] overflow-auto relative">
         <!-- Fabric の <canvas> は廃止し、Konva のステージ/レイヤーを使用 -->
         <v-stage
             v-if="imageElement"
             :config="{ width: stageWidth, height: stageHeight }"
-            class="edit-canvas"
+            class="shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
             @mousedown="handleStageMouseDown"
             @touchstart="handleStageMouseDown"
         >
@@ -361,43 +362,48 @@ const addRectangle = () => {
           </v-layer>
         </v-stage>
 
-        <div v-else class="placeholder">
-          <p>画像をアップロードしてください</p>
+        <div v-else class="text-center text-dark-muted">
+          <p class="text-xl">画像をアップロードしてください</p>
         </div>
       </main>
 
       <!-- レイヤーパネル -->
-      <aside class="layer-panel">
-        <div class="layer-panel-header">
-          <h3>レイヤー</h3>
-          <button @click="addRectangle" :disabled="!imageUrl" class="button button-sm">+</button>
+      <aside class="w-sidebar bg-dark-panel border-l border-dark-border p-4 overflow-y-auto flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="m-0 text-base text-dark-text">レイヤー</h3>
+          <button @click="addRectangle" :disabled="!imageUrl" class="py-1 px-3 text-xl leading-none block w-full py-2 px-4 mb-2 bg-primary text-white border-none rounded cursor-pointer text-center transition-colors duration-200 font-semibold hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted disabled:cursor-not-allowed">+</button>
         </div>
 
-        <div class="layer-list">
+        <div class="flex flex-col gap-1">
           <!-- レイヤーなしの場合 -->
-          <div v-if="rects.length === 0" class="layer-empty">
+          <div v-if="rects.length === 0" class="text-center text-dark-muted py-8 px-4 text-sm">
             レイヤーなし<br>
-            <small>矩形を追加してください</small>
+            <small class="text-xs">矩形を追加してください</small>
           </div>
 
           <!-- レイヤーアイテム（逆順で表示：配列の最後=最前面=リストの最上部） -->
           <div
             v-for="r in [...rects].reverse()"
             :key="r.id"
-            :class="['layer-item', { 'layer-item--selected': selectedShapeId === r.id }]"
+            :class="[
+              'p-2 bg-dark-bg border rounded cursor-pointer transition-all duration-200 group',
+              selectedShapeId === r.id
+                ? 'bg-dark-elevated border-primary'
+                : 'border-dark-border hover:bg-dark-elevated'
+            ]"
             @click="selectLayer(r.id)"
           >
-            <div class="layer-item-content">
+            <div class="flex items-center gap-2">
               <!-- カラープレビュー -->
               <div
-                class="layer-color-preview"
+                class="w-5 h-5 border border-dark-border rounded-sm flex-shrink-0"
                 :style="{ backgroundColor: r.fill }"
               ></div>
 
               <!-- レイヤー名（編集可能） -->
               <span
                 v-if="editingLayerId !== r.id"
-                class="layer-name"
+                class="flex-1 text-white text-sm overflow-hidden text-ellipsis whitespace-nowrap"
                 @dblclick="startEditLayerName(r)"
               >
                 {{ r.name }}
@@ -405,7 +411,7 @@ const addRectangle = () => {
               <input
                 v-else
                 v-model="editingLayerName"
-                class="layer-name-input"
+                class="flex-1 bg-dark-border text-white border border-primary rounded px-2 py-1 text-sm outline-none"
                 @blur="finishEditLayerName"
                 @keyup.enter="finishEditLayerName"
                 @keyup.esc="cancelEditLayerName"
@@ -413,11 +419,11 @@ const addRectangle = () => {
               />
 
               <!-- コントロールボタン -->
-              <div class="layer-controls">
+              <div class="flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                 <button
                   @click.stop="moveLayerUp(r.id)"
                   :disabled="rects[rects.length - 1].id === r.id"
-                  class="layer-control-btn"
+                  class="py-1 px-2 bg-dark-border text-white border-none rounded-sm cursor-pointer text-xs transition-colors duration-200 hover:bg-[#4d4d4d] disabled:opacity-30 disabled:cursor-not-allowed"
                   title="前面へ"
                 >
                   ↑
@@ -425,14 +431,14 @@ const addRectangle = () => {
                 <button
                   @click.stop="moveLayerDown(r.id)"
                   :disabled="rects[0].id === r.id"
-                  class="layer-control-btn"
+                  class="py-1 px-2 bg-dark-border text-white border-none rounded-sm cursor-pointer text-xs transition-colors duration-200 hover:bg-[#4d4d4d] disabled:opacity-30 disabled:cursor-not-allowed"
                   title="背面へ"
                 >
                   ↓
                 </button>
                 <button
                   @click.stop="deleteLayer(r.id)"
-                  class="layer-control-btn layer-control-btn--delete"
+                  class="py-1 px-2 bg-dark-border text-danger border-none rounded-sm cursor-pointer text-xs transition-colors duration-200 hover:bg-danger hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                   title="削除"
                 >
                   ×
@@ -445,272 +451,3 @@ const addRectangle = () => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.editor-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: #1e1e1e;
-  color: #fff;
-}
-
-.editor-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 2rem;
-  background: #2d2d2d;
-  border-bottom: 1px solid #3d3d3d;
-}
-
-.editor-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
-.resolution-display {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: #1e1e1e;
-  border-radius: 4px;
-}
-
-.resolution-label {
-  color: #aaa;
-  font-size: 0.875rem;
-}
-
-.resolution-value {
-  color: #42b883;
-  font-weight: 600;
-  font-size: 1rem;
-  font-family: 'Courier New', monospace;
-}
-
-.editor-workspace {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.toolbar {
-  width: 250px;
-  background: #252525;
-  border-right: 1px solid #3d3d3d;
-  padding: 1rem;
-  overflow-y: auto;
-}
-
-.tool-section {
-  margin-bottom: 2rem;
-}
-
-.tool-section h3 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-  color: #aaa;
-}
-
-.button {
-  display: block;
-  width: 100%;
-  padding: 0.5rem 1rem;
-  margin-bottom: 0.5rem;
-  background: #3d3d3d;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  text-align: center;
-  transition: background 0.2s;
-}
-
-.button:hover {
-  background: #4d4d4d;
-}
-
-.button:disabled {
-  background: #2d2d2d;
-  color: #666;
-  cursor: not-allowed;
-}
-
-.button-primary {
-  background: #42b883;
-  font-weight: 600;
-}
-
-.button-primary:hover:not(:disabled) {
-  background: #359268;
-}
-
-#file-input {
-  display: none;
-}
-
-.canvas-area {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #1a1a1a;
-  overflow: auto;
-  position: relative;
-}
-
-.edit-canvas {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
-
-.placeholder {
-  text-align: center;
-  color: #666;
-}
-
-.placeholder p {
-  font-size: 1.2rem;
-}
-
-/* レイヤーパネル */
-.layer-panel {
-  width: 250px;
-  background: #252525;
-  border-left: 1px solid #3d3d3d;
-  padding: 1rem;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.layer-panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.layer-panel-header h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: #aaa;
-}
-
-.button-sm {
-  padding: 0.25rem 0.75rem;
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-.layer-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.layer-empty {
-  text-align: center;
-  color: #666;
-  padding: 2rem 1rem;
-  font-size: 0.875rem;
-}
-
-.layer-empty small {
-  font-size: 0.75rem;
-}
-
-.layer-item {
-  padding: 0.5rem;
-  background: #1e1e1e;
-  border: 1px solid #3d3d3d;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.layer-item:hover {
-  background: #2d2d2d;
-}
-
-.layer-item--selected {
-  background: #2d2d2d;
-  border-color: #42b883;
-}
-
-.layer-item-content {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.layer-color-preview {
-  width: 20px;
-  height: 20px;
-  border: 1px solid #3d3d3d;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-.layer-name {
-  flex: 1;
-  color: #fff;
-  font-size: 0.875rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.layer-name-input {
-  flex: 1;
-  background: #3d3d3d;
-  color: #fff;
-  border: 1px solid #42b883;
-  border-radius: 2px;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  outline: none;
-}
-
-.layer-controls {
-  display: flex;
-  gap: 0.25rem;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.layer-item:hover .layer-controls {
-  opacity: 1;
-}
-
-.layer-control-btn {
-  padding: 0.25rem 0.5rem;
-  background: #3d3d3d;
-  color: #fff;
-  border: none;
-  border-radius: 2px;
-  cursor: pointer;
-  font-size: 0.75rem;
-  transition: background 0.2s;
-}
-
-.layer-control-btn:hover:not(:disabled) {
-  background: #4d4d4d;
-}
-
-.layer-control-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.layer-control-btn--delete {
-  color: #ff6b6b;
-}
-
-.layer-control-btn--delete:hover:not(:disabled) {
-  background: #ff6b6b;
-  color: #fff;
-}
-</style>
