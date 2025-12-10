@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
-import BaseButton from '@/components/BaseButton.vue';
-import type { Shape } from '../types';
-import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from '../types';
+import BaseButton from '@/components/common/BaseButton.vue';
+import type { Shape } from './types';
+import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from './types';
 
 const props = defineProps<{
   layer: Shape;

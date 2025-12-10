@@ -1,6 +1,6 @@
 import { ref, type Ref } from 'vue';
 import { toast } from 'vue-sonner';
-import type { Shape } from '../types';
+import type { Shape } from '@/components/editor/types';
 
 type UseShapeNameCounters = ReturnType<typeof import('./useShapeNameCounters').useShapeNameCounters>;
 

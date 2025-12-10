@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue';
-import type { TextShape, Shape } from '../types';
+import type { TextShape, Shape } from '@/components/editor/types';
 
 /**
  * テキストモード（テキスト注釈の作成）を管理するcomposable

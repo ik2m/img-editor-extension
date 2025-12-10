@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import type { Shape } from '../types';
+import type { Shape } from '@/components/editor/types';
 
 /**
  * レイヤー（Shape配列）の管理を行うcomposable

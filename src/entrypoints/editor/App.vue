@@ -2,12 +2,12 @@
 import { ref, computed } from 'vue';
 import { Toaster } from 'vue-sonner';
 import type Konva from 'konva';
-import EditorHeader from './components/EditorHeader.vue';
-import EditorToolbar from './components/EditorToolbar.vue';
-import EditorCanvas from './components/EditorCanvas.vue';
-import LayerPanel from './components/LayerPanel.vue';
-import ImageSourceModal from './components/ImageSourceModal.vue';
-import TextInputModal from './components/TextInputModal.vue';
+import EditorHeader from '@/components/editor/EditorHeader.vue';
+import EditorToolbar from '@/components/editor/EditorToolbar.vue';
+import EditorCanvas from '@/components/editor/EditorCanvas.vue';
+import LayerPanel from '@/components/editor/LayerPanel.vue';
+import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
+import TextInputModal from '@/components/editor/TextInputModal.vue';
 import { useShapeNameCounters } from './composables/useShapeNameCounters';
 import { useLayerManagement } from './composables/useLayerManagement';
 import { useImageManagement } from './composables/useImageManagement';

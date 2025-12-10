@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import Konva from 'konva';
-import type { Shape, DrawingShape } from '../types';
-import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from '../types';
+import type { Shape, DrawingShape } from './types';
+import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from './types';
 
 const props = defineProps<{
   imageElement: HTMLImageElement | null;

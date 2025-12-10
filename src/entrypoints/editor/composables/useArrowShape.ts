@@ -1,5 +1,5 @@
 import type { Ref } from 'vue';
-import type { ArrowShape, Shape } from '../types';
+import type { ArrowShape, Shape } from '@/components/editor/types';
 
 /**
  * 矢印図形の作成を管理するcomposable

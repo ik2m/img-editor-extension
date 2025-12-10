@@ -1,5 +1,5 @@
 import type { Ref } from 'vue';
-import type { RectShape, Shape } from '../types';
+import type { RectShape, Shape } from '@/components/editor/types';
 
 type UseShapeNameCounters = ReturnType<
   typeof import('./useShapeNameCounters').useShapeNameCounters

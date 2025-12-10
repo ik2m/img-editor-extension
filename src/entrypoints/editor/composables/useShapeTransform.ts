@@ -1,6 +1,6 @@
 import type { Ref } from 'vue';
-import type { Shape } from '../types';
-import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from '../types';
+import type { Shape } from '@/components/editor/types';
+import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from '@/components/editor/types';
 import Konva from 'konva';
 
 /**

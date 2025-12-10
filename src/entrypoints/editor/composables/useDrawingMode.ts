@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue';
-import type { DrawingShape, Shape } from '../types';
+import type { DrawingShape, Shape } from '@/components/editor/types';
 
 /**
  * お絵描きモード（フリーハンド描画）を管理するcomposable

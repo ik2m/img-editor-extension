@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
-import BaseButton from '@/components/BaseButton.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
 import LayerItem from './LayerItem.vue';
-import type { Shape } from '../types';
+import type { Shape } from './types';
 
 const props = defineProps<{
   shapes: Shape[];

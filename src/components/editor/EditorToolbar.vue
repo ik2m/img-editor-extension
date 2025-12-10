@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import BaseButton from '@/components/BaseButton.vue';
-import BaseSection from '@/components/BaseSection.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
+import BaseSection from '@/components/common/BaseSection.vue';
 
 defineProps<{
   imageUrl: string;
