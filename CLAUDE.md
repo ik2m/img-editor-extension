@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 関連ドキュメント
+
+- **[STYLE_GUIDE.md](./STYLE_GUIDE.md)** - コーディング規約とベストプラクティス
+
 ## プロジェクト概要
 
 これはWXTフレームワークを使用したブラウザ拡張機能（Chrome/Firefox）で、画像編集機能を提供します。Vue 3とKonvaを使用して画像エディターを実装しています。

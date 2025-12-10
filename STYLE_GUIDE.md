@@ -1,0 +1,357 @@
+# Coding Standards
+
+このドキュメントは、このプロジェクトで採用しているコーディング規約とベストプラクティスをまとめたものです。
+
+## 目次
+
+- [Vue 3 Composition API](#vue-3-composition-api)
+- [TypeScript](#typescript)
+- [スタイリング（Tailwind CSS）](#スタイリングtailwind-css)
+- [命名規則](#命名規則)
+- [ファイル構成](#ファイル構成)
+
+---
+
+## Vue 3 Composition API
+
+### Props定義
+
+**✅ Good: インライン型定義 + withDefaults**
+
+```typescript
+const props = withDefaults(
+  defineProps<{
+    variant?: 'primary' | 'secondary';
+    disabled?: boolean;
+    type?: 'button' | 'submit' | 'reset';
+  }>(),
+  {
+    variant: 'primary',
+    disabled: false,
+    type: 'button',
+  }
+);
+```
+
+**❌ Avoid: 別途interface定義**
+
+```typescript
+interface Props {
+  variant?: 'primary' | 'secondary';
+  disabled?: boolean;
+}
+const props = withDefaults(defineProps<Props>(), {
+  variant: 'primary',
+  disabled: false,
+});
+```
+
+**理由**: より簡潔で、型定義とデフォルト値が視覚的に近く、可読性が高い
+
+### Emits定義
+
+```typescript
+const emit = defineEmits<{
+  openModal: [];
+  submit: [value: string];
+  update: [id: string, data: Record<string, unknown>];
+}>();
+```
+
+### Template内の属性定義
+
+**原則: 静的な属性は静的に、動的な属性のみバインディング構文を使う**
+
+**✅ Good: 静的な属性はプレフィックスなしで記述**
+
+```vue
+<button
+  type="button"
+  class="block w-full cursor-pointer rounded border-none text-white"
+  aria-label="送信ボタン"
+  :disabled="isLoading"
+  :class="[colorCls, sizeCls]"
+  @click="handleClick"
+>
+  <slot />
+</button>
+
+<input
+  type="text"
+  placeholder="名前を入力"
+  class="border rounded px-4 py-2"
+  :value="inputValue"
+  @input="handleInput"
+/>
+```
+
+**❌ Avoid: 静的な値に動的バインディングを使う**
+
+```vue
+<button
+  :type="'button'"
+  :class="'block w-full cursor-pointer rounded border-none text-white ' + dynamicClass"
+  :aria-label="'送信ボタン'"
+>
+  <slot />
+</button>
+```
+
+**理由**:
+- HTMLとして自然で読みやすい
+- 実行時のオーバーヘッドを避ける
+- 静的解析ツールやエディタのサポートが向上
+- Vueの最適化が効きやすい
+- コードレビュー時に動的な部分が一目で分かる
+
+**適用例**:
+- `class` - 静的なクラスは `class`、動的なクラスは `:class`
+- `type`, `placeholder`, `alt`, `title` などの固定値
+- `aria-*` 属性で固定の値
+- `data-*` 属性で固定の値
+
+### v-bind="$attrs" の使用
+
+Vue 3では非props属性は自動的に継承されるため、明示的な `v-bind="$attrs"` は不要です。
+
+```vue
+<!-- ✅ Good -->
+<button :type="type" :disabled="disabled">
+
+<!-- ❌ Avoid -->
+<button :type="type" :disabled="disabled" v-bind="$attrs">
+```
+
+---
+
+## TypeScript
+
+### 型推論の活用
+
+**✅ Good: 型推論に任せる**
+
+```typescript
+const map = {
+  primary: 'bg-primary hover:bg-primary-hover',
+  secondary: 'bg-dark-border hover:bg-[#4d4d4d]',
+};
+```
+
+**❌ Avoid: 冗長な型注釈**
+
+```typescript
+const classes: Record<string, string> = {
+  primary: 'bg-primary hover:bg-primary-hover',
+  secondary: 'bg-dark-border hover:bg-[#4d4d4d]',
+};
+```
+
+**理由**: TypeScriptの型推論で十分な場合は冗長な型注釈を避ける
+
+### Composables の型定義
+
+```typescript
+import type { Ref } from 'vue';
+import type { Shape } from '@/components/editor/types';
+
+export function useLayerManagement() {
+  const shapes = ref<Shape[]>([]);
+  const selectedShapeId = ref('');
+
+  // ... implementation
+
+  return {
+    shapes,
+    selectedShapeId,
+    selectLayer,
+    moveLayerUp,
+  };
+}
+```
+
+### JSDoc コメント
+
+Composables には簡潔なJSDocコメントを付ける：
+
+```typescript
+/**
+ * レイヤー（Shape配列）の管理を行うcomposable
+ */
+export function useLayerManagement() {
+  // ...
+}
+```
+
+---
+
+## スタイリング（Tailwind CSS）
+
+### 関心の分離（Separation of Concerns）
+
+スタイルの種類ごとに computed プロパティを分離する：
+
+**✅ Good: 色とサイズを分離**
+
+```typescript
+const colorCls = computed(() => {
+  const map = {
+    primary: 'bg-primary hover:bg-primary-hover disabled:bg-dark-elevated',
+    secondary: 'bg-dark-border hover:bg-[#4d4d4d] disabled:opacity-30',
+    icon: 'bg-dark-border hover:bg-[#4d4d4d] disabled:opacity-30',
+  };
+
+  let result = map[props.variant];
+
+  if (props.danger && props.variant === 'icon') {
+    result += 'text-danger hover:bg-danger hover:text-white';
+  }
+
+  return result;
+});
+
+const sizeCls = computed(() => {
+  const map = {
+    primary: 'px-4 py-2 text-base font-semibold mb-2',
+    secondary: 'px-4 py-2 text-base mb-2',
+    icon: 'px-2 py-1 text-xs rounded-sm',
+  };
+  return map[props.variant];
+});
+```
+
+**❌ Avoid: すべてを1つに混在**
+
+```typescript
+const variantClasses = computed(() => {
+  const classes = {
+    primary: 'bg-primary hover:bg-primary-hover px-4 py-2 text-base font-semibold',
+    secondary: 'bg-dark-border hover:bg-[#4d4d4d] px-4 py-2 text-base',
+  };
+  return classes[props.variant];
+});
+```
+
+**理由**: スタイルの種類ごとに分離することで、保守性と可読性が向上
+
+### Map オブジェクトの命名
+
+```typescript
+// ✅ Good: シンプルに "map"
+const map = {
+  primary: '...',
+  secondary: '...',
+};
+
+// ❌ Avoid: 冗長な命名
+const variantToClassesMapping = { ... };
+```
+
+---
+
+## 命名規則
+
+### 変数名
+
+- **キャメルケース**を使用
+- **簡潔だが意味が明確**な命名を好む
+- 省略形の使用例：
+  - `colorCls` = color classes
+  - `sizeCls` = size classes
+  - `cls` = classes
+
+```typescript
+// ✅ Good
+const colorCls = computed(() => ...);
+const sizeCls = computed(() => ...);
+
+// ❌ Avoid: 過度に長い名前
+const variantColorClasses = computed(() => ...);
+```
+
+### 関数名
+
+- 動詞で始める
+- 明確な意図を示す
+
+```typescript
+// ✅ Good
+const selectLayer = (id: string) => { ... };
+const moveLayerUp = (id: string) => { ... };
+const deleteLayer = (id: string) => { ... };
+```
+
+### Composables
+
+- `use` プレフィックスで始める
+- 機能を明確に表現
+
+```typescript
+// ✅ Good
+useLayerManagement()
+useShapeTransform()
+useImageManagement()
+```
+
+---
+
+## ファイル構成
+
+### Feature-based Structure
+
+機能ごとにディレクトリを整理する：
+
+```
+src/
+├── components/
+│   ├── common/          # 共通コンポーネント
+│   │   ├── BaseButton.vue
+│   │   └── BaseSection.vue
+│   └── editor/          # エディター専用コンポーネント
+│       ├── EditorCanvas.vue
+│       ├── EditorToolbar.vue
+│       └── types.ts
+│
+├── composables/
+│   └── editor/          # エディター専用composables
+│       ├── useLayerManagement.ts
+│       └── useShapeTransform.ts
+│
+└── entrypoints/         # WXTエントリーポイント
+    └── editor/
+        ├── App.vue
+        ├── index.html
+        └── main.ts
+```
+
+### Import パス
+
+- 絶対パスエイリアス `@/` を使用
+- 同一ディレクトリ内は相対パス `./` を使用
+
+```typescript
+// ✅ Good
+import BaseButton from '@/components/common/BaseButton.vue';
+import { useLayerManagement } from '@/composables/editor/useLayerManagement';
+import type { Shape } from './types';  // 同じディレクトリ内
+
+// ❌ Avoid: 長い相対パス
+import BaseButton from '../../../components/common/BaseButton.vue';
+```
+
+---
+
+## 全体的な原則
+
+1. **簡潔性優先**: 冗長なコードを避け、シンプルで読みやすいコードを書く
+2. **関心の分離**: 機能ごとに適切に分割し、責務を明確にする
+3. **型推論活用**: TypeScriptの型推論を信頼し、不要な型注釈は省略する
+4. **モダンVue 3**: Vue 3の機能（Composition API、自動attrs継承など）を積極的に活用する
+5. **一貫性**: プロジェクト全体で統一されたスタイルを維持する
+
+---
+
+## 参考
+
+- [Vue 3 Style Guide](https://vuejs.org/style-guide/)
+- [TypeScript Best Practices](https://www.typescriptlang.org/docs/handbook/declaration-files/do-s-and-don-ts.html)
+- [Tailwind CSS Best Practices](https://tailwindcss.com/docs/reusing-styles)
