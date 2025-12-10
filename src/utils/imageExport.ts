@@ -6,8 +6,16 @@ import { toast } from 'vue-sonner';
  */
 export function downloadImageFromStage(stage: Konva.Stage) {
   try {
+    // トランスフォーマーを一時的に非表示にする
+    const transformers = stage.find('Transformer');
+    const transformerVisibilities = transformers.map((t) => t.visible());
+    transformers.forEach((t) => t.visible(false));
+
     // Stageを画像に変換
     const dataURL = stage.toDataURL({ pixelRatio: 1 });
+
+    // トランスフォーマーを元に戻す
+    transformers.forEach((t, i) => t.visible(transformerVisibilities[i]));
 
     // ダウンロード用のリンクを作成
     const link = document.createElement('a');
@@ -29,8 +37,16 @@ export function downloadImageFromStage(stage: Konva.Stage) {
  */
 export async function copyImageFromStageToClipboard(stage: Konva.Stage) {
   try {
+    // トランスフォーマーを一時的に非表示にする
+    const transformers = stage.find('Transformer');
+    const transformerVisibilities = transformers.map((t) => t.visible());
+    transformers.forEach((t) => t.visible(false));
+
     // Stageを画像に変換
     const dataURL = stage.toDataURL({ pixelRatio: 1 });
+
+    // トランスフォーマーを元に戻す
+    transformers.forEach((t, i) => t.visible(transformerVisibilities[i]));
 
     // DataURLをBlobに変換
     const response = await fetch(dataURL);
