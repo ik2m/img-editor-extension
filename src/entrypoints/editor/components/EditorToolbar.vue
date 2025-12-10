@@ -9,7 +9,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  uploadImage: [file: File];
+  openImageSourceModal: [];
   resizeImage: [];
   addRectangle: [];
   addArrow: [];
@@ -17,14 +17,6 @@ const emit = defineEmits<{
   toggleTextMode: [];
   copyImage: [];
 }>();
-
-const handleFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (file) {
-    emit('uploadImage', file);
-  }
-};
 </script>
 
 <template>
@@ -32,18 +24,9 @@ const handleFileChange = (event: Event) => {
     class="w-sidebar bg-dark-panel border-dark-border overflow-y-auto border-r p-4"
   >
     <BaseSection title="ファイル">
-      <input
-        type="file"
-        accept="image/*"
-        @change="handleFileChange"
-        id="file-input"
-        class="hidden"
-      />
-      <label
-        for="file-input"
-        class="bg-dark-border mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d]"
-        >画像を開く</label
-      >
+      <BaseButton variant="primary" @click="emit('openImageSourceModal')">
+        画像を開く
+      </BaseButton>
     </BaseSection>
 
     <BaseSection title="リサイズ">

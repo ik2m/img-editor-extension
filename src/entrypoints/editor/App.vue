@@ -6,6 +6,7 @@ import EditorHeader from './components/EditorHeader.vue';
 import EditorToolbar from './components/EditorToolbar.vue';
 import EditorCanvas from './components/EditorCanvas.vue';
 import LayerPanel from './components/LayerPanel.vue';
+import ImageSourceModal from './components/ImageSourceModal.vue';
 import { useShapeNameCounters } from './composables/useShapeNameCounters';
 import { useLayerManagement } from './composables/useLayerManagement';
 import { useImageManagement } from './composables/useImageManagement';
@@ -48,8 +49,36 @@ const text = useTextMode(
 );
 const clipboard = useClipboardImage(canvasRef);
 
+// Modal state
+const isImageSourceModalOpen = ref(false);
+const fileInputRef = ref<HTMLInputElement | null>(null);
+
 const handleStageClick = (targetId: string) => {
   layers.selectLayer(targetId);
+};
+
+const openImageSourceModal = () => {
+  isImageSourceModalOpen.value = true;
+};
+
+const closeImageSourceModal = () => {
+  isImageSourceModalOpen.value = false;
+};
+
+const handleOpenFile = () => {
+  fileInputRef.value?.click();
+};
+
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (file) {
+    image.handleImageUpload(file);
+  }
+};
+
+const handleOpenClipboard = () => {
+  image.loadImageFromClipboard();
 };
 </script>
 
@@ -62,7 +91,7 @@ const handleStageClick = (targetId: string) => {
         :image-url="image.imageUrl.value"
         :drawing-mode="drawing.drawingMode.value"
         :text-mode="text.textMode.value"
-        @upload-image="image.handleImageUpload"
+        @open-image-source-modal="openImageSourceModal"
         @resize-image="image.resizeToMaxWidth840"
         @add-rectangle="rectangle.addRectangle"
         @add-arrow="arrow.addArrow"
@@ -103,6 +132,22 @@ const handleStageClick = (targetId: string) => {
         @reorder-layers="layers.reorderLayers"
       />
     </div>
+
+    <ImageSourceModal
+      :is-open="isImageSourceModalOpen"
+      @close="closeImageSourceModal"
+      @open-file="handleOpenFile"
+      @open-clipboard="handleOpenClipboard"
+    />
+
+    <input
+      ref="fileInputRef"
+      type="file"
+      accept="image/*"
+      class="hidden"
+      @change="handleFileChange"
+    />
+
     <Toaster position="bottom-right" />
   </div>
 </template>
