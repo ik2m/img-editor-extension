@@ -35,7 +35,20 @@ export type DrawingShape = {
   draggable: true;
 };
 
-export type Shape = RectShape | ArrowShape | DrawingShape;
+export type TextShape = {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  text: string;
+  fontSize: number;
+  fontFamily: string;
+  fill: string;
+  align: 'left' | 'center' | 'right';
+  draggable: true;
+};
+
+export type Shape = RectShape | ArrowShape | DrawingShape | TextShape;
 
 // 型ガード関数
 export function isRectShape(shape: Shape): shape is RectShape {
@@ -48,4 +61,8 @@ export function isArrowShape(shape: Shape): shape is ArrowShape {
 
 export function isDrawingShape(shape: Shape): shape is DrawingShape {
   return 'tension' in shape;
+}
+
+export function isTextShape(shape: Shape): shape is TextShape {
+  return 'fontSize' in shape && 'text' in shape;
 }

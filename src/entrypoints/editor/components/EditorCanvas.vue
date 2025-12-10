@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import Konva from 'konva';
 import type { Shape, DrawingShape } from '../types';
-import { isRectShape, isArrowShape, isDrawingShape } from '../types';
+import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from '../types';
 
 const props = defineProps<{
   imageElement: HTMLImageElement | null;
@@ -14,6 +14,7 @@ const props = defineProps<{
   originalImage: HTMLImageElement | null;
   drawingMode: boolean;
   currentDrawing: DrawingShape | null;
+  textMode: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -22,6 +23,7 @@ const emit = defineEmits<{
   startDrawing: [pos: { x: number; y: number }];
   continueDrawing: [pos: { x: number; y: number }];
   finishDrawing: [];
+  addText: [pos: { x: number; y: number }];
 }>();
 
 const transformer = ref<{ getNode(): Konva.Transformer } | null>(null);
@@ -53,6 +55,14 @@ const handleStageMouseDown = (e: any) => {
     const stage = e.target.getStage();
     const pos = stage.getPointerPosition();
     emit('startDrawing', { x: pos.x, y: pos.y });
+    return;
+  }
+
+  // テキストモードの場合
+  if (props.textMode) {
+    const stage = e.target.getStage();
+    const pos = stage.getPointerPosition();
+    emit('addText', { x: pos.x, y: pos.y });
     return;
   }
 
@@ -107,6 +117,7 @@ onMounted(() => {
       :class="[
         'shadow-[0_4px_20px_rgba(0,0,0,0.5)]',
         drawingMode ? 'cursor-crosshair' : '',
+        textMode ? 'cursor-text' : '',
       ]"
       @mousedown="handleStageMouseDown"
       @mousemove="handleStageMouseMove"
@@ -171,6 +182,21 @@ onMounted(() => {
               tension: shape.tension,
               lineCap: shape.lineCap,
               lineJoin: shape.lineJoin,
+              draggable: shape.draggable,
+            }"
+            @transformend="(e: any) => emit('transformEnd', e)"
+          />
+          <v-text
+            v-else-if="isTextShape(shape)"
+            :config="{
+              name: shape.id,
+              x: shape.x,
+              y: shape.y,
+              text: shape.text,
+              fontSize: shape.fontSize,
+              fontFamily: shape.fontFamily,
+              fill: shape.fill,
+              align: shape.align,
               draggable: shape.draggable,
             }"
             @transformend="(e: any) => emit('transformEnd', e)"

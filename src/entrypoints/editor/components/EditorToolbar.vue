@@ -5,6 +5,7 @@ import BaseSection from '@/components/BaseSection.vue';
 defineProps<{
   imageUrl: string;
   drawingMode: boolean;
+  textMode: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -13,6 +14,7 @@ const emit = defineEmits<{
   addRectangle: [];
   addArrow: [];
   toggleDrawingMode: [];
+  toggleTextMode: [];
 }>();
 
 const handleFileChange = (event: Event) => {
@@ -74,6 +76,13 @@ const handleFileChange = (event: Event) => {
         @click="emit('toggleDrawingMode')"
       >
         {{ drawingMode ? '描画中...' : 'ペンツール' }}
+      </BaseButton>
+      <BaseButton
+        :variant="textMode ? 'primary' : 'secondary'"
+        :disabled="!imageUrl"
+        @click="emit('toggleTextMode')"
+      >
+        {{ textMode ? 'テキスト入力中...' : 'テキストツール' }}
       </BaseButton>
     </BaseSection>
   </aside>

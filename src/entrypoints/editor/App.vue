@@ -5,8 +5,8 @@ import EditorHeader from './components/EditorHeader.vue';
 import EditorToolbar from './components/EditorToolbar.vue';
 import EditorCanvas from './components/EditorCanvas.vue';
 import LayerPanel from './components/LayerPanel.vue';
-import type { RectShape, ArrowShape, DrawingShape, Shape } from './types';
-import { isRectShape, isArrowShape, isDrawingShape } from './types';
+import type { RectShape, ArrowShape, DrawingShape, TextShape, Shape } from './types';
+import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from './types';
 
 // 全ての状態変数をそのまま保持
 const imageUrl = ref<string>('');
@@ -20,16 +20,19 @@ const selectedShapeId = ref('');
 const rectCounter = ref(1);
 const arrowCounter = ref(1);
 const drawingCounter = ref(1);
+const textCounter = ref(1);
 const editingLayerId = ref<string>('');
 const editingLayerName = ref<string>('');
 const layerNameInput = ref<HTMLInputElement | null>(null);
 const drawingMode = ref<boolean>(false);
 const currentDrawing = ref<DrawingShape | null>(null);
+const textMode = ref<boolean>(false);
 
 // 全ての関数をそのまま保持
 const getNextRectName = () => `矩形 ${rectCounter.value++}`;
 const getNextArrowName = () => `矢印 ${arrowCounter.value++}`;
 const getNextDrawingName = () => `お絵描き ${drawingCounter.value++}`;
+const getNextTextName = () => `テキスト ${textCounter.value++}`;
 
 const handleTransformEnd = (e: any) => {
   const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
@@ -47,6 +50,9 @@ const handleTransformEnd = (e: any) => {
     const node = e.target;
     const newPoints = node.points();
     shape.points = newPoints;
+  } else if (isTextShape(shape)) {
+    shape.x = e.target.x();
+    shape.y = e.target.y();
   }
 };
 
@@ -75,6 +81,7 @@ const loadImageToStage = (url: string) => {
     rectCounter.value = 1;
     arrowCounter.value = 1;
     drawingCounter.value = 1;
+    textCounter.value = 1;
   };
   img.src = url;
 };
@@ -235,6 +242,34 @@ const finishDrawing = () => {
   currentDrawing.value = null;
   drawingMode.value = false;
 };
+
+const toggleTextMode = () => {
+  textMode.value = !textMode.value;
+};
+
+const addText = (pos: { x: number; y: number }) => {
+  if (!textMode.value) return;
+  const inputText = window.prompt('テキストを入力してください:', 'テキスト');
+  if (!inputText) {
+    textMode.value = false;
+    return;
+  }
+  const text: TextShape = {
+    id: `text-${Date.now()}`,
+    name: getNextTextName(),
+    x: pos.x / layerScale.value.x,
+    y: pos.y / layerScale.value.y,
+    text: inputText,
+    fontSize: 24,
+    fontFamily: 'Noto Sans JP',
+    fill: '#000000',
+    align: 'left',
+    draggable: true,
+  };
+  shapes.value.push(text);
+  selectLayer(text.id);
+  textMode.value = false;
+};
 </script>
 
 <template>
@@ -245,11 +280,13 @@ const finishDrawing = () => {
       <EditorToolbar
         :image-url="imageUrl"
         :drawing-mode="drawingMode"
+        :text-mode="textMode"
         @upload-image="handleImageUpload"
         @resize-image="resizeToMaxWidth840"
         @add-rectangle="addRectangle"
         @add-arrow="addArrow"
         @toggle-drawing-mode="toggleDrawingMode"
+        @toggle-text-mode="toggleTextMode"
       />
 
       <EditorCanvas
@@ -262,11 +299,13 @@ const finishDrawing = () => {
         :original-image="originalImage"
         :drawing-mode="drawingMode"
         :current-drawing="currentDrawing"
+        :text-mode="textMode"
         @transform-end="handleTransformEnd"
         @stage-click="handleStageClick"
         @start-drawing="startDrawing"
         @continue-drawing="continueDrawing"
         @finish-drawing="finishDrawing"
+        @add-text="addText"
       />
 
       <LayerPanel
