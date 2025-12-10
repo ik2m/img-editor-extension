@@ -13,11 +13,27 @@ import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from './types'
 import { useShapeNameCounters } from './composables/useShapeNameCounters';
 import { useLayerManagement } from './composables/useLayerManagement';
 import { useImageManagement } from './composables/useImageManagement';
+import { useShapeTransform } from './composables/useShapeTransform';
+import { useRectangleShape } from './composables/useRectangleShape';
+import { useArrowShape } from './composables/useArrowShape';
 
-// Composables（Phase 1-2）
+// Composables（Phase 1-3）
 const nameCounters = useShapeNameCounters();
 const layers = useLayerManagement();
 const image = useImageManagement(nameCounters, layers.shapes);
+const transform = useShapeTransform(layers.shapes, layers.selectedShapeId);
+const rectangle = useRectangleShape(
+  layers.shapes,
+  layers.selectLayer,
+  nameCounters.getNextRectName,
+  image.imageElement
+);
+const arrow = useArrowShape(
+  layers.shapes,
+  layers.selectLayer,
+  nameCounters.getNextArrowName,
+  image.imageElement
+);
 
 // 既存のロジック（そのまま維持）
 const editingLayerId = ref<string>('');
@@ -30,28 +46,6 @@ const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
 
 // クリップボード機能
 const { copy: copyToClipboard, copied, isSupported } = useClipboardItems();
-
-const handleTransformEnd = (e: any) => {
-  const shape = layers.shapes.value.find((s) => s.id === layers.selectedShapeId.value);
-  if (!shape) return;
-
-  if (isRectShape(shape)) {
-    shape.x = e.target.x();
-    shape.y = e.target.y();
-    shape.fill = Konva.Util.getRandomColor();
-  } else if (isArrowShape(shape)) {
-    const node = e.target;
-    const newPoints = node.points();
-    shape.points = newPoints as [number, number, number, number];
-  } else if (isDrawingShape(shape)) {
-    const node = e.target;
-    const newPoints = node.points();
-    shape.points = newPoints;
-  } else if (isTextShape(shape)) {
-    shape.x = e.target.x();
-    shape.y = e.target.y();
-  }
-};
 
 const handleStageClick = (targetId: string) => {
   layers.selectLayer(targetId);
@@ -74,41 +68,6 @@ const finishEditLayerName = () => {
 const cancelEditLayerName = () => {
   editingLayerId.value = '';
   editingLayerName.value = '';
-};
-
-const addRectangle = () => {
-  if (!image.imageElement.value) return;
-  const rect: RectShape = {
-    id: `rect-${Date.now()}`,
-    name: nameCounters.getNextRectName(),
-    x: 100,
-    y: 100,
-    width: 200,
-    height: 150,
-    fill: 'rgba(255, 0, 0, 0.3)',
-    stroke: '#ff0000',
-    strokeWidth: 3,
-    draggable: true,
-  };
-  layers.shapes.value.push(rect);
-  layers.selectLayer(rect.id);
-};
-
-const addArrow = () => {
-  if (!image.imageElement.value) return;
-  const arrow: ArrowShape = {
-    id: `arrow-${Date.now()}`,
-    name: nameCounters.getNextArrowName(),
-    points: [100, 100, 300, 200],
-    stroke: '#ff0000',
-    strokeWidth: 3,
-    fill: '#ff0000',
-    pointerLength: 20,
-    pointerWidth: 20,
-    draggable: true,
-  };
-  layers.shapes.value.push(arrow);
-  layers.selectLayer(arrow.id);
 };
 
 const toggleDrawingMode = () => {
@@ -226,8 +185,8 @@ const copyImageToClipboard = async () => {
         :text-mode="textMode"
         @upload-image="image.handleImageUpload"
         @resize-image="image.resizeToMaxWidth840"
-        @add-rectangle="addRectangle"
-        @add-arrow="addArrow"
+        @add-rectangle="rectangle.addRectangle"
+        @add-arrow="arrow.addArrow"
         @toggle-drawing-mode="toggleDrawingMode"
         @toggle-text-mode="toggleTextMode"
         @copy-image="copyImageToClipboard"
@@ -245,7 +204,7 @@ const copyImageToClipboard = async () => {
         :drawing-mode="drawingMode"
         :current-drawing="currentDrawing"
         :text-mode="textMode"
-        @transform-end="handleTransformEnd"
+        @transform-end="transform.handleTransformEnd"
         @stage-click="handleStageClick"
         @start-drawing="startDrawing"
         @continue-drawing="continueDrawing"
@@ -259,7 +218,7 @@ const copyImageToClipboard = async () => {
         :image-url="image.imageUrl.value"
         :editing-layer-id="editingLayerId"
         :editing-layer-name="editingLayerName"
-        @add-rectangle="addRectangle"
+        @add-rectangle="rectangle.addRectangle"
         @select-layer="layers.selectLayer"
         @move-layer-up="layers.moveLayerUp"
         @move-layer-down="layers.moveLayerDown"
