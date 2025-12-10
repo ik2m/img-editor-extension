@@ -1,23 +1,23 @@
 <script lang="ts" setup>
-import { ref, nextTick } from 'vue';
-import { useClipboardItems } from '@vueuse/core';
-import { toast } from 'vue-sonner';
+import { ref } from 'vue';
 import { Toaster } from 'vue-sonner';
-import Konva from 'konva';
+import type Konva from 'konva';
 import EditorHeader from './components/EditorHeader.vue';
 import EditorToolbar from './components/EditorToolbar.vue';
 import EditorCanvas from './components/EditorCanvas.vue';
 import LayerPanel from './components/LayerPanel.vue';
-import type { RectShape, ArrowShape, DrawingShape, TextShape, Shape } from './types';
-import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from './types';
 import { useShapeNameCounters } from './composables/useShapeNameCounters';
 import { useLayerManagement } from './composables/useLayerManagement';
 import { useImageManagement } from './composables/useImageManagement';
 import { useShapeTransform } from './composables/useShapeTransform';
 import { useRectangleShape } from './composables/useRectangleShape';
 import { useArrowShape } from './composables/useArrowShape';
+import { useDrawingMode } from './composables/useDrawingMode';
+import { useTextMode } from './composables/useTextMode';
+import { useLayerNameEditing } from './composables/useLayerNameEditing';
+import { useClipboardImage } from './composables/useClipboardImage';
 
-// Composables（Phase 1-3）
+// Composables（Phase 1-4 完全版）
 const nameCounters = useShapeNameCounters();
 const layers = useLayerManagement();
 const image = useImageManagement(nameCounters, layers.shapes);
@@ -34,143 +34,24 @@ const arrow = useArrowShape(
   nameCounters.getNextArrowName,
   image.imageElement
 );
-
-// 既存のロジック（そのまま維持）
-const editingLayerId = ref<string>('');
-const editingLayerName = ref<string>('');
-const layerNameInput = ref<HTMLInputElement | null>(null);
-const drawingMode = ref<boolean>(false);
-const currentDrawing = ref<DrawingShape | null>(null);
-const textMode = ref<boolean>(false);
 const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
-
-// クリップボード機能
-const { copy: copyToClipboard, copied, isSupported } = useClipboardItems();
+const drawing = useDrawingMode(
+  layers.shapes,
+  layers.selectLayer,
+  nameCounters.getNextDrawingName,
+  image.layerScale
+);
+const text = useTextMode(
+  layers.shapes,
+  layers.selectLayer,
+  nameCounters.getNextTextName,
+  image.layerScale
+);
+const layerEdit = useLayerNameEditing(layers.renameLayer);
+const clipboard = useClipboardImage(canvasRef);
 
 const handleStageClick = (targetId: string) => {
   layers.selectLayer(targetId);
-};
-
-const startEditLayerName = async (layer: Shape) => {
-  editingLayerId.value = layer.id;
-  editingLayerName.value = layer.name;
-  await nextTick();
-  // layerNameInputはLayerPanel内で管理されるため、ここでの処理は不要
-};
-
-const finishEditLayerName = () => {
-  if (editingLayerId.value) {
-    layers.renameLayer(editingLayerId.value, editingLayerName.value);
-    editingLayerId.value = '';
-  }
-};
-
-const cancelEditLayerName = () => {
-  editingLayerId.value = '';
-  editingLayerName.value = '';
-};
-
-const toggleDrawingMode = () => {
-  drawingMode.value = !drawingMode.value;
-  if (!drawingMode.value) {
-    currentDrawing.value = null;
-  }
-};
-
-const startDrawing = (pos: { x: number; y: number }) => {
-  if (!drawingMode.value) return;
-  const drawing: DrawingShape = {
-    id: `drawing-${Date.now()}`,
-    name: nameCounters.getNextDrawingName(),
-    points: [pos.x / image.layerScale.value.x, pos.y / image.layerScale.value.y],
-    stroke: '#000000',
-    strokeWidth: 2,
-    tension: 0.5,
-    lineCap: 'round',
-    lineJoin: 'round',
-    draggable: true,
-  };
-  currentDrawing.value = drawing;
-};
-
-const continueDrawing = (pos: { x: number; y: number }) => {
-  if (!currentDrawing.value) return;
-  currentDrawing.value.points.push(
-    pos.x / image.layerScale.value.x,
-    pos.y / image.layerScale.value.y
-  );
-};
-
-const finishDrawing = () => {
-  if (!currentDrawing.value) return;
-  if (currentDrawing.value.points.length >= 4) {
-    layers.shapes.value.push(currentDrawing.value);
-    layers.selectLayer(currentDrawing.value.id);
-  }
-  currentDrawing.value = null;
-  drawingMode.value = false;
-};
-
-const toggleTextMode = () => {
-  textMode.value = !textMode.value;
-};
-
-const addText = (pos: { x: number; y: number }) => {
-  if (!textMode.value) return;
-  const inputText = window.prompt('テキストを入力してください:', 'テキスト');
-  if (!inputText) {
-    textMode.value = false;
-    return;
-  }
-  const text: TextShape = {
-    id: `text-${Date.now()}`,
-    name: nameCounters.getNextTextName(),
-    x: pos.x / image.layerScale.value.x,
-    y: pos.y / image.layerScale.value.y,
-    text: inputText,
-    fontSize: 24,
-    fontFamily: 'Noto Sans JP',
-    fill: '#000000',
-    align: 'left',
-    draggable: true,
-  };
-  layers.shapes.value.push(text);
-  layers.selectLayer(text.id);
-  textMode.value = false;
-};
-
-const copyImageToClipboard = async () => {
-  if (!isSupported.value) {
-    toast.error('お使いのブラウザはクリップボード機能に対応していません');
-    return;
-  }
-
-  if (!canvasRef.value) return;
-  const stage = canvasRef.value.getStage();
-  if (!stage) return;
-
-  try {
-    // Stageを画像に変換
-    const dataURL = stage.toDataURL({ pixelRatio: 1 });
-
-    // DataURLをBlobに変換
-    const response = await fetch(dataURL);
-    const blob = await response.blob();
-
-    // クリップボードにコピー
-    await copyToClipboard([
-      new ClipboardItem({
-        'image/png': blob,
-      }),
-    ]);
-
-    if (copied.value) {
-      toast.success('画像をクリップボードにコピーしました');
-    }
-  } catch (error) {
-    console.error('クリップボードへのコピーに失敗しました:', error);
-    toast.error('クリップボードへのコピーに失敗しました');
-  }
 };
 </script>
 
@@ -181,15 +62,15 @@ const copyImageToClipboard = async () => {
     <div class="flex flex-1 overflow-hidden">
       <EditorToolbar
         :image-url="image.imageUrl.value"
-        :drawing-mode="drawingMode"
-        :text-mode="textMode"
+        :drawing-mode="drawing.drawingMode.value"
+        :text-mode="text.textMode.value"
         @upload-image="image.handleImageUpload"
         @resize-image="image.resizeToMaxWidth840"
         @add-rectangle="rectangle.addRectangle"
         @add-arrow="arrow.addArrow"
-        @toggle-drawing-mode="toggleDrawingMode"
-        @toggle-text-mode="toggleTextMode"
-        @copy-image="copyImageToClipboard"
+        @toggle-drawing-mode="drawing.toggleDrawingMode"
+        @toggle-text-mode="text.toggleTextMode"
+        @copy-image="clipboard.copyImageToClipboard"
       />
 
       <EditorCanvas
@@ -201,32 +82,32 @@ const copyImageToClipboard = async () => {
         :shapes="layers.shapes.value"
         :selected-shape-id="layers.selectedShapeId.value"
         :original-image="image.originalImage.value"
-        :drawing-mode="drawingMode"
-        :current-drawing="currentDrawing"
-        :text-mode="textMode"
+        :drawing-mode="drawing.drawingMode.value"
+        :current-drawing="drawing.currentDrawing.value"
+        :text-mode="text.textMode.value"
         @transform-end="transform.handleTransformEnd"
         @stage-click="handleStageClick"
-        @start-drawing="startDrawing"
-        @continue-drawing="continueDrawing"
-        @finish-drawing="finishDrawing"
-        @add-text="addText"
+        @start-drawing="drawing.startDrawing"
+        @continue-drawing="drawing.continueDrawing"
+        @finish-drawing="drawing.finishDrawing"
+        @add-text="text.addText"
       />
 
       <LayerPanel
         :shapes="layers.shapes.value"
         :selected-shape-id="layers.selectedShapeId.value"
         :image-url="image.imageUrl.value"
-        :editing-layer-id="editingLayerId"
-        :editing-layer-name="editingLayerName"
+        :editing-layer-id="layerEdit.editingLayerId.value"
+        :editing-layer-name="layerEdit.editingLayerName.value"
         @add-rectangle="rectangle.addRectangle"
         @select-layer="layers.selectLayer"
         @move-layer-up="layers.moveLayerUp"
         @move-layer-down="layers.moveLayerDown"
         @delete-layer="layers.deleteLayer"
-        @start-edit-name="startEditLayerName"
-        @finish-edit-name="finishEditLayerName"
-        @cancel-edit-name="cancelEditLayerName"
-        @update-editing-name="(name) => (editingLayerName = name)"
+        @start-edit-name="layerEdit.startEditLayerName"
+        @finish-edit-name="layerEdit.finishEditLayerName"
+        @cancel-edit-name="layerEdit.cancelEditLayerName"
+        @update-editing-name="(name) => (layerEdit.editingLayerName.value = name)"
       />
     </div>
     <Toaster position="bottom-right" />
