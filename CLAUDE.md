@@ -24,6 +24,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 型チェック
 - TypeScript型チェック: `pnpm compile`
 
+### コードフォーマット
+- コード自動フォーマット: `pnpm format`
+- フォーマットチェック: `pnpm format:check`
+
 ## アーキテクチャ
 
 ### WXTフレームワーク構造
