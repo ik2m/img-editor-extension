@@ -46,22 +46,71 @@ export function useImageManagement(
   const resizeToMaxWidth840 = () => {
     if (!originalImage.value) return;
     const img = originalImage.value;
-    const maxWidth = 840;
-    let width = img.width;
-    let height = img.height;
+    const targetWidth = 840;
+    const currentWidth = img.width;
+    const currentHeight = img.height;
 
-    if (width > maxWidth) {
-      const ratio = maxWidth / width;
-      width = maxWidth;
-      height = Math.round(height * ratio);
-      layerScale.value = { x: ratio, y: ratio };
-      stageWidth.value = width;
-      stageHeight.value = height;
-    } else {
-      layerScale.value = { x: 1, y: 1 };
-      stageWidth.value = width;
-      stageHeight.value = height;
+    if (currentWidth === targetWidth) {
+      toast.info('画像はすでに840pxです');
+      return;
     }
+
+    // リサイズ比率を計算
+    const ratio = targetWidth / currentWidth;
+    const newWidth = targetWidth;
+    const newHeight = Math.round(currentHeight * ratio);
+
+    // キャンバスで画像をリサイズ
+    const canvas = document.createElement('canvas');
+    canvas.width = newWidth;
+    canvas.height = newHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+    // リサイズされた画像を新しいImageとして読み込む
+    const resizedDataURL = canvas.toDataURL('image/png');
+    const resizedImg = new Image();
+    resizedImg.onload = () => {
+      originalImage.value = resizedImg;
+      imageElement.value = resizedImg;
+      stageWidth.value = newWidth;
+      stageHeight.value = newHeight;
+      layerScale.value = { x: 1, y: 1 };
+
+      // 既存の図形の座標をリサイズに合わせて調整
+      shapes.value.forEach((shape) => {
+        if ('x' in shape && 'y' in shape) {
+          shape.x = shape.x * ratio;
+          shape.y = shape.y * ratio;
+          if ('width' in shape && 'height' in shape) {
+            shape.width = shape.width * ratio;
+            shape.height = shape.height * ratio;
+          }
+          if ('fontSize' in shape) {
+            shape.fontSize = Math.round(shape.fontSize * ratio);
+          }
+        }
+        if ('points' in shape && Array.isArray(shape.points)) {
+          // ArrowShapeのpointsは [x1, y1, x2, y2] のタプル型
+          const scaledPoints = shape.points.map((p) => p * ratio);
+          shape.points = [scaledPoints[0], scaledPoints[1], scaledPoints[2], scaledPoints[3]];
+        }
+        if ('strokeWidth' in shape) {
+          shape.strokeWidth = Math.max(1, Math.round(shape.strokeWidth * ratio));
+        }
+        if ('lines' in shape) {
+          shape.lines.forEach((line) => {
+            line.points = line.points.map((p) => p * ratio);
+            line.strokeWidth = Math.max(1, Math.round(line.strokeWidth * ratio));
+          });
+        }
+      });
+
+      toast.success(`画像を${newWidth}x${newHeight}pxにリサイズしました`);
+    };
+    resizedImg.src = resizedDataURL;
   };
 
   const loadImageFromBlob = (blob: Blob) => {
