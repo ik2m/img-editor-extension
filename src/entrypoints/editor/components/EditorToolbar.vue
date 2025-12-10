@@ -59,29 +59,5 @@ const handleFileChange = (event: Event) => {
         矩形を追加
       </button>
     </div>
-
-    <div class="mb-8">
-      <h3 class="text-dark-text mt-0 mb-4 text-base">編集ツール</h3>
-      <button
-        class="bg-dark-border mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d]"
-      >
-        切り抜き
-      </button>
-      <button
-        class="bg-dark-border mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d]"
-      >
-        リサイズ
-      </button>
-      <button
-        class="bg-dark-border mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d]"
-      >
-        フィルター
-      </button>
-      <button
-        class="bg-dark-border mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d]"
-      >
-        回転
-      </button>
-    </div>
   </aside>
 </template>
