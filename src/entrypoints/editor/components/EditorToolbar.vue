@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import BaseButton from '@/components/BaseButton.vue';
+
 defineProps<{
   imageUrl: string;
 }>();
@@ -40,24 +42,24 @@ const handleFileChange = (event: Event) => {
 
     <div class="mb-8">
       <h3 class="text-dark-text mt-0 mb-4 text-base">リサイズ</h3>
-      <button
-        class="bg-primary hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center font-semibold text-white transition-colors duration-200 disabled:cursor-not-allowed"
-        @click="emit('resizeImage')"
+      <BaseButton
+        variant="primary"
         :disabled="!imageUrl"
+        @click="emit('resizeImage')"
       >
         max-width: 840pxにリサイズ
-      </button>
+      </BaseButton>
     </div>
 
     <div class="mb-8">
       <h3 class="text-dark-text mt-0 mb-4 text-base">図形</h3>
-      <button
-        class="bg-dark-border disabled:bg-dark-elevated disabled:text-dark-muted mb-2 block w-full cursor-pointer rounded border-none px-4 py-2 text-center text-white transition-colors duration-200 hover:bg-[#4d4d4d] disabled:cursor-not-allowed"
-        @click="emit('addRectangle')"
+      <BaseButton
+        variant="secondary"
         :disabled="!imageUrl"
+        @click="emit('addRectangle')"
       >
         矩形を追加
-      </button>
+      </BaseButton>
     </div>
   </aside>
 </template>

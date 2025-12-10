@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
+import BaseButton from '@/components/BaseButton.vue';
 import type { RectShape } from '../types';
 
 const props = defineProps<{
@@ -31,13 +32,14 @@ const layerNameInput = ref<HTMLInputElement | null>(null);
   >
     <div class="mb-4 flex items-center justify-between">
       <h3 class="text-dark-text m-0 text-base">レイヤー</h3>
-      <button
-        @click="emit('addRectangle')"
+      <BaseButton
+        variant="primary"
         :disabled="!imageUrl"
-        class="bg-primary hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted mb-2 block w-full cursor-pointer rounded border-none px-3 px-4 py-1 py-2 text-center text-xl leading-none font-semibold text-white transition-colors duration-200 disabled:cursor-not-allowed"
+        @click="emit('addRectangle')"
+        class="text-xl leading-none"
       >
         +
-      </button>
+      </BaseButton>
     </div>
 
     <div class="flex flex-col gap-1">
@@ -92,29 +94,30 @@ const layerNameInput = ref<HTMLInputElement | null>(null);
           <div
             class="flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
           >
-            <button
-              @click.stop="emit('moveLayerUp', r.id)"
+            <BaseButton
+              variant="icon"
               :disabled="rects[rects.length - 1].id === r.id"
-              class="bg-dark-border cursor-pointer rounded-sm border-none px-2 py-1 text-xs text-white transition-colors duration-200 hover:bg-[#4d4d4d] disabled:cursor-not-allowed disabled:opacity-30"
+              @click.stop="emit('moveLayerUp', r.id)"
               title="前面へ"
             >
               ↑
-            </button>
-            <button
-              @click.stop="emit('moveLayerDown', r.id)"
+            </BaseButton>
+            <BaseButton
+              variant="icon"
               :disabled="rects[0].id === r.id"
-              class="bg-dark-border cursor-pointer rounded-sm border-none px-2 py-1 text-xs text-white transition-colors duration-200 hover:bg-[#4d4d4d] disabled:cursor-not-allowed disabled:opacity-30"
+              @click.stop="emit('moveLayerDown', r.id)"
               title="背面へ"
             >
               ↓
-            </button>
-            <button
+            </BaseButton>
+            <BaseButton
+              variant="icon"
+              danger
               @click.stop="emit('deleteLayer', r.id)"
-              class="bg-dark-border text-danger hover:bg-danger cursor-pointer rounded-sm border-none px-2 py-1 text-xs transition-colors duration-200 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
               title="削除"
             >
               ×
-            </button>
+            </BaseButton>
           </div>
         </div>
       </div>
