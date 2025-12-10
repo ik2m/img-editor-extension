@@ -59,6 +59,20 @@ const emit = defineEmits<{
         @cancel-edit="emit('cancelEditName')"
         @update-editing-name="emit('updateEditingName', $event)"
       />
+
+      <!-- 画像レイヤー（表示のみ） -->
+      <div
+        v-if="imageUrl"
+        class="bg-dark-bg border-dark-border cursor-default rounded border p-2 opacity-60"
+      >
+        <div class="flex items-center gap-2">
+          <div
+            class="border-dark-border h-5 w-5 flex-shrink-0 rounded-sm border bg-white"
+          ></div>
+          <span class="text-dark-text flex-1 text-sm">画像</span>
+          <div class="text-dark-muted text-xs">🔒</div>
+        </div>
+      </div>
     </div>
   </aside>
 </template>
