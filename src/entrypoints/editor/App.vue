@@ -207,6 +207,6 @@ const handleCopyImage = async () => {
       @change="handleFileChange"
     />
 
-    <Toaster position="bottom-right" />
+    <Toaster position="top-center" />
   </div>
 </template>
