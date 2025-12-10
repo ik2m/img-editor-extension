@@ -40,11 +40,11 @@ const layerColor = computed(() => {
 <template>
   <div
     :class="[
-      'bg-dark-bg group rounded border p-2 transition-all duration-200',
+      'group rounded border p-2 transition-all duration-150',
       selected
-        ? 'bg-dark-elevated border-primary'
-        : 'border-dark-border hover:bg-dark-elevated',
-      isBeingDragged ? 'opacity-50' : 'opacity-100',
+        ? 'bg-dark-elevated border-primary shadow-sm'
+        : 'bg-dark-bg border-dark-border hover:bg-dark-elevated hover:border-[#4d4d4d]',
+      isBeingDragged ? 'opacity-40 scale-95' : 'opacity-100 scale-100',
       'cursor-move',
     ]"
     draggable="true"
@@ -56,12 +56,12 @@ const layerColor = computed(() => {
   >
     <div class="flex items-center gap-2">
       <div
-        class="border-dark-border h-5 w-5 flex-shrink-0 rounded-sm border"
+        class="border-dark-border h-4 w-4 flex-shrink-0 rounded-sm border"
         :style="{ backgroundColor: layerColor }"
       ></div>
 
       <span
-        class="flex-1 overflow-hidden text-sm text-ellipsis whitespace-nowrap text-white"
+        class="flex-1 overflow-hidden text-xs text-ellipsis whitespace-nowrap text-white"
       >
         {{ layer.name }}
       </span>
