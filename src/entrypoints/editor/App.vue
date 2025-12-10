@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Toaster } from 'vue-sonner';
 import type Konva from 'konva';
 import EditorHeader from './components/EditorHeader.vue';
@@ -7,6 +7,7 @@ import EditorToolbar from './components/EditorToolbar.vue';
 import EditorCanvas from './components/EditorCanvas.vue';
 import LayerPanel from './components/LayerPanel.vue';
 import ImageSourceModal from './components/ImageSourceModal.vue';
+import TextInputModal from './components/TextInputModal.vue';
 import { useShapeNameCounters } from './composables/useShapeNameCounters';
 import { useLayerManagement } from './composables/useLayerManagement';
 import { useImageManagement } from './composables/useImageManagement';
@@ -80,6 +81,17 @@ const handleFileChange = (event: Event) => {
 const handleOpenClipboard = () => {
   image.loadImageFromClipboard();
 };
+
+// Text input modal
+const isTextInputModalOpen = computed(() => text.pendingTextPosition.value !== null);
+
+const handleTextSubmit = (inputText: string) => {
+  text.finishAddText(inputText);
+};
+
+const handleTextCancel = () => {
+  text.cancelAddText();
+};
 </script>
 
 <template>
@@ -117,7 +129,7 @@ const handleOpenClipboard = () => {
         @start-drawing="drawing.startDrawing"
         @continue-drawing="drawing.continueDrawing"
         @finish-drawing="drawing.finishDrawing"
-        @add-text="text.addText"
+        @add-text="text.startAddText"
       />
 
       <LayerPanel
@@ -138,6 +150,12 @@ const handleOpenClipboard = () => {
       @close="closeImageSourceModal"
       @open-file="handleOpenFile"
       @open-clipboard="handleOpenClipboard"
+    />
+
+    <TextInputModal
+      :is-open="isTextInputModalOpen"
+      @close="handleTextCancel"
+      @submit="handleTextSubmit"
     />
 
     <input
