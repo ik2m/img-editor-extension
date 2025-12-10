@@ -1,0 +1,27 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+
+# Build outputs
+.output
+.wxt
+dist
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Other
+CLAUDE.md

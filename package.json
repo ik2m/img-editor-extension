@@ -12,20 +12,26 @@
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
     "compile": "vue-tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,vue,js,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,vue,js,json,css,md}\"",
     "postinstall": "wxt prepare",
-    "preinstall": "npx only-allow pnpm",
-    "format": "prettier --write ."
+    "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
+    "@vueuse/core": "^14.1.0",
     "fabric": "^6.7.1",
     "konva": "^10.0.8",
     "vue": "^3.5.21",
-    "vue-konva": "^3.2.6"
+    "vue-konva": "^3.2.6",
+    "vue-sonner": "^2.0.9"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.17",
     "@types/fabric": "^5.3.10",
     "@wxt-dev/module-vue": "^1.0.2",
-    "prettier": "3.6.2",
+    "prettier": "^3.7.4",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "tailwindcss": "^4.1.17",
     "typescript": "^5.9.2",
     "vue-tsc": "^3.0.6",
     "wxt": "^0.20.6"
