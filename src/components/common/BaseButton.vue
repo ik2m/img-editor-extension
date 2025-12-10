@@ -21,7 +21,7 @@ const colorCls = computed(() => {
     primary:
       'bg-primary hover:bg-primary-hover disabled:bg-dark-elevated disabled:text-dark-muted font-semibold',
     tertiary: 'bg-dark-border hover:bg-[#4d4d4d] disabled:opacity-30',
-    danger: 'bg-danger hover:bg-danger-hover text-white disabled:opacity-30',
+    danger: 'bg-danger hover:bg-danger-hover disabled:opacity-30',
   };
   return map[props.color];
 });
@@ -39,7 +39,7 @@ const sizeCls = computed(() => {
   <button
     :type="type"
     :disabled="disabled"
-    class="block w-full cursor-pointer rounded border-none text-white transition-colors duration-200 disabled:cursor-not-allowed"
+    class="block w-full cursor-pointer rounded text-white transition-colors duration-200 disabled:cursor-not-allowed"
     :class="[colorCls, sizeCls]"
   >
     <slot />
