@@ -42,6 +42,11 @@ export function useLayerManagement() {
     }
   };
 
+  const reorderLayers = (fromIndex: number, toIndex: number) => {
+    const [removed] = shapes.value.splice(fromIndex, 1);
+    shapes.value.splice(toIndex, 0, removed);
+  };
+
   return {
     shapes,
     selectedShapeId,
@@ -49,5 +54,6 @@ export function useLayerManagement() {
     moveLayerUp,
     moveLayerDown,
     deleteLayer,
+    reorderLayers,
   };
 }

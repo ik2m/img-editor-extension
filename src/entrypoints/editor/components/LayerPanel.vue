@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { ref } from 'vue';
 import BaseButton from '@/components/BaseButton.vue';
 import LayerItem from './LayerItem.vue';
 import type { Shape } from '../types';
@@ -15,7 +16,29 @@ const emit = defineEmits<{
   moveLayerUp: [id: string];
   moveLayerDown: [id: string];
   deleteLayer: [id: string];
+  reorderLayers: [fromIndex: number, toIndex: number];
 }>();
+
+const draggedIndex = ref<number | null>(null);
+
+const handleDragStart = (index: number) => {
+  draggedIndex.value = index;
+};
+
+const handleDragOver = (event: DragEvent, index: number) => {
+  event.preventDefault();
+  if (draggedIndex.value === null || draggedIndex.value === index) return;
+};
+
+const handleDrop = (index: number) => {
+  if (draggedIndex.value === null || draggedIndex.value === index) return;
+  emit('reorderLayers', draggedIndex.value, index);
+  draggedIndex.value = null;
+};
+
+const handleDragEnd = () => {
+  draggedIndex.value = null;
+};
 </script>
 
 <template>
@@ -36,16 +59,21 @@ const emit = defineEmits<{
       </div>
 
       <LayerItem
-        v-for="s in [...shapes].reverse()"
+        v-for="(s, reversedIndex) in [...shapes].reverse()"
         :key="s.id"
         :layer="s"
         :selected="selectedShapeId === s.id"
         :is-first="shapes[0].id === s.id"
         :is-last="shapes[shapes.length - 1].id === s.id"
+        :is-being-dragged="draggedIndex === shapes.length - 1 - reversedIndex"
         @select="emit('selectLayer', $event)"
         @move-up="emit('moveLayerUp', $event)"
         @move-down="emit('moveLayerDown', $event)"
         @delete="emit('deleteLayer', $event)"
+        @drag-start="handleDragStart(shapes.length - 1 - reversedIndex)"
+        @drag-over="handleDragOver($event, shapes.length - 1 - reversedIndex)"
+        @drop="handleDrop(shapes.length - 1 - reversedIndex)"
+        @drag-end="handleDragEnd"
       />
 
       <!-- 画像レイヤー（表示のみ） -->

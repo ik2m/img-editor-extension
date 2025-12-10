@@ -100,6 +100,7 @@ const handleStageClick = (targetId: string) => {
         @move-layer-up="layers.moveLayerUp"
         @move-layer-down="layers.moveLayerDown"
         @delete-layer="layers.deleteLayer"
+        @reorder-layers="layers.reorderLayers"
       />
     </div>
     <Toaster position="bottom-right" />

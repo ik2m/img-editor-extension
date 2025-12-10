@@ -9,6 +9,7 @@ const props = defineProps<{
   selected: boolean;
   isFirst: boolean;
   isLast: boolean;
+  isBeingDragged: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -16,6 +17,10 @@ const emit = defineEmits<{
   moveUp: [id: string];
   moveDown: [id: string];
   delete: [id: string];
+  dragStart: [];
+  dragOver: [event: DragEvent];
+  drop: [];
+  dragEnd: [];
 }>();
 
 const layerColor = computed(() => {
@@ -35,12 +40,19 @@ const layerColor = computed(() => {
 <template>
   <div
     :class="[
-      'bg-dark-bg group cursor-pointer rounded border p-2 transition-all duration-200',
+      'bg-dark-bg group rounded border p-2 transition-all duration-200',
       selected
         ? 'bg-dark-elevated border-primary'
         : 'border-dark-border hover:bg-dark-elevated',
+      isBeingDragged ? 'opacity-50' : 'opacity-100',
+      'cursor-move',
     ]"
+    draggable="true"
     @click="emit('select', layer.id)"
+    @dragstart="emit('dragStart')"
+    @dragover="emit('dragOver', $event)"
+    @drop="emit('drop')"
+    @dragend="emit('dragEnd')"
   >
     <div class="flex items-center gap-2">
       <div
