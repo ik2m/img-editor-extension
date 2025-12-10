@@ -4,6 +4,7 @@ import BaseSection from '@/components/BaseSection.vue';
 
 defineProps<{
   imageUrl: string;
+  drawingMode: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -11,6 +12,7 @@ const emit = defineEmits<{
   resizeImage: [];
   addRectangle: [];
   addArrow: [];
+  toggleDrawingMode: [];
 }>();
 
 const handleFileChange = (event: Event) => {
@@ -65,6 +67,13 @@ const handleFileChange = (event: Event) => {
         @click="emit('addArrow')"
       >
         矢印を追加
+      </BaseButton>
+      <BaseButton
+        :variant="drawingMode ? 'primary' : 'secondary'"
+        :disabled="!imageUrl"
+        @click="emit('toggleDrawingMode')"
+      >
+        {{ drawingMode ? '描画中...' : 'ペンツール' }}
       </BaseButton>
     </BaseSection>
   </aside>

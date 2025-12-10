@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import BaseButton from '@/components/BaseButton.vue';
 import type { Shape } from '../types';
-import { isRectShape, isArrowShape } from '../types';
+import { isRectShape, isArrowShape, isDrawingShape } from '../types';
 
 const props = defineProps<{
   layer: Shape;
@@ -28,6 +28,8 @@ const layerColor = computed(() => {
   if (isRectShape(props.layer)) {
     return props.layer.fill;
   } else if (isArrowShape(props.layer)) {
+    return props.layer.stroke;
+  } else if (isDrawingShape(props.layer)) {
     return props.layer.stroke;
   }
   return '#000000';

@@ -5,8 +5,8 @@ import EditorHeader from './components/EditorHeader.vue';
 import EditorToolbar from './components/EditorToolbar.vue';
 import EditorCanvas from './components/EditorCanvas.vue';
 import LayerPanel from './components/LayerPanel.vue';
-import type { RectShape, ArrowShape, Shape } from './types';
-import { isRectShape, isArrowShape } from './types';
+import type { RectShape, ArrowShape, DrawingShape, Shape } from './types';
+import { isRectShape, isArrowShape, isDrawingShape } from './types';
 
 // 全ての状態変数をそのまま保持
 const imageUrl = ref<string>('');
@@ -19,13 +19,17 @@ const shapes = ref<Shape[]>([]);
 const selectedShapeId = ref('');
 const rectCounter = ref(1);
 const arrowCounter = ref(1);
+const drawingCounter = ref(1);
 const editingLayerId = ref<string>('');
 const editingLayerName = ref<string>('');
 const layerNameInput = ref<HTMLInputElement | null>(null);
+const drawingMode = ref<boolean>(false);
+const currentDrawing = ref<DrawingShape | null>(null);
 
 // 全ての関数をそのまま保持
 const getNextRectName = () => `矩形 ${rectCounter.value++}`;
 const getNextArrowName = () => `矢印 ${arrowCounter.value++}`;
+const getNextDrawingName = () => `お絵描き ${drawingCounter.value++}`;
 
 const handleTransformEnd = (e: any) => {
   const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
@@ -39,6 +43,10 @@ const handleTransformEnd = (e: any) => {
     const node = e.target;
     const newPoints = node.points();
     shape.points = newPoints as [number, number, number, number];
+  } else if (isDrawingShape(shape)) {
+    const node = e.target;
+    const newPoints = node.points();
+    shape.points = newPoints;
   }
 };
 
@@ -66,6 +74,7 @@ const loadImageToStage = (url: string) => {
     shapes.value = [];
     rectCounter.value = 1;
     arrowCounter.value = 1;
+    drawingCounter.value = 1;
   };
   img.src = url;
 };
@@ -185,6 +194,47 @@ const addArrow = () => {
   shapes.value.push(arrow);
   selectLayer(arrow.id);
 };
+
+const toggleDrawingMode = () => {
+  drawingMode.value = !drawingMode.value;
+  if (!drawingMode.value) {
+    currentDrawing.value = null;
+  }
+};
+
+const startDrawing = (pos: { x: number; y: number }) => {
+  if (!drawingMode.value) return;
+  const drawing: DrawingShape = {
+    id: `drawing-${Date.now()}`,
+    name: getNextDrawingName(),
+    points: [pos.x / layerScale.value.x, pos.y / layerScale.value.y],
+    stroke: '#000000',
+    strokeWidth: 2,
+    tension: 0.5,
+    lineCap: 'round',
+    lineJoin: 'round',
+    draggable: true,
+  };
+  currentDrawing.value = drawing;
+};
+
+const continueDrawing = (pos: { x: number; y: number }) => {
+  if (!currentDrawing.value) return;
+  currentDrawing.value.points.push(
+    pos.x / layerScale.value.x,
+    pos.y / layerScale.value.y
+  );
+};
+
+const finishDrawing = () => {
+  if (!currentDrawing.value) return;
+  if (currentDrawing.value.points.length >= 4) {
+    shapes.value.push(currentDrawing.value);
+    selectLayer(currentDrawing.value.id);
+  }
+  currentDrawing.value = null;
+  drawingMode.value = false;
+};
 </script>
 
 <template>
@@ -194,10 +244,12 @@ const addArrow = () => {
     <div class="flex flex-1 overflow-hidden">
       <EditorToolbar
         :image-url="imageUrl"
+        :drawing-mode="drawingMode"
         @upload-image="handleImageUpload"
         @resize-image="resizeToMaxWidth840"
         @add-rectangle="addRectangle"
         @add-arrow="addArrow"
+        @toggle-drawing-mode="toggleDrawingMode"
       />
 
       <EditorCanvas
@@ -208,8 +260,13 @@ const addArrow = () => {
         :shapes="shapes"
         :selected-shape-id="selectedShapeId"
         :original-image="originalImage"
+        :drawing-mode="drawingMode"
+        :current-drawing="currentDrawing"
         @transform-end="handleTransformEnd"
         @stage-click="handleStageClick"
+        @start-drawing="startDrawing"
+        @continue-drawing="continueDrawing"
+        @finish-drawing="finishDrawing"
       />
 
       <LayerPanel

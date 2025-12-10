@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import Konva from 'konva';
-import type { Shape } from '../types';
-import { isRectShape, isArrowShape } from '../types';
+import type { Shape, DrawingShape } from '../types';
+import { isRectShape, isArrowShape, isDrawingShape } from '../types';
 
 const props = defineProps<{
   imageElement: HTMLImageElement | null;
@@ -12,11 +12,16 @@ const props = defineProps<{
   shapes: Shape[];
   selectedShapeId: string;
   originalImage: HTMLImageElement | null;
+  drawingMode: boolean;
+  currentDrawing: DrawingShape | null;
 }>();
 
 const emit = defineEmits<{
   transformEnd: [e: any];
   stageClick: [targetId: string];
+  startDrawing: [pos: { x: number; y: number }];
+  continueDrawing: [pos: { x: number; y: number }];
+  finishDrawing: [];
 }>();
 
 const transformer = ref<{ getNode(): Konva.Transformer } | null>(null);
@@ -43,6 +48,15 @@ const updateTransformer = () => {
 };
 
 const handleStageMouseDown = (e: any) => {
+  // 描画モードの場合
+  if (props.drawingMode) {
+    const stage = e.target.getStage();
+    const pos = stage.getPointerPosition();
+    emit('startDrawing', { x: pos.x, y: pos.y });
+    return;
+  }
+
+  // 通常モード（選択モード）
   if (e.target === e.target.getStage()) {
     emit('stageClick', '');
     return;
@@ -56,6 +70,18 @@ const handleStageMouseDown = (e: any) => {
   const name = e.target.name();
   const shape = props.shapes.find((s) => s.id === name);
   emit('stageClick', shape ? name : '');
+};
+
+const handleStageMouseMove = (e: any) => {
+  if (!props.currentDrawing) return;
+  const stage = e.target.getStage();
+  const pos = stage.getPointerPosition();
+  emit('continueDrawing', { x: pos.x, y: pos.y });
+};
+
+const handleStageMouseUp = () => {
+  if (!props.currentDrawing) return;
+  emit('finishDrawing');
 };
 
 // selectedShapeIdが変わったらtransformerを更新
@@ -78,8 +104,13 @@ onMounted(() => {
     <v-stage
       v-if="imageElement"
       :config="{ width: stageWidth, height: stageHeight }"
-      class="shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
+      :class="[
+        'shadow-[0_4px_20px_rgba(0,0,0,0.5)]',
+        drawingMode ? 'cursor-crosshair' : '',
+      ]"
       @mousedown="handleStageMouseDown"
+      @mousemove="handleStageMouseMove"
+      @mouseup="handleStageMouseUp"
       @touchstart="handleStageMouseDown"
     >
       <v-layer :config="{ scaleX: layerScale.x, scaleY: layerScale.y }">
@@ -130,7 +161,34 @@ onMounted(() => {
             }"
             @transformend="(e: any) => emit('transformEnd', e)"
           />
+          <v-line
+            v-else-if="isDrawingShape(shape)"
+            :config="{
+              name: shape.id,
+              points: shape.points,
+              stroke: shape.stroke,
+              strokeWidth: shape.strokeWidth,
+              tension: shape.tension,
+              lineCap: shape.lineCap,
+              lineJoin: shape.lineJoin,
+              draggable: shape.draggable,
+            }"
+            @transformend="(e: any) => emit('transformEnd', e)"
+          />
         </template>
+        <!-- 描画中の一時表示 -->
+        <v-line
+          v-if="currentDrawing"
+          :config="{
+            points: currentDrawing.points,
+            stroke: currentDrawing.stroke,
+            strokeWidth: currentDrawing.strokeWidth,
+            tension: currentDrawing.tension,
+            lineCap: currentDrawing.lineCap,
+            lineJoin: currentDrawing.lineJoin,
+            listening: false,
+          }"
+        />
         <v-transformer ref="transformer" />
       </v-layer>
     </v-stage>
