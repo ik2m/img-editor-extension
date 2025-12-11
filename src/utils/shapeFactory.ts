@@ -67,8 +67,8 @@ export function createText(
   name: string,
   text: string,
   color: string,
-  centerX: number,
-  centerY: number
+  x = 100,
+  y = 100
 ): TextShape {
   const fontSize = 24;
   // テキストの幅を推定（日本語の場合、フォントサイズとほぼ同じ幅）
@@ -77,8 +77,8 @@ export function createText(
   return {
     id: `text-${Date.now()}`,
     name,
-    x: centerX,
-    y: centerY,
+    x,
+    y,
     text,
     fontSize,
     fontFamily: 'Noto Sans JP',
