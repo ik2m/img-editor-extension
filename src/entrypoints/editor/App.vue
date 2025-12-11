@@ -15,7 +15,7 @@ import { useImageManagement } from '@/composables/editor/useImageManagement';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
 import { useSettings } from '@/composables/editor/useSettings';
-import useLayerStore from '@/stores/layerStore';
+import useLayerStore from '@/stores/useLayerStore';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
