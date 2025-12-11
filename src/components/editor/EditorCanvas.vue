@@ -25,6 +25,8 @@ const emit = defineEmits<{
   updateArrowPoint: [shapeId: string, pointIndex: number, x: number, y: number];
   updateRectCorner: [shapeId: string, corner: string, x: number, y: number];
   updateTextPosition: [shapeId: string, x: number, y: number];
+  updateRectPosition: [shapeId: string, x: number, y: number];
+  updateArrowPosition: [shapeId: string, deltaX: number, deltaY: number];
 }>();
 
 const transformer = ref<{ getNode(): Konva.Transformer } | null>(null);
@@ -99,6 +101,50 @@ const handleTextHandleDragMove = (e: any, shapeId: string) => {
   const pos = e.target.position();
   // offsetを使っているので、posがそのままテキストの中心座標
   emit('updateTextPosition', shapeId, pos.x, pos.y);
+};
+
+// 矩形移動ハンドラのドラッグ処理
+const rectMoveHandleStartPos = ref<{ x: number; y: number } | null>(null);
+
+const handleRectMoveHandleMouseDown = (e: any, shapeId: string) => {
+  e.cancelBubble = true;
+  const pos = e.target.position();
+  rectMoveHandleStartPos.value = { x: pos.x, y: pos.y };
+};
+
+const handleRectMoveHandleDragMove = (e: any, shapeId: string) => {
+  if (!rectMoveHandleStartPos.value) return;
+  const pos = e.target.position();
+  const shape = props.shapes.find((s) => s.id === shapeId);
+  if (!shape || !isRectShape(shape)) return;
+
+  // ハンドルは中央にあるので、矩形の左上座標を計算
+  const rectX = pos.x - shape.width / 2;
+  const rectY = pos.y - shape.height / 2;
+  emit('updateRectPosition', shapeId, rectX, rectY);
+};
+
+// 矢印移動ハンドラのドラッグ処理
+const arrowMoveHandleStartPos = ref<{ x: number; y: number } | null>(null);
+
+const handleArrowMoveHandleMouseDown = (e: any, shapeId: string) => {
+  e.cancelBubble = true;
+  const pos = e.target.position();
+  arrowMoveHandleStartPos.value = { x: pos.x, y: pos.y };
+};
+
+const handleArrowMoveHandleDragMove = (e: any, shapeId: string) => {
+  if (!arrowMoveHandleStartPos.value) return;
+  const pos = e.target.position();
+
+  // 移動量を計算
+  const deltaX = pos.x - arrowMoveHandleStartPos.value.x;
+  const deltaY = pos.y - arrowMoveHandleStartPos.value.y;
+
+  emit('updateArrowPosition', shapeId, deltaX, deltaY);
+
+  // 次のドラッグのために現在位置を保存
+  arrowMoveHandleStartPos.value = { x: pos.x, y: pos.y };
 };
 
 // ハンドラがクリックされたとき、ステージクリックイベントを防ぐ
@@ -324,6 +370,19 @@ defineExpose({
             @mousedown="handleHandleMouseDown"
             @dragmove="(e: any) => handleRectHandleDragMove(e, selectedRect.id, 'br')"
           />
+          <!-- 中央（移動用） -->
+          <v-circle
+            :config="{
+              name: `${selectedRect.id}-handle-move`,
+              x: selectedRect.x + selectedRect.width / 2,
+              y: selectedRect.y + selectedRect.height / 2,
+              radius: 12,
+              fill: 'rgba(255, 255, 255, 0.6)',
+              draggable: true,
+            }"
+            @mousedown="(e: any) => handleRectMoveHandleMouseDown(e, selectedRect.id)"
+            @dragmove="(e: any) => handleRectMoveHandleDragMove(e, selectedRect.id)"
+          />
         </template>
         <!-- 矢印の始点・終点ハンドラ -->
         <template v-if="selectedArrow">
@@ -350,6 +409,19 @@ defineExpose({
             }"
             @mousedown="handleHandleMouseDown"
             @dragmove="(e: any) => handleArrowHandleDragMove(e, selectedArrow.id, 2)"
+          />
+          <!-- 中央（移動用） -->
+          <v-circle
+            :config="{
+              name: `${selectedArrow.id}-handle-move`,
+              x: (selectedArrow.points[0] + selectedArrow.points[2]) / 2,
+              y: (selectedArrow.points[1] + selectedArrow.points[3]) / 2,
+              radius: 12,
+              fill: 'rgba(255, 255, 255, 0.6)',
+              draggable: true,
+            }"
+            @mousedown="(e: any) => handleArrowMoveHandleMouseDown(e, selectedArrow.id)"
+            @dragmove="(e: any) => handleArrowMoveHandleDragMove(e, selectedArrow.id)"
           />
         </template>
         <!-- テキストの移動ハンドラ -->

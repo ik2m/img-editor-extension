@@ -18,12 +18,12 @@ export function useRectangleShape(
   const addRectangle = () => {
     if (!imageElement.value) return;
 
-    // 選択された色から透明度付きのfillを作成
+    // 選択された色から半透明の線の色を作成
     const color = selectedColor.value;
     const r = parseInt(color.slice(1, 3), 16);
     const g = parseInt(color.slice(3, 5), 16);
     const b = parseInt(color.slice(5, 7), 16);
-    const fillColor = `rgba(${r}, ${g}, ${b}, 0.3)`;
+    const strokeColor = `rgba(${r}, ${g}, ${b}, 0.7)`;
 
     const rect: RectShape = {
       id: `rect-${Date.now()}`,
@@ -32,10 +32,10 @@ export function useRectangleShape(
       y: 100,
       width: 200,
       height: 150,
-      fill: fillColor,
-      stroke: color,
-      strokeWidth: 3,
-      cornerRadius: 10,
+      fill: 'transparent',
+      stroke: strokeColor,
+      strokeWidth: 8,
+      cornerRadius: 2,
       draggable: true,
     };
     shapes.value.push(rect);

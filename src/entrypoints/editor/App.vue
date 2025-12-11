@@ -219,6 +219,44 @@ const handleUpdateTextPosition = (shapeId: string, x: number, y: number) => {
   ];
 };
 
+const handleUpdateRectPosition = (shapeId: string, x: number, y: number) => {
+  const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
+  if (shapeIndex === -1) return;
+
+  const shape = layers.shapes.value[shapeIndex];
+  if (!('width' in shape && 'height' in shape)) return;
+
+  // 配列全体を更新してリアクティビティをトリガー
+  layers.shapes.value = [
+    ...layers.shapes.value.slice(0, shapeIndex),
+    { ...shape, x, y },
+    ...layers.shapes.value.slice(shapeIndex + 1),
+  ];
+};
+
+const handleUpdateArrowPosition = (shapeId: string, deltaX: number, deltaY: number) => {
+  const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
+  if (shapeIndex === -1) return;
+
+  const shape = layers.shapes.value[shapeIndex];
+  if (!('points' in shape)) return;
+
+  // 始点と終点を移動量分だけ移動
+  const newPoints: [number, number, number, number] = [
+    shape.points[0] + deltaX,
+    shape.points[1] + deltaY,
+    shape.points[2] + deltaX,
+    shape.points[3] + deltaY,
+  ];
+
+  // 配列全体を更新してリアクティビティをトリガー
+  layers.shapes.value = [
+    ...layers.shapes.value.slice(0, shapeIndex),
+    { ...shape, points: newPoints },
+    ...layers.shapes.value.slice(shapeIndex + 1),
+  ];
+};
+
 const handleSaveImage = () => {
   const stage = canvasRef.value?.getStage();
   if (!stage) return;
@@ -300,6 +338,8 @@ const handleCopyImage = async () => {
         @update-arrow-point="handleUpdateArrowPoint"
         @update-rect-corner="handleUpdateRectCorner"
         @update-text-position="handleUpdateTextPosition"
+        @update-rect-position="handleUpdateRectPosition"
+        @update-arrow-position="handleUpdateArrowPosition"
       />
 
       <LayerPanel
