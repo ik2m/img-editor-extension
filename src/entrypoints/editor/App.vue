@@ -11,21 +11,17 @@ import InfoPanel from '@/components/editor/InfoPanel.vue';
 import TextInputModal from '@/components/editor/TextInputModal.vue';
 import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
 import { useShapeNameCounters } from '@/composables/editor/useShapeNameCounters';
-import { useShapeColor } from '@/composables/editor/useShapeColor';
 import useLayerStore from '@/stores/useLayerStore';
 import useImageStore from '@/stores/useImageStore';
 import useSettingsStore from '@/stores/useSettingsStore';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
-// Settings
-const { targetWidth, setTargetWidth } = useSettingsStore();
-
 // Composables
 const { getNextRectName, getNextArrowName, getNextTextName, resetCounters } =
   useShapeNameCounters();
 
-// Pinia store
+// Pinia stores
 const { shapes, selectLayer } = useLayerStore();
 
 const {
@@ -38,7 +34,8 @@ const {
   applyTargetWidth,
 } = useImageStore();
 
-const { rectangleColor, arrowColor, textColor } = useShapeColor();
+const { rectangleColor, arrowColor, textColor, targetWidth, setTargetWidth } =
+  useSettingsStore();
 
 const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);

@@ -6,7 +6,6 @@ import ColorPicker from './ColorPicker.vue';
 import SizeSelector from './SizeSelector.vue';
 import useImageStore from '@/stores/useImageStore';
 import useSettingsStore from '@/stores/useSettingsStore';
-import { useShapeColor } from '@/composables/editor/useShapeColor';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 
 const emit = defineEmits<{
@@ -20,10 +19,17 @@ const emit = defineEmits<{
 
 // Stores and composables
 const { imageUrl } = useImageStore();
-const { rectangleColor, arrowColor, textColor, setRectangleColor, setArrowColor, setTextColor } =
-  useShapeColor();
+const {
+  rectangleColor,
+  arrowColor,
+  textColor,
+  targetWidth,
+  setRectangleColor,
+  setArrowColor,
+  setTextColor,
+  setTargetWidth,
+} = useSettingsStore();
 const { drawingMode, toggleDrawingMode } = useDrawingMode();
-const { targetWidth, setTargetWidth } = useSettingsStore();
 
 const targetWidthModel = computed({
   get: () => targetWidth.value,
