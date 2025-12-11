@@ -137,6 +137,58 @@ const handleUpdateArrowPoint = (
   ];
 };
 
+const handleUpdateRectCorner = (
+  shapeId: string,
+  corner: string,
+  x: number,
+  y: number
+) => {
+  const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
+  if (shapeIndex === -1) return;
+
+  const shape = layers.shapes.value[shapeIndex];
+  if (!('width' in shape && 'height' in shape)) return;
+
+  let newX = shape.x;
+  let newY = shape.y;
+  let newWidth = shape.width;
+  let newHeight = shape.height;
+
+  switch (corner) {
+    case 'tl': // 左上
+      newWidth = shape.x + shape.width - x;
+      newHeight = shape.y + shape.height - y;
+      newX = x;
+      newY = y;
+      break;
+    case 'tr': // 右上
+      newWidth = x - shape.x;
+      newHeight = shape.y + shape.height - y;
+      newY = y;
+      break;
+    case 'bl': // 左下
+      newWidth = shape.x + shape.width - x;
+      newHeight = y - shape.y;
+      newX = x;
+      break;
+    case 'br': // 右下
+      newWidth = x - shape.x;
+      newHeight = y - shape.y;
+      break;
+  }
+
+  // 最小サイズを確保
+  if (newWidth < 10) newWidth = 10;
+  if (newHeight < 10) newHeight = 10;
+
+  // 配列全体を更新してリアクティビティをトリガー
+  layers.shapes.value = [
+    ...layers.shapes.value.slice(0, shapeIndex),
+    { ...shape, x: newX, y: newY, width: newWidth, height: newHeight },
+    ...layers.shapes.value.slice(shapeIndex + 1),
+  ];
+};
+
 const handleSaveImage = () => {
   const stage = canvasRef.value?.getStage();
   if (!stage) return;
@@ -216,6 +268,7 @@ const handleCopyImage = async () => {
         @continue-drawing="drawing.continueDrawing"
         @finish-drawing="drawing.finishDrawing"
         @update-arrow-point="handleUpdateArrowPoint"
+        @update-rect-corner="handleUpdateRectCorner"
       />
 
       <LayerPanel

@@ -23,6 +23,7 @@ const emit = defineEmits<{
   continueDrawing: [pos: { x: number; y: number }];
   finishDrawing: [];
   updateArrowPoint: [shapeId: string, pointIndex: number, x: number, y: number];
+  updateRectCorner: [shapeId: string, corner: string, x: number, y: number];
 }>();
 
 const transformer = ref<{ getNode(): Konva.Transformer } | null>(null);
@@ -41,9 +42,9 @@ const updateTransformer = () => {
     return;
   }
 
-  // 矢印が選択されている場合はトランスフォーマーを無効化（カスタムハンドラを使用）
+  // 矢印または矩形が選択されている場合はトランスフォーマーを無効化（カスタムハンドラを使用）
   const selectedShape = props.shapes.find((s) => s.id === props.selectedShapeId);
-  if (selectedShape && isArrowShape(selectedShape)) {
+  if (selectedShape && (isArrowShape(selectedShape) || isRectShape(selectedShape))) {
     transformerNode.nodes([]);
     return;
   }
@@ -68,16 +69,26 @@ const selectedArrow = computed(() => {
   return shape && isArrowShape(shape) ? shape : null;
 });
 
+// 選択された矩形を取得
+const selectedRect = computed(() => {
+  const shape = props.shapes.find((s) => s.id === props.selectedShapeId);
+  return shape && isRectShape(shape) ? shape : null;
+});
+
 // 矢印ハンドラのドラッグ処理
 const handleArrowHandleDragMove = (e: any, shapeId: string, pointIndex: number) => {
   const pos = e.target.position();
-  // レイヤースケールの影響を考慮せずに、そのまま座標を使用
-  // （ハンドラはレイヤーの子要素なので、既にスケールされた座標系にいる）
   emit('updateArrowPoint', shapeId, pointIndex, pos.x, pos.y);
 };
 
+// 矩形ハンドラのドラッグ処理
+const handleRectHandleDragMove = (e: any, shapeId: string, corner: string) => {
+  const pos = e.target.position();
+  emit('updateRectCorner', shapeId, corner, pos.x, pos.y);
+};
+
 // ハンドラがクリックされたとき、ステージクリックイベントを防ぐ
-const handleArrowHandleMouseDown = (e: any) => {
+const handleHandleMouseDown = (e: any) => {
   e.cancelBubble = true;
 };
 
@@ -182,9 +193,8 @@ defineExpose({
               fill: shape.fill,
               stroke: shape.stroke,
               strokeWidth: shape.strokeWidth,
-              draggable: shape.draggable,
+              draggable: false,
             }"
-            @transformend="(e: any) => emit('transformEnd', e)"
           />
           <v-arrow
             v-else-if="isArrowShape(shape)"
@@ -244,6 +254,69 @@ defineExpose({
             listening: false,
           }"
         />
+        <!-- 矩形の4つの角ハンドラ -->
+        <template v-if="selectedRect">
+          <!-- 左上 -->
+          <v-circle
+            :config="{
+              name: `${selectedRect.id}-handle-tl`,
+              x: selectedRect.x,
+              y: selectedRect.y,
+              radius: 6,
+              fill: '#ffffff',
+              stroke: '#FF3333',
+              strokeWidth: 2,
+              draggable: true,
+            }"
+            @mousedown="handleHandleMouseDown"
+            @dragmove="(e: any) => handleRectHandleDragMove(e, selectedRect.id, 'tl')"
+          />
+          <!-- 右上 -->
+          <v-circle
+            :config="{
+              name: `${selectedRect.id}-handle-tr`,
+              x: selectedRect.x + selectedRect.width,
+              y: selectedRect.y,
+              radius: 6,
+              fill: '#ffffff',
+              stroke: '#FF3333',
+              strokeWidth: 2,
+              draggable: true,
+            }"
+            @mousedown="handleHandleMouseDown"
+            @dragmove="(e: any) => handleRectHandleDragMove(e, selectedRect.id, 'tr')"
+          />
+          <!-- 左下 -->
+          <v-circle
+            :config="{
+              name: `${selectedRect.id}-handle-bl`,
+              x: selectedRect.x,
+              y: selectedRect.y + selectedRect.height,
+              radius: 6,
+              fill: '#ffffff',
+              stroke: '#FF3333',
+              strokeWidth: 2,
+              draggable: true,
+            }"
+            @mousedown="handleHandleMouseDown"
+            @dragmove="(e: any) => handleRectHandleDragMove(e, selectedRect.id, 'bl')"
+          />
+          <!-- 右下 -->
+          <v-circle
+            :config="{
+              name: `${selectedRect.id}-handle-br`,
+              x: selectedRect.x + selectedRect.width,
+              y: selectedRect.y + selectedRect.height,
+              radius: 6,
+              fill: '#ffffff',
+              stroke: '#FF3333',
+              strokeWidth: 2,
+              draggable: true,
+            }"
+            @mousedown="handleHandleMouseDown"
+            @dragmove="(e: any) => handleRectHandleDragMove(e, selectedRect.id, 'br')"
+          />
+        </template>
         <!-- 矢印の始点・終点ハンドラ -->
         <template v-if="selectedArrow">
           <v-circle
@@ -257,7 +330,7 @@ defineExpose({
               strokeWidth: 2,
               draggable: true,
             }"
-            @mousedown="handleArrowHandleMouseDown"
+            @mousedown="handleHandleMouseDown"
             @dragmove="(e: any) => handleArrowHandleDragMove(e, selectedArrow.id, 0)"
           />
           <v-circle
@@ -271,7 +344,7 @@ defineExpose({
               strokeWidth: 2,
               draggable: true,
             }"
-            @mousedown="handleArrowHandleMouseDown"
+            @mousedown="handleHandleMouseDown"
             @dragmove="(e: any) => handleArrowHandleDragMove(e, selectedArrow.id, 2)"
           />
         </template>
