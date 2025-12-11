@@ -1,4 +1,5 @@
 export type RectShape = {
+  type: 'rect';
   id: string;
   name: string;
   x: number;
@@ -13,6 +14,7 @@ export type RectShape = {
 };
 
 export type ArrowShape = {
+  type: 'arrow';
   id: string;
   name: string;
   points: [number, number, number, number]; // [x1, y1, x2, y2]
@@ -31,6 +33,7 @@ export type DrawingLine = {
 };
 
 export type DrawingShape = {
+  type: 'drawing';
   id: string;
   name: string;
   lines: DrawingLine[];
@@ -41,6 +44,7 @@ export type DrawingShape = {
 };
 
 export type TextShape = {
+  type: 'text';
   id: string;
   name: string;
   x: number;
@@ -60,17 +64,17 @@ export type Shape = RectShape | ArrowShape | DrawingShape | TextShape;
 
 // 型ガード関数
 export function isRectShape(shape: Shape): shape is RectShape {
-  return 'width' in shape;
+  return shape.type === 'rect';
 }
 
 export function isArrowShape(shape: Shape): shape is ArrowShape {
-  return 'pointerLength' in shape;
+  return shape.type === 'arrow';
 }
 
 export function isDrawingShape(shape: Shape): shape is DrawingShape {
-  return 'lines' in shape;
+  return shape.type === 'drawing';
 }
 
 export function isTextShape(shape: Shape): shape is TextShape {
-  return 'fontSize' in shape && 'text' in shape;
+  return shape.type === 'text';
 }
