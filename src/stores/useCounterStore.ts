@@ -1,13 +1,16 @@
 import { ref } from 'vue';
+import { defineStore, storeToRefs } from 'pinia';
 
 /**
- * 図形名の自動採番を管理するcomposable
+ * 図形名の自動採番を管理するstore
  */
-export function useShapeNameCounters() {
+const useCounterStore = defineStore('counter', () => {
+  // State
   const rectCounter = ref(1);
   const arrowCounter = ref(1);
   const textCounter = ref(1);
 
+  // Actions
   const getNextRectName = () => `矩形 ${rectCounter.value++}`;
   const getNextArrowName = () => `矢印 ${arrowCounter.value++}`;
   const getNextTextName = () => `テキスト ${textCounter.value++}`;
@@ -27,4 +30,13 @@ export function useShapeNameCounters() {
     getNextTextName,
     resetCounters,
   };
-}
+});
+
+/**
+ * カウンターストアを使用する
+ * stateとactionsを分割代入可能な形で返す
+ */
+export default () => {
+  const store = useCounterStore();
+  return { ...store, ...storeToRefs(store) };
+};
