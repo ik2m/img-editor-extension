@@ -262,10 +262,10 @@ defineExpose({
               name: `${selectedRect.id}-handle-tl`,
               x: selectedRect.x,
               y: selectedRect.y,
-              radius: 6,
-              fill: '#ffffff',
+              radius: 10,
+              fill: 'rgba(255, 255, 255, 0.6)',
               stroke: '#FF3333',
-              strokeWidth: 2,
+              strokeWidth: 3,
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
@@ -277,10 +277,10 @@ defineExpose({
               name: `${selectedRect.id}-handle-tr`,
               x: selectedRect.x + selectedRect.width,
               y: selectedRect.y,
-              radius: 6,
-              fill: '#ffffff',
+              radius: 10,
+              fill: 'rgba(255, 255, 255, 0.6)',
               stroke: '#FF3333',
-              strokeWidth: 2,
+              strokeWidth: 3,
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
@@ -292,10 +292,10 @@ defineExpose({
               name: `${selectedRect.id}-handle-bl`,
               x: selectedRect.x,
               y: selectedRect.y + selectedRect.height,
-              radius: 6,
-              fill: '#ffffff',
+              radius: 10,
+              fill: 'rgba(255, 255, 255, 0.6)',
               stroke: '#FF3333',
-              strokeWidth: 2,
+              strokeWidth: 3,
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
@@ -307,10 +307,10 @@ defineExpose({
               name: `${selectedRect.id}-handle-br`,
               x: selectedRect.x + selectedRect.width,
               y: selectedRect.y + selectedRect.height,
-              radius: 6,
-              fill: '#ffffff',
+              radius: 10,
+              fill: 'rgba(255, 255, 255, 0.6)',
               stroke: '#FF3333',
-              strokeWidth: 2,
+              strokeWidth: 3,
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
@@ -324,10 +324,10 @@ defineExpose({
               name: `${selectedArrow.id}-handle-start`,
               x: selectedArrow.points[0],
               y: selectedArrow.points[1],
-              radius: 6,
-              fill: '#ffffff',
+              radius: 10,
+              fill: 'rgba(255, 255, 255, 0.6)',
               stroke: '#213FFF',
-              strokeWidth: 2,
+              strokeWidth: 3,
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
@@ -338,10 +338,10 @@ defineExpose({
               name: `${selectedArrow.id}-handle-end`,
               x: selectedArrow.points[2],
               y: selectedArrow.points[3],
-              radius: 6,
-              fill: '#ffffff',
+              radius: 10,
+              fill: 'rgba(255, 255, 255, 0.6)',
               stroke: '#213FFF',
-              strokeWidth: 2,
+              strokeWidth: 3,
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
