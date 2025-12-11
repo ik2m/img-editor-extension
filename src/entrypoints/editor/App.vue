@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { Toaster } from 'vue-sonner';
 import { ModalsContainer, useModal } from 'vue-final-modal';
 import type Konva from 'konva';
@@ -11,11 +12,11 @@ import InfoPanel from '@/components/editor/InfoPanel.vue';
 import TextInputModal from '@/components/editor/TextInputModal.vue';
 import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
 import { useShapeNameCounters } from '@/composables/editor/useShapeNameCounters';
-import { useLayerManagement } from '@/composables/editor/useLayerManagement';
 import { useImageManagement } from '@/composables/editor/useImageManagement';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
 import { useSettings } from '@/composables/editor/useSettings';
+import { useLayerStore } from '@/stores/layerStore';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
@@ -37,15 +38,10 @@ const {
   resetCounters,
 } = useShapeNameCounters();
 
-const {
-  shapes,
-  selectedShapeId,
-  selectLayer,
-  moveLayerUp,
-  moveLayerDown,
-  deleteLayer,
-  reorderLayers,
-} = useLayerManagement();
+// Pinia store
+const layerStore = useLayerStore();
+const { shapes, selectedShapeId } = storeToRefs(layerStore);
+const { selectLayer, moveLayerUp, moveLayerDown, deleteLayer, reorderLayers } = layerStore;
 
 const {
   imageUrl,

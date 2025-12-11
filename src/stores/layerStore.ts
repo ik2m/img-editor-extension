@@ -1,11 +1,12 @@
 import { ref } from 'vue';
+import { defineStore } from 'pinia';
 import type { Shape } from '@/components/editor/types';
 import { isDrawingShape } from '@/components/editor/types';
 
 /**
- * レイヤー（Shape配列）の管理を行うcomposable
+ * レイヤー（Shape配列）の管理を行うstore
  */
-export function useLayerManagement() {
+export const useLayerStore = defineStore('layer', () => {
   const shapes = ref<Shape[]>([]);
   const selectedShapeId = ref('');
 
@@ -82,4 +83,4 @@ export function useLayerManagement() {
     deleteLayer,
     reorderLayers,
   };
-}
+});
