@@ -1,24 +1,13 @@
 <script lang="ts" setup>
-import { ref, watch, computed } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { VueFinalModal } from 'vue-final-modal';
 import BaseButton from '@/components/common/BaseButton.vue';
-
-const props = defineProps<{
-  isOpen: boolean;
-}>();
 
 const emit = defineEmits<{
   close: [];
   openFile: [];
   openClipboardImage: [blob: Blob];
 }>();
-
-const open = computed({
-  get: () => props.isOpen,
-  set: (value) => {
-    if (!value) emit('close');
-  },
-});
 
 interface ClipboardImageItem {
   blob: Blob;
@@ -28,18 +17,15 @@ interface ClipboardImageItem {
 const clipboardImages = ref<ClipboardImageItem[]>([]);
 const isLoadingClipboard = ref(false);
 
-watch(
-  () => props.isOpen,
-  async (isOpen) => {
-    if (isOpen) {
-      await loadClipboardImages();
-    } else {
-      // Clean up URLs when modal closes
-      clipboardImages.value.forEach((item) => URL.revokeObjectURL(item.url));
-      clipboardImages.value = [];
-    }
-  }
-);
+onMounted(async () => {
+  await loadClipboardImages();
+});
+
+onUnmounted(() => {
+  // Clean up URLs when modal closes
+  clipboardImages.value.forEach((item) => URL.revokeObjectURL(item.url));
+  clipboardImages.value = [];
+});
 
 const loadClipboardImages = async () => {
   isLoadingClipboard.value = true;
@@ -75,7 +61,6 @@ const handleSelectClipboardImage = (item: ClipboardImageItem) => {
 
 <template>
   <VueFinalModal
-    v-model="open"
     class="flex items-center justify-center"
     content-class="bg-dark-panel border-dark-border w-full max-w-2xl rounded-lg border p-6 shadow-lg"
     overlay-transition="vfm-fade"
@@ -135,7 +120,7 @@ const handleSelectClipboardImage = (item: ClipboardImageItem) => {
       </div>
 
       <!-- Cancel button -->
-      <BaseButton color="tertiary" @click="open = false" class="w-full">
+      <BaseButton color="tertiary" @click="emit('close')" class="w-full">
         キャンセル
       </BaseButton>
     </div>

@@ -9,11 +9,11 @@ import EditorCanvas from '@/components/editor/EditorCanvas.vue';
 import LayerPanel from '@/components/editor/LayerPanel.vue';
 import InfoPanel from '@/components/editor/InfoPanel.vue';
 import TextInputModal from '@/components/editor/TextInputModal.vue';
+import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
 import { useShapeNameCounters } from '@/composables/editor/useShapeNameCounters';
 import { useLayerManagement } from '@/composables/editor/useLayerManagement';
 import { useImageManagement } from '@/composables/editor/useImageManagement';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
-import { useImageSourceModal } from '@/composables/editor/useImageSourceModal';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
 import { useSettings } from '@/composables/editor/useSettings';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
@@ -38,10 +38,26 @@ const drawing = useDrawingMode(
   image.layerScale
 );
 const fileInputRef = ref<HTMLInputElement | null>(null);
-const imageSourceModal = useImageSourceModal(
-  fileInputRef,
-  image.loadImageFromBlob
-);
+
+// Image source modal
+const { open: openImageSourceModal, close: closeImageSourceModal } = useModal<
+  typeof ImageSourceModal
+>({
+  component: ImageSourceModal,
+  attrs: {
+    onClose() {
+      closeImageSourceModal();
+    },
+    onOpenFile() {
+      fileInputRef.value?.click();
+      closeImageSourceModal();
+    },
+    onOpenClipboardImage(blob: Blob) {
+      image.loadImageFromBlob(blob);
+      closeImageSourceModal();
+    },
+  },
+});
 
 // Text modal
 const { open: openTextModal, close: closeTextModal } = useModal<
@@ -315,7 +331,7 @@ const handleCopyImage = async () => {
         :arrow-color="shapeColor.arrowColor.value"
         :text-color="shapeColor.textColor.value"
         :target-width="targetWidth"
-        @open-image-source-modal="imageSourceModal.openImageSourceModal"
+        @open-image-source-modal="openImageSourceModal"
         @save-image="handleSaveImage"
         @copy-image="handleCopyImage"
         @add-rectangle="handleAddRectangle"
