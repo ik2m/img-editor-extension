@@ -1,19 +1,19 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue';
 import { Toaster } from 'vue-sonner';
+import { ModalsContainer } from 'vue-final-modal';
 import type Konva from 'konva';
 import EditorHeader from '@/components/editor/EditorHeader.vue';
 import EditorToolbar from '@/components/editor/EditorToolbar.vue';
 import EditorCanvas from '@/components/editor/EditorCanvas.vue';
 import LayerPanel from '@/components/editor/LayerPanel.vue';
-import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
-import TextInputModal from '@/components/editor/TextInputModal.vue';
 import InfoPanel from '@/components/editor/InfoPanel.vue';
 import { useShapeNameCounters } from '@/composables/editor/useShapeNameCounters';
 import { useLayerManagement } from '@/composables/editor/useLayerManagement';
 import { useImageManagement } from '@/composables/editor/useImageManagement';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 import { useTextMode } from '@/composables/editor/useTextMode';
+import { useImageSourceModal } from '@/composables/editor/useImageSourceModal';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
 import { useSettings } from '@/composables/editor/useSettings';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
@@ -33,6 +33,7 @@ const image = useImageManagement(nameCounters, layers.shapes, targetWidth);
 const shapeColor = useShapeColor();
 const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
 const drawing = useDrawingMode(layers.shapes, layers.selectLayer, image.layerScale);
+const fileInputRef = ref<HTMLInputElement | null>(null);
 const text = useTextMode(
   layers.shapes,
   layers.selectLayer,
@@ -40,6 +41,7 @@ const text = useTextMode(
   image.originalImage,
   shapeColor.textColor
 );
+const imageSourceModal = useImageSourceModal(fileInputRef, image.loadImageFromBlob);
 
 // Shape creation handlers
 const handleAddRectangle = () => {
@@ -55,9 +57,6 @@ const handleAddArrow = () => {
   layers.shapes.value.push(arrow);
   layers.selectLayer(arrow.id);
 };
-// Modal state
-const isImageSourceModalOpen = ref(false);
-const fileInputRef = ref<HTMLInputElement | null>(null);
 
 // targetWidthの変更を監視して、画像が読み込まれている場合はリサイズ
 watch(targetWidth, (newWidth) => {
@@ -70,36 +69,12 @@ const handleStageClick = (targetId: string) => {
   layers.selectLayer(targetId);
 };
 
-const openImageSourceModal = () => {
-  isImageSourceModalOpen.value = true;
-};
-
-const closeImageSourceModal = () => {
-  isImageSourceModalOpen.value = false;
-};
-
-const handleOpenFile = () => {
-  fileInputRef.value?.click();
-};
-
 const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (file) {
     image.handleImageUpload(file);
   }
-};
-
-const handleOpenClipboardImage = (blob: Blob) => {
-  image.loadImageFromBlob(blob);
-};
-
-const handleTextSubmit = (inputText: string) => {
-  text.addText(inputText);
-};
-
-const handleTextCancel = () => {
-  text.cancelAddText();
 };
 
 const handleUpdateArrowPoint = (
@@ -300,7 +275,7 @@ const handleCopyImage = async () => {
         :arrow-color="shapeColor.arrowColor.value"
         :text-color="shapeColor.textColor.value"
         :target-width="targetWidth"
-        @open-image-source-modal="openImageSourceModal"
+        @open-image-source-modal="imageSourceModal.openImageSourceModal"
         @save-image="handleSaveImage"
         @copy-image="handleCopyImage"
         @add-rectangle="handleAddRectangle"
@@ -350,19 +325,6 @@ const handleCopyImage = async () => {
       />
     </div>
 
-    <ImageSourceModal
-      :is-open="isImageSourceModalOpen"
-      @close="closeImageSourceModal"
-      @open-file="handleOpenFile"
-      @open-clipboard-image="handleOpenClipboardImage"
-    />
-
-    <TextInputModal
-      :is-open="text.isTextInputOpen.value"
-      @close="handleTextCancel"
-      @submit="handleTextSubmit"
-    />
-
     <input
       ref="fileInputRef"
       type="file"
@@ -374,5 +336,7 @@ const handleCopyImage = async () => {
     <Toaster position="top-center" />
 
     <InfoPanel :width="image.stageWidth.value" :height="image.stageHeight.value" />
+
+    <ModalsContainer />
   </div>
 </template>
