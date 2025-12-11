@@ -265,8 +265,6 @@ defineExpose({
               y: selectedRect.y,
               radius: 10,
               fill: 'rgba(255, 255, 255, 0.6)',
-              stroke: '#FF3333',
-              strokeWidth: 3,
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
@@ -280,8 +278,6 @@ defineExpose({
               y: selectedRect.y,
               radius: 10,
               fill: 'rgba(255, 255, 255, 0.6)',
-              stroke: '#FF3333',
-              strokeWidth: 3,
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
@@ -295,8 +291,6 @@ defineExpose({
               y: selectedRect.y + selectedRect.height,
               radius: 10,
               fill: 'rgba(255, 255, 255, 0.6)',
-              stroke: '#FF3333',
-              strokeWidth: 3,
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
@@ -310,8 +304,6 @@ defineExpose({
               y: selectedRect.y + selectedRect.height,
               radius: 10,
               fill: 'rgba(255, 255, 255, 0.6)',
-              stroke: '#FF3333',
-              strokeWidth: 3,
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
@@ -327,8 +319,6 @@ defineExpose({
               y: selectedArrow.points[1],
               radius: 10,
               fill: 'rgba(255, 255, 255, 0.6)',
-              stroke: '#213FFF',
-              strokeWidth: 3,
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
@@ -341,8 +331,6 @@ defineExpose({
               y: selectedArrow.points[3],
               radius: 10,
               fill: 'rgba(255, 255, 255, 0.6)',
-              stroke: '#213FFF',
-              strokeWidth: 3,
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
