@@ -7,6 +7,7 @@ import type { Shape } from '@/components/editor/types';
  */
 const useLayerStore = defineStore('layer', () => {
   const shapes = ref<Shape[]>([]);
+  const drawingLayer = ref<Shape | null>(null);
   const selectedShapeId = ref('');
 
   const selectLayer = (id: string) => {
@@ -23,10 +24,19 @@ const useLayerStore = defineStore('layer', () => {
 
   const resetShapes = () => {
     shapes.value = [];
+    drawingLayer.value = null;
+  };
+
+  const setDrawingLayer = (layer: Shape) => {
+    drawingLayer.value = layer;
+  };
+
+  const resetDrawingLayer = () => {
+    drawingLayer.value = null;
   };
 
   const scaleShapes = (ratio: number) => {
-    shapes.value.forEach((shape) => {
+    const scaleShape = (shape: Shape) => {
       if ('x' in shape && 'y' in shape) {
         shape.x = shape.x * ratio;
         shape.y = shape.y * ratio;
@@ -40,7 +50,12 @@ const useLayerStore = defineStore('layer', () => {
       }
       if ('points' in shape && Array.isArray(shape.points)) {
         const scaledPoints = shape.points.map((p) => p * ratio);
-        shape.points = [scaledPoints[0], scaledPoints[1], scaledPoints[2], scaledPoints[3]];
+        shape.points = [
+          scaledPoints[0],
+          scaledPoints[1],
+          scaledPoints[2],
+          scaledPoints[3],
+        ];
       }
       if ('strokeWidth' in shape) {
         shape.strokeWidth = Math.max(1, Math.round(shape.strokeWidth * ratio));
@@ -51,20 +66,17 @@ const useLayerStore = defineStore('layer', () => {
           line.strokeWidth = Math.max(1, Math.round(line.strokeWidth * ratio));
         });
       }
-    });
+    };
+
+    shapes.value.forEach(scaleShape);
+    if (drawingLayer.value) {
+      scaleShape(drawingLayer.value);
+    }
   };
 
   const moveLayerUp = (id: string) => {
-    // お絵描きレイヤーは移動不可
-    const shape = shapes.value.find((s) => s.id === id);
-    if (shape && shape.type === 'drawing') return;
-
     const index = shapes.value.findIndex((s) => s.id === id);
     if (index < shapes.value.length - 1) {
-      // 移動先がお絵描きレイヤーの場合はスキップ
-      const nextShape = shapes.value[index + 1];
-      if (nextShape.type === 'drawing') return;
-
       [shapes.value[index], shapes.value[index + 1]] = [
         shapes.value[index + 1],
         shapes.value[index],
@@ -73,16 +85,8 @@ const useLayerStore = defineStore('layer', () => {
   };
 
   const moveLayerDown = (id: string) => {
-    // お絵描きレイヤーは移動不可
-    const shape = shapes.value.find((s) => s.id === id);
-    if (shape && shape.type === 'drawing') return;
-
     const index = shapes.value.findIndex((s) => s.id === id);
     if (index > 0) {
-      // 移動先がお絵描きレイヤーの場合はスキップ
-      const prevShape = shapes.value[index - 1];
-      if (prevShape.type === 'drawing') return;
-
       [shapes.value[index], shapes.value[index - 1]] = [
         shapes.value[index - 1],
         shapes.value[index],
@@ -91,10 +95,6 @@ const useLayerStore = defineStore('layer', () => {
   };
 
   const deleteLayer = (id: string) => {
-    // お絵描きレイヤーは削除不可
-    const shape = shapes.value.find((s) => s.id === id);
-    if (shape && shape.type === 'drawing') return;
-
     const index = shapes.value.findIndex((s) => s.id === id);
     if (index !== -1) {
       shapes.value.splice(index, 1);
@@ -105,11 +105,6 @@ const useLayerStore = defineStore('layer', () => {
   };
 
   const reorderLayers = (fromIndex: number, toIndex: number) => {
-    // お絵描きレイヤーが関与する場合は移動不可
-    const fromShape = shapes.value[fromIndex];
-    const toShape = shapes.value[toIndex];
-    if (fromShape.type === 'drawing' || toShape.type === 'drawing') return;
-
     const [removed] = shapes.value.splice(fromIndex, 1);
     shapes.value.splice(toIndex, 0, removed);
   };
@@ -262,11 +257,14 @@ const useLayerStore = defineStore('layer', () => {
 
   return {
     shapes: readonly(shapes),
+    drawingLayer: readonly(drawingLayer),
     selectedShapeId,
     selectLayer,
     addShape,
     addShapeAt,
     resetShapes,
+    setDrawingLayer,
+    resetDrawingLayer,
     scaleShapes,
     moveLayerUp,
     moveLayerDown,

@@ -8,6 +8,7 @@ import useDrawingStore from '@/stores/useDrawingStore';
 // Stores
 const {
   shapes,
+  drawingLayer,
   selectedShapeId,
   selectLayer,
   updateArrowPoint,
@@ -19,6 +20,15 @@ const {
 const { imageElement, stageWidth, stageHeight, layerScale, originalImage } = useImageStore();
 const { drawingMode, currentDrawing, startDrawing, continueDrawing, finishDrawing } =
   useDrawingStore();
+
+// 全レイヤー（お絵描きレイヤー + shapes）
+const allLayers = computed(() => {
+  const layers = [...shapes.value];
+  if (drawingLayer.value) {
+    layers.unshift(drawingLayer.value); // 先頭に追加
+  }
+  return layers;
+});
 
 const transformer = ref<{ getNode(): Konva.Transformer } | null>(null);
 const stage = ref<{ getNode(): Konva.Stage } | null>(null);
@@ -37,7 +47,7 @@ const updateTransformer = () => {
   }
 
   // 矢印、矩形、テキストが選択されている場合はトランスフォーマーを無効化（カスタム操作を使用）
-  const selectedShape = shapes.value.find((s) => s.id === selectedShapeId.value);
+  const selectedShape = allLayers.value.find((s) => s.id === selectedShapeId.value);
   if (selectedShape && (selectedShape.type === 'arrow' || selectedShape.type === 'rect' || selectedShape.type === 'text')) {
     transformerNode.nodes([]);
     return;
@@ -59,19 +69,19 @@ const updateTransformer = () => {
 
 // 選択された矢印を取得
 const selectedArrow = computed(() => {
-  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
+  const shape = allLayers.value.find((s) => s.id === selectedShapeId.value);
   return shape && shape.type === 'arrow' ? shape : null;
 });
 
 // 選択された矩形を取得
 const selectedRect = computed(() => {
-  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
+  const shape = allLayers.value.find((s) => s.id === selectedShapeId.value);
   return shape && shape.type === 'rect' ? shape : null;
 });
 
 // 選択されたテキストを取得
 const selectedText = computed(() => {
-  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
+  const shape = allLayers.value.find((s) => s.id === selectedShapeId.value);
   return shape && shape.type === 'text' ? shape : null;
 });
 
@@ -105,7 +115,7 @@ const handleRectMoveHandleMouseDown = (e: any, shapeId: string) => {
 const handleRectMoveHandleDragMove = (e: any, shapeId: string) => {
   if (!rectMoveHandleStartPos.value) return;
   const pos = e.target.position();
-  const shape = shapes.value.find((s) => s.id === shapeId);
+  const shape = allLayers.value.find((s) => s.id === shapeId);
   if (!shape || shape.type !== 'rect') return;
 
   // ハンドルは中央にあるので、矩形の左上座標を計算
@@ -163,7 +173,7 @@ const handleStageMouseDown = (e: any) => {
   }
 
   const name = e.target.name();
-  const shape = shapes.value.find((s) => s.id === name);
+  const shape = allLayers.value.find((s) => s.id === name);
   selectLayer(shape ? name : '');
 };
 
@@ -231,7 +241,7 @@ defineExpose({
             listening: false,
           }"
         />
-        <template v-for="shape in shapes" :key="shape.id">
+        <template v-for="shape in allLayers" :key="shape.id">
           <v-rect
             v-if="shape.type === 'rect'"
             :config="{

@@ -8,6 +8,7 @@ import useDrawingStore from '@/stores/useDrawingStore';
 // Stores
 const {
   shapes,
+  drawingLayer,
   selectedShapeId,
   selectLayer,
   moveLayerUp,
@@ -19,19 +20,23 @@ const {
 const { imageUrl } = useImageStore();
 const { drawingMode } = useDrawingStore();
 
-// お絵描きレイヤー以外のレイヤーをフィルタ
+// お絵描きレイヤー以外のレイヤー = shapes配列そのもの
 const editableLayers = computed(() => {
-  return shapes.value.filter((s) => s.type !== 'drawing');
+  return shapes.value;
 });
 
-// お絵描きレイヤーの存在チェック
-const drawingLayer = computed(() => {
-  return shapes.value.find((s) => s.type === 'drawing');
+// 全レイヤー（お絵描きレイヤー + shapes）
+const allLayers = computed(() => {
+  const layers = [...shapes.value];
+  if (drawingLayer.value) {
+    layers.unshift(drawingLayer.value);
+  }
+  return layers;
 });
 
 // 選択されたテキストレイヤーを取得
 const selectedTextLayer = computed(() => {
-  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
+  const shape = allLayers.value.find((s) => s.id === selectedShapeId.value);
   return shape && shape.type === 'text' ? shape : null;
 });
 
