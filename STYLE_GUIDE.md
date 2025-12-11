@@ -169,6 +169,66 @@ export function useLayerManagement() {
 }
 ```
 
+### Composables の使用方法
+
+**✅ Good: 分割代入でプロパティを取り出す**
+
+```typescript
+// script setup内
+const { shapes, selectedShapeId, selectLayer, moveLayerUp, moveLayerDown } = useLayerManagement();
+const { imageUrl, stageWidth, stageHeight, isImageLoaded, handleImageUpload } = useImageManagement();
+const { rectangleColor, arrowColor, setRectangleColor, setArrowColor } = useShapeColor();
+
+// 使用時
+const handleAddShape = () => {
+  if (!isImageLoaded.value) return;  // script内では.valueが必要
+  shapes.value.push(newShape);
+  selectLayer(newShape.id);
+};
+```
+
+```vue
+<!-- template内 -->
+<EditorCanvas
+  :shapes="shapes"
+  :stage-width="stageWidth"
+  :image-url="imageUrl"
+  @select-layer="selectLayer"
+/>
+```
+
+**❌ Avoid: オブジェクトごと受け取る**
+
+```typescript
+// BAD: ドット記法でアクセスする必要があり冗長
+const layers = useLayerManagement();
+const image = useImageManagement();
+
+const handleAddShape = () => {
+  if (!image.isImageLoaded.value) return;
+  layers.shapes.value.push(newShape);
+  layers.selectLayer(newShape.id);
+};
+```
+
+```vue
+<!-- template内も冗長 -->
+<EditorCanvas
+  :shapes="layers.shapes.value"
+  :stage-width="image.stageWidth.value"
+/>
+```
+
+**理由**:
+- コードが簡潔で読みやすくなる
+- プロパティ名が短くなり、可読性が向上
+- テンプレート内で`.value`の記述が不要（Vueが自動で展開）
+- 使用するプロパティが一目でわかる
+
+**注意点**:
+- **script setup内**: Refの値にアクセスする際は`.value`が必要
+- **template内**: `.value`は不要（Vueが自動的に展開）
+
 ### JSDoc コメント
 
 Composables には簡潔なJSDocコメントを付ける：
