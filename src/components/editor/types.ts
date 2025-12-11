@@ -61,20 +61,3 @@ export type TextShape = {
 };
 
 export type Shape = RectShape | ArrowShape | DrawingShape | TextShape;
-
-// 型ガード関数
-export function isRectShape(shape: Shape): shape is RectShape {
-  return shape.type === 'rect';
-}
-
-export function isArrowShape(shape: Shape): shape is ArrowShape {
-  return shape.type === 'arrow';
-}
-
-export function isDrawingShape(shape: Shape): shape is DrawingShape {
-  return shape.type === 'drawing';
-}
-
-export function isTextShape(shape: Shape): shape is TextShape {
-  return shape.type === 'text';
-}
