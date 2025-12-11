@@ -1,7 +1,6 @@
 import { ref } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
 import type { Shape } from '@/components/editor/types';
-import { isDrawingShape } from '@/components/editor/types';
 
 /**
  * レイヤー（Shape配列）の管理を行うstore
@@ -17,13 +16,13 @@ const useLayerStore = defineStore('layer', () => {
   const moveLayerUp = (id: string) => {
     // お絵描きレイヤーは移動不可
     const shape = shapes.value.find((s) => s.id === id);
-    if (shape && isDrawingShape(shape)) return;
+    if (shape && shape.type === 'drawing') return;
 
     const index = shapes.value.findIndex((s) => s.id === id);
     if (index < shapes.value.length - 1) {
       // 移動先がお絵描きレイヤーの場合はスキップ
       const nextShape = shapes.value[index + 1];
-      if (isDrawingShape(nextShape)) return;
+      if (nextShape.type === 'drawing') return;
 
       [shapes.value[index], shapes.value[index + 1]] = [
         shapes.value[index + 1],
@@ -35,13 +34,13 @@ const useLayerStore = defineStore('layer', () => {
   const moveLayerDown = (id: string) => {
     // お絵描きレイヤーは移動不可
     const shape = shapes.value.find((s) => s.id === id);
-    if (shape && isDrawingShape(shape)) return;
+    if (shape && shape.type === 'drawing') return;
 
     const index = shapes.value.findIndex((s) => s.id === id);
     if (index > 0) {
       // 移動先がお絵描きレイヤーの場合はスキップ
       const prevShape = shapes.value[index - 1];
-      if (isDrawingShape(prevShape)) return;
+      if (prevShape.type === 'drawing') return;
 
       [shapes.value[index], shapes.value[index - 1]] = [
         shapes.value[index - 1],
@@ -53,7 +52,7 @@ const useLayerStore = defineStore('layer', () => {
   const deleteLayer = (id: string) => {
     // お絵描きレイヤーは削除不可
     const shape = shapes.value.find((s) => s.id === id);
-    if (shape && isDrawingShape(shape)) return;
+    if (shape && shape.type === 'drawing') return;
 
     const index = shapes.value.findIndex((s) => s.id === id);
     if (index !== -1) {
@@ -68,7 +67,7 @@ const useLayerStore = defineStore('layer', () => {
     // お絵描きレイヤーが関与する場合は移動不可
     const fromShape = shapes.value[fromIndex];
     const toShape = shapes.value[toIndex];
-    if (isDrawingShape(fromShape) || isDrawingShape(toShape)) return;
+    if (fromShape.type === 'drawing' || toShape.type === 'drawing') return;
 
     const [removed] = shapes.value.splice(fromIndex, 1);
     shapes.value.splice(toIndex, 0, removed);
@@ -85,7 +84,7 @@ const useLayerStore = defineStore('layer', () => {
     if (shapeIndex === -1) return;
 
     const shape = shapes.value[shapeIndex];
-    if (!('points' in shape)) return;
+    if (shape.type !== 'arrow') return;
 
     const newPoints = [...shape.points] as [number, number, number, number];
     if (pointIndex === 0) {
@@ -113,7 +112,7 @@ const useLayerStore = defineStore('layer', () => {
     if (shapeIndex === -1) return;
 
     const shape = shapes.value[shapeIndex];
-    if (!('width' in shape && 'height' in shape)) return;
+    if (shape.type !== 'rect') return;
 
     let newX = shape.x;
     let newY = shape.y;
@@ -158,7 +157,7 @@ const useLayerStore = defineStore('layer', () => {
     if (shapeIndex === -1) return;
 
     const shape = shapes.value[shapeIndex];
-    if (!('text' in shape)) return;
+    if (shape.type !== 'text') return;
 
     shapes.value = [
       ...shapes.value.slice(0, shapeIndex),
@@ -172,7 +171,7 @@ const useLayerStore = defineStore('layer', () => {
     if (shapeIndex === -1) return;
 
     const shape = shapes.value[shapeIndex];
-    if (!('width' in shape && 'height' in shape)) return;
+    if (shape.type !== 'rect') return;
 
     shapes.value = [
       ...shapes.value.slice(0, shapeIndex),
@@ -190,7 +189,7 @@ const useLayerStore = defineStore('layer', () => {
     if (shapeIndex === -1) return;
 
     const shape = shapes.value[shapeIndex];
-    if (!('points' in shape)) return;
+    if (shape.type !== 'arrow') return;
 
     const newPoints: [number, number, number, number] = [
       shape.points[0] + deltaX,
@@ -211,7 +210,7 @@ const useLayerStore = defineStore('layer', () => {
     if (shapeIndex === -1) return;
 
     const shape = shapes.value[shapeIndex];
-    if (!('fontSize' in shape)) return;
+    if (shape.type !== 'text') return;
 
     shapes.value = [
       ...shapes.value.slice(0, shapeIndex),

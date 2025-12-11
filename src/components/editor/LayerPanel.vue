@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
 import LayerItem from './LayerItem.vue';
-import { isDrawingShape, isTextShape } from './types';
 import useLayerStore from '@/stores/useLayerStore';
 import useImageStore from '@/stores/useImageStore';
 import useDrawingStore from '@/stores/useDrawingStore';
@@ -22,18 +21,18 @@ const { drawingMode } = useDrawingStore();
 
 // お絵描きレイヤー以外のレイヤーをフィルタ
 const editableLayers = computed(() => {
-  return shapes.value.filter((s) => !isDrawingShape(s));
+  return shapes.value.filter((s) => s.type !== 'drawing');
 });
 
 // お絵描きレイヤーの存在チェック
 const drawingLayer = computed(() => {
-  return shapes.value.find(isDrawingShape);
+  return shapes.value.find((s) => s.type === 'drawing');
 });
 
 // 選択されたテキストレイヤーを取得
 const selectedTextLayer = computed(() => {
   const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
-  return shape && isTextShape(shape) ? shape : null;
+  return shape && shape.type === 'text' ? shape : null;
 });
 
 const draggedIndex = ref<number | null>(null);

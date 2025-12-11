@@ -2,7 +2,6 @@
 import { computed } from 'vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import type { Shape } from './types';
-import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from './types';
 
 const props = defineProps<{
   layer: Shape;
@@ -25,16 +24,18 @@ const emit = defineEmits<{
 }>();
 
 const layerColor = computed(() => {
-  if (isRectShape(props.layer)) {
-    return props.layer.fill;
-  } else if (isArrowShape(props.layer)) {
-    return props.layer.stroke;
-  } else if (isDrawingShape(props.layer)) {
-    return props.layer.lines[0]?.stroke || '#000000';
-  } else if (isTextShape(props.layer)) {
-    return props.layer.fill;
+  switch (props.layer.type) {
+    case 'rect':
+      return props.layer.fill;
+    case 'arrow':
+      return props.layer.stroke;
+    case 'drawing':
+      return props.layer.lines[0]?.stroke || '#000000';
+    case 'text':
+      return props.layer.fill;
+    default:
+      return '#000000';
   }
-  return '#000000';
 });
 </script>
 

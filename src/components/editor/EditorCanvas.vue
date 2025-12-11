@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import Konva from 'konva';
-import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from './types';
 import useLayerStore from '@/stores/useLayerStore';
 import useImageStore from '@/stores/useImageStore';
 import useDrawingStore from '@/stores/useDrawingStore';
@@ -39,7 +38,7 @@ const updateTransformer = () => {
 
   // 矢印、矩形、テキストが選択されている場合はトランスフォーマーを無効化（カスタム操作を使用）
   const selectedShape = shapes.value.find((s) => s.id === selectedShapeId.value);
-  if (selectedShape && (isArrowShape(selectedShape) || isRectShape(selectedShape) || isTextShape(selectedShape))) {
+  if (selectedShape && (selectedShape.type === 'arrow' || selectedShape.type === 'rect' || selectedShape.type === 'text')) {
     transformerNode.nodes([]);
     return;
   }
@@ -61,19 +60,19 @@ const updateTransformer = () => {
 // 選択された矢印を取得
 const selectedArrow = computed(() => {
   const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
-  return shape && isArrowShape(shape) ? shape : null;
+  return shape && shape.type === 'arrow' ? shape : null;
 });
 
 // 選択された矩形を取得
 const selectedRect = computed(() => {
   const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
-  return shape && isRectShape(shape) ? shape : null;
+  return shape && shape.type === 'rect' ? shape : null;
 });
 
 // 選択されたテキストを取得
 const selectedText = computed(() => {
   const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
-  return shape && isTextShape(shape) ? shape : null;
+  return shape && shape.type === 'text' ? shape : null;
 });
 
 // 矢印ハンドラのドラッグ処理
@@ -107,7 +106,7 @@ const handleRectMoveHandleDragMove = (e: any, shapeId: string) => {
   if (!rectMoveHandleStartPos.value) return;
   const pos = e.target.position();
   const shape = shapes.value.find((s) => s.id === shapeId);
-  if (!shape || !isRectShape(shape)) return;
+  if (!shape || shape.type !== 'rect') return;
 
   // ハンドルは中央にあるので、矩形の左上座標を計算
   const rectX = pos.x - shape.width / 2;
@@ -234,7 +233,7 @@ defineExpose({
         />
         <template v-for="shape in shapes" :key="shape.id">
           <v-rect
-            v-if="isRectShape(shape)"
+            v-if="shape.type === 'rect'"
             :config="{
               name: shape.id,
               x: shape.x,
@@ -249,7 +248,7 @@ defineExpose({
             }"
           />
           <v-arrow
-            v-else-if="isArrowShape(shape)"
+            v-else-if="shape.type === 'arrow'"
             :config="{
               name: shape.id,
               points: shape.points,
@@ -261,7 +260,7 @@ defineExpose({
               draggable: false,
             }"
           />
-          <template v-else-if="isDrawingShape(shape)">
+          <template v-else-if="shape.type === 'drawing'">
             <v-line
               v-for="(line, index) in shape.lines"
               :key="`${shape.id}-line-${index}`"
@@ -277,7 +276,7 @@ defineExpose({
             />
           </template>
           <v-text
-            v-else-if="isTextShape(shape)"
+            v-else-if="shape.type === 'text'"
             :config="{
               name: shape.id,
               x: shape.x,

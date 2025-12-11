@@ -1,7 +1,6 @@
 import { ref, computed } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
 import type { DrawingShape, DrawingLine } from '@/components/editor/types';
-import { isDrawingShape } from '@/components/editor/types';
 import useLayerStore from './useLayerStore';
 import useImageStore from './useImageStore';
 
@@ -21,13 +20,14 @@ const useDrawingStore = defineStore('drawing', () => {
   // Getters
   // お絵描きレイヤーを取得または作成
   const drawingLayer = computed(() => {
-    return shapes.value.find(isDrawingShape);
+    return shapes.value.find((s) => s.type === 'drawing');
   });
 
   const getOrCreateDrawingLayer = (): DrawingShape => {
     let layer = drawingLayer.value;
     if (!layer) {
       layer = {
+        type: 'drawing',
         id: 'drawing-layer',
         name: 'お絵描き',
         lines: [],

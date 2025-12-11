@@ -22,6 +22,7 @@ export function createRectangle(
   height = 150
 ): RectShape {
   return {
+    type: 'rect',
     id: `rect-${Date.now()}`,
     name,
     x,
@@ -48,6 +49,7 @@ export function createArrow(
   y2 = 200
 ): ArrowShape {
   return {
+    type: 'arrow',
     id: `arrow-${Date.now()}`,
     name,
     points: [x1, y1, x2, y2],
@@ -75,6 +77,7 @@ export function createText(
   const estimatedWidth = text.length * fontSize;
 
   return {
+    type: 'text',
     id: `text-${Date.now()}`,
     name,
     x,
