@@ -1,0 +1,85 @@
+import type { RectShape, ArrowShape, TextShape } from '@/components/editor/types';
+
+/**
+ * 16進数カラーコードからRGBA文字列を生成
+ */
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/**
+ * 矩形図形を作成
+ */
+export function createRectangle(
+  name: string,
+  color: string,
+  x = 100,
+  y = 100,
+  width = 200,
+  height = 150
+): RectShape {
+  return {
+    id: `rect-${Date.now()}`,
+    name,
+    x,
+    y,
+    width,
+    height,
+    fill: 'transparent',
+    stroke: hexToRgba(color, 0.7),
+    strokeWidth: 8,
+    cornerRadius: 2,
+    draggable: true,
+  };
+}
+
+/**
+ * 矢印図形を作成
+ */
+export function createArrow(
+  name: string,
+  color: string,
+  x1 = 100,
+  y1 = 100,
+  x2 = 300,
+  y2 = 200
+): ArrowShape {
+  return {
+    id: `arrow-${Date.now()}`,
+    name,
+    points: [x1, y1, x2, y2],
+    stroke: color,
+    strokeWidth: 3,
+    fill: color,
+    pointerLength: 20,
+    pointerWidth: 20,
+    draggable: true,
+  };
+}
+
+/**
+ * テキスト図形を作成
+ */
+export function createText(
+  name: string,
+  text: string,
+  color: string,
+  centerX: number,
+  centerY: number
+): TextShape {
+  return {
+    id: `text-${Date.now()}`,
+    name,
+    x: centerX,
+    y: centerY,
+    text,
+    fontSize: 24,
+    fontFamily: 'Noto Sans JP',
+    fill: color,
+    align: 'center',
+    draggable: true,
+  };
+}

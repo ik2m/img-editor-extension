@@ -12,14 +12,12 @@ import InfoPanel from '@/components/editor/InfoPanel.vue';
 import { useShapeNameCounters } from '@/composables/editor/useShapeNameCounters';
 import { useLayerManagement } from '@/composables/editor/useLayerManagement';
 import { useImageManagement } from '@/composables/editor/useImageManagement';
-import { useShapeTransform } from '@/composables/editor/useShapeTransform';
-import { useRectangleShape } from '@/composables/editor/useRectangleShape';
-import { useArrowShape } from '@/composables/editor/useArrowShape';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 import { useTextMode } from '@/composables/editor/useTextMode';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
 import { useSettings } from '@/composables/editor/useSettings';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
+import { createRectangle, createArrow } from '@/utils/shapeFactory';
 
 // Settings
 const { settings, updateSetting } = useSettings();
@@ -28,32 +26,13 @@ const targetWidth = computed({
   set: (value: number | 'original') => updateSetting('targetWidth', value),
 });
 
-// Composables（Phase 1-4 完全版）
+// Composables
 const nameCounters = useShapeNameCounters();
 const layers = useLayerManagement();
 const image = useImageManagement(nameCounters, layers.shapes, targetWidth);
-const transform = useShapeTransform(layers.shapes, layers.selectedShapeId);
 const shapeColor = useShapeColor();
-const rectangle = useRectangleShape(
-  layers.shapes,
-  layers.selectLayer,
-  nameCounters.getNextRectName,
-  image.imageElement,
-  shapeColor.rectangleColor
-);
-const arrow = useArrowShape(
-  layers.shapes,
-  layers.selectLayer,
-  nameCounters.getNextArrowName,
-  image.imageElement,
-  shapeColor.arrowColor
-);
 const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
-const drawing = useDrawingMode(
-  layers.shapes,
-  layers.selectLayer,
-  image.layerScale
-);
+const drawing = useDrawingMode(layers.shapes, layers.selectLayer, image.layerScale);
 const text = useTextMode(
   layers.shapes,
   layers.selectLayer,
@@ -61,6 +40,21 @@ const text = useTextMode(
   image.originalImage,
   shapeColor.textColor
 );
+
+// Shape creation handlers
+const handleAddRectangle = () => {
+  if (!image.imageElement.value) return;
+  const rect = createRectangle(nameCounters.getNextRectName(), shapeColor.rectangleColor.value);
+  layers.shapes.value.push(rect);
+  layers.selectLayer(rect.id);
+};
+
+const handleAddArrow = () => {
+  if (!image.imageElement.value) return;
+  const arrow = createArrow(nameCounters.getNextArrowName(), shapeColor.arrowColor.value);
+  layers.shapes.value.push(arrow);
+  layers.selectLayer(arrow.id);
+};
 // Modal state
 const isImageSourceModalOpen = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -309,8 +303,8 @@ const handleCopyImage = async () => {
         @open-image-source-modal="openImageSourceModal"
         @save-image="handleSaveImage"
         @copy-image="handleCopyImage"
-        @add-rectangle="rectangle.addRectangle"
-        @add-arrow="arrow.addArrow"
+        @add-rectangle="handleAddRectangle"
+        @add-arrow="handleAddArrow"
         @toggle-drawing-mode="drawing.toggleDrawingMode"
         @add-text="text.openTextInput"
         @select-rectangle-color="shapeColor.setRectangleColor"
@@ -330,7 +324,6 @@ const handleCopyImage = async () => {
         :original-image="image.originalImage.value"
         :drawing-mode="drawing.drawingMode.value"
         :current-drawing="drawing.currentDrawing.value"
-        @transform-end="transform.handleTransformEnd"
         @stage-click="handleStageClick"
         @start-drawing="drawing.startDrawing"
         @continue-drawing="drawing.continueDrawing"
@@ -347,7 +340,7 @@ const handleCopyImage = async () => {
         :selected-shape-id="layers.selectedShapeId.value"
         :image-url="image.imageUrl.value"
         :drawing-mode="drawing.drawingMode.value"
-        @add-rectangle="rectangle.addRectangle"
+        @add-rectangle="handleAddRectangle"
         @select-layer="layers.selectLayer"
         @move-layer-up="layers.moveLayerUp"
         @move-layer-down="layers.moveLayerDown"

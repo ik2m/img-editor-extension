@@ -108,3 +108,4 @@ v-stage (width, height)
 - Vue Konvaコンポーネント（`v-stage`, `v-layer`, `v-image`, `v-rect`, `v-transformer`等）を使用
 - 図形の座標は元画像座標系で管理し、表示スケールはレイヤーレベルで適用
 - TypeScript型チェックは`pnpm compile`で実行（ビルドには含まれない）
+- コーディング規約の詳細は **[STYLE_GUIDE.md](./STYLE_GUIDE.md)** を参照

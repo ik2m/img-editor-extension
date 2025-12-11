@@ -294,6 +294,97 @@ useImageManagement()
 
 ---
 
+## Composables vs Utils の使い分け
+
+### Composables（`src/composables/`）は状態管理に限定する
+
+- リアクティブな状態（`ref`, `computed`, `reactive`など）を持つものだけをcomposableにする
+- Vueのライフサイクルや副作用（`watch`, `onMounted`など）を扱うもの
+- 複数のコンポーネント間で共有される状態を管理するもの
+
+**✅ Good: composableとして適切（状態を持つ）**
+
+```typescript
+// useLayerManagement.ts - shapes配列とselectedShapeIdの状態を管理
+export function useLayerManagement() {
+  const shapes = ref<Shape[]>([]);
+  const selectedShapeId = ref<string>('');
+
+  const selectLayer = (id: string) => {
+    selectedShapeId.value = id;
+  };
+
+  return { shapes, selectedShapeId, selectLayer };
+}
+```
+
+### Utils（`src/utils/`）は純粋関数として実装する
+
+- 状態を持たない単純な関数
+- 入力を受け取り、出力を返すだけのロジック
+- データ変換、計算、オブジェクト生成など
+
+**✅ Good: utilsとして適切（純粋関数）**
+
+```typescript
+// shapeFactory.ts - 図形オブジェクトを生成する純粋関数
+export function createRectangle(
+  name: string,
+  color: string,
+  x = 100,
+  y = 100
+): RectShape {
+  return {
+    id: `rect-${Date.now()}`,
+    name,
+    x,
+    y,
+    fill: 'transparent',
+    stroke: hexToRgba(color, 0.7),
+    strokeWidth: 8,
+    cornerRadius: 2,
+    draggable: true,
+  };
+}
+```
+
+### 避けるべきパターン
+
+**❌ Avoid: 単なるラッパーcomposable（状態を持たない）**
+
+```typescript
+// BAD: 状態を持たず、ただ関数を返すだけ
+export function useRectangleShape(shapes, selectLayer, getName) {
+  const addRectangle = () => {
+    const rect = createRectangle(getName());
+    shapes.value.push(rect);
+  };
+  return { addRectangle };
+}
+```
+
+**✅ Good: コンポーネント内で直接utilsを使用**
+
+```typescript
+// GOOD: コンポーネント内で直接utilsの関数を呼ぶ
+import { createRectangle } from '@/utils/shapeFactory';
+
+const handleAddRectangle = () => {
+  const rect = createRectangle(nameCounters.getNextRectName(), color);
+  layers.shapes.value.push(rect);
+  layers.selectLayer(rect.id);
+};
+```
+
+### 判断基準
+
+1. **過度な抽象化を避ける** - 本当に必要な場合だけcomposableを作る
+2. **明確な責務分離** - 状態管理 = composables、ロジック = utils
+3. **実用的判断** - 「状態が必要か？」で判断する
+4. **不要なラッパーを作らない** - ただ関数を呼ぶだけなら直接呼ぶ
+
+---
+
 ## ファイル構成
 
 ### Feature-based Structure
