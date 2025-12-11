@@ -24,6 +24,7 @@ const emit = defineEmits<{
   finishDrawing: [];
   updateArrowPoint: [shapeId: string, pointIndex: number, x: number, y: number];
   updateRectCorner: [shapeId: string, corner: string, x: number, y: number];
+  updateTextPosition: [shapeId: string, x: number, y: number];
 }>();
 
 const transformer = ref<{ getNode(): Konva.Transformer } | null>(null);
@@ -75,6 +76,12 @@ const selectedRect = computed(() => {
   return shape && isRectShape(shape) ? shape : null;
 });
 
+// 選択されたテキストを取得
+const selectedText = computed(() => {
+  const shape = props.shapes.find((s) => s.id === props.selectedShapeId);
+  return shape && isTextShape(shape) ? shape : null;
+});
+
 // 矢印ハンドラのドラッグ処理
 const handleArrowHandleDragMove = (e: any, shapeId: string, pointIndex: number) => {
   const pos = e.target.position();
@@ -85,6 +92,13 @@ const handleArrowHandleDragMove = (e: any, shapeId: string, pointIndex: number) 
 const handleRectHandleDragMove = (e: any, shapeId: string, corner: string) => {
   const pos = e.target.position();
   emit('updateRectCorner', shapeId, corner, pos.x, pos.y);
+};
+
+// テキスト移動ハンドラのドラッグ処理
+const handleTextHandleDragMove = (e: any, shapeId: string) => {
+  const pos = e.target.position();
+  // offsetを使っているので、posがそのままテキストの中心座標
+  emit('updateTextPosition', shapeId, pos.x, pos.y);
 };
 
 // ハンドラがクリックされたとき、ステージクリックイベントを防ぐ
@@ -237,6 +251,8 @@ defineExpose({
               fontStyle: shape.fontStyle,
               fill: shape.fill,
               align: shape.align,
+              offsetX: shape.offsetX || 0,
+              offsetY: shape.offsetY || 0,
               draggable: false,
             }"
           />
@@ -334,6 +350,21 @@ defineExpose({
             }"
             @mousedown="handleHandleMouseDown"
             @dragmove="(e: any) => handleArrowHandleDragMove(e, selectedArrow.id, 2)"
+          />
+        </template>
+        <!-- テキストの移動ハンドラ -->
+        <template v-if="selectedText">
+          <v-circle
+            :config="{
+              name: `${selectedText.id}-handle-move`,
+              x: selectedText.x,
+              y: selectedText.y,
+              radius: 12,
+              fill: 'rgba(255, 255, 255, 0.6)',
+              draggable: true,
+            }"
+            @mousedown="handleHandleMouseDown"
+            @dragmove="(e: any) => handleTextHandleDragMove(e, selectedText.id)"
           />
         </template>
         <v-transformer ref="transformer" />

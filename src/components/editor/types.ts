@@ -51,6 +51,8 @@ export type TextShape = {
   fontStyle: string;
   fill: string;
   align: 'left' | 'center' | 'right';
+  offsetX?: number;
+  offsetY?: number;
   draggable: true;
 };
 

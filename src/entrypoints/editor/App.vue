@@ -204,6 +204,21 @@ const handleUpdateTextFontSize = (shapeId: string, fontSize: number) => {
   ];
 };
 
+const handleUpdateTextPosition = (shapeId: string, x: number, y: number) => {
+  const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
+  if (shapeIndex === -1) return;
+
+  const shape = layers.shapes.value[shapeIndex];
+  if (!('text' in shape)) return;
+
+  // 配列全体を更新してリアクティビティをトリガー
+  layers.shapes.value = [
+    ...layers.shapes.value.slice(0, shapeIndex),
+    { ...shape, x, y },
+    ...layers.shapes.value.slice(shapeIndex + 1),
+  ];
+};
+
 const handleSaveImage = () => {
   const stage = canvasRef.value?.getStage();
   if (!stage) return;
@@ -284,6 +299,7 @@ const handleCopyImage = async () => {
         @finish-drawing="drawing.finishDrawing"
         @update-arrow-point="handleUpdateArrowPoint"
         @update-rect-corner="handleUpdateRectCorner"
+        @update-text-position="handleUpdateTextPosition"
       />
 
       <LayerPanel
