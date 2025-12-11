@@ -239,7 +239,7 @@ const handleAddShape = () => {
 **✅ Good: 分割代入可能なexport default パターン**
 
 ```typescript
-import { ref } from 'vue';
+import { ref, readonly } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
 import type { Shape } from '@/components/editor/types';
 
@@ -249,6 +249,10 @@ const useLayerStore = defineStore('layer', () => {
   const selectedShapeId = ref('');
 
   // Actions
+  const addShape = (shape: Shape) => {
+    shapes.value.push(shape);
+  };
+
   const selectLayer = (id: string) => {
     selectedShapeId.value = id;
   };
@@ -258,8 +262,9 @@ const useLayerStore = defineStore('layer', () => {
   };
 
   return {
-    shapes,
+    shapes: readonly(shapes),  // 配列はreadonlyで返す
     selectedShapeId,
+    addShape,
     selectLayer,
     moveLayerUp,
   };
@@ -302,6 +307,26 @@ const { selectLayer } = store;
 - `export default` でラッパー関数を公開
 - ラッパー関数内で `storeToRefs` を適用してから返す
 - これにより、使用側は単純な分割代入だけで使える
+
+**外部から直接変更する必要がないStateはreadonlyで公開する**:
+- 外部から直接代入や変更をする必要がないStateは `readonly()` でラップして返す
+- 変更は必ずアクション経由で行うことを強制し、状態管理を一元化する
+- 実行時にも変更を防止でき、型レベルと実行時の両方で安全性を確保
+- アクション（`addShape`, `updateShape` など）を提供して、変更方法を明示する
+
+```typescript
+// ✅ Good: 外部から直接変更する必要がないStateはreadonlyで返し、変更用のアクションを提供
+return {
+  shapes: readonly(shapes),  // 外部からの直接変更を防止
+  addShape,                   // 追加はアクション経由
+  updateShape,                // 更新もアクション経由
+};
+
+// ❌ Avoid: 外部から直接変更できてしまう
+return {
+  shapes,  // shapes.value.push() で外部から直接変更できてしまう
+};
+```
 
 **ファイル名**: `useXxxStore.ts` の形式（例: `useLayerStore.ts`, `useImageStore.ts`）
 
