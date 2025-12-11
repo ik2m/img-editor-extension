@@ -240,6 +240,20 @@ const useShapeStore = defineStore('shape', () => {
     replaceShape(shapeId, { fill: color });
   };
 
+  const updateArrowColor = (shapeId: string, color: string) => {
+    const shape = shapes.value.find((s) => s.id === shapeId);
+    if (!shape || shape.type !== 'arrow') return;
+
+    replaceShape(shapeId, { stroke: color });
+  };
+
+  const updateRectColor = (shapeId: string, color: string) => {
+    const shape = shapes.value.find((s) => s.id === shapeId);
+    if (!shape || shape.type !== 'rect') return;
+
+    replaceShape(shapeId, { stroke: color });
+  };
+
   return {
     shapes,
     selectedShapeId,
@@ -264,6 +278,8 @@ const useShapeStore = defineStore('shape', () => {
     updateArrowPosition,
     updateTextFontSize,
     updateTextColor,
+    updateArrowColor,
+    updateRectColor,
   };
 });
 

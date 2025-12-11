@@ -26,6 +26,8 @@ const {
   addTextShape,
   updateTextFontSize,
   updateTextColor,
+  updateArrowColor,
+  updateRectColor,
 } = useShapeStore();
 
 const {
@@ -44,21 +46,44 @@ const { rectangleColor, arrowColor, textColor, targetWidth, setTargetWidth } =
 const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
-// 選択されたテキストレイヤーを取得
+// 選択されたレイヤーを取得
 const selectedTextLayer = computed(() => {
   const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
   return shape && shape.type === 'text' ? shape : null;
 });
 
+const selectedArrowLayer = computed(() => {
+  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
+  return shape && shape.type === 'arrow' ? shape : null;
+});
+
+const selectedRectLayer = computed(() => {
+  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
+  return shape && shape.type === 'rect' ? shape : null;
+});
+
 const handleFontSizeChange = (delta: number) => {
   if (!selectedTextLayer.value) return;
-  const newSize = Math.max(8, Math.min(200, selectedTextLayer.value.fontSize + delta));
+  const newSize = Math.max(
+    8,
+    Math.min(200, selectedTextLayer.value.fontSize + delta)
+  );
   updateTextFontSize(selectedTextLayer.value.id, newSize);
 };
 
 const handleTextColorChange = (color: string) => {
   if (!selectedTextLayer.value) return;
   updateTextColor(selectedTextLayer.value.id, color);
+};
+
+const handleArrowColorChange = (color: string) => {
+  if (!selectedArrowLayer.value) return;
+  updateArrowColor(selectedArrowLayer.value.id, color);
+};
+
+const handleRectColorChange = (color: string) => {
+  if (!selectedRectLayer.value) return;
+  updateRectColor(selectedRectLayer.value.id, color);
 };
 
 // Image source modal
@@ -203,11 +228,23 @@ const handleCopyImage = async () => {
       :value="selectedTextLayer.fontSize"
       :color="selectedTextLayer.fill"
       unit="px"
-      decrease-title="サイズを小さく"
-      increase-title="サイズを大きく"
       :step="2"
       @change="handleFontSizeChange"
       @color-change="handleTextColorChange"
+    />
+
+    <FloatingControl
+      v-else-if="selectedArrowLayer"
+      label="矢印"
+      :color="selectedArrowLayer.stroke"
+      @color-change="handleArrowColorChange"
+    />
+
+    <FloatingControl
+      v-else-if="selectedRectLayer"
+      label="矩形"
+      :color="selectedRectLayer.stroke"
+      @color-change="handleRectColorChange"
     />
 
     <ModalsContainer />

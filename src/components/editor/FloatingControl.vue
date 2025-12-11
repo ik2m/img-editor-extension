@@ -7,14 +7,10 @@ const props = withDefaults(
     value?: number;
     color?: string;
     unit?: string;
-    decreaseTitle?: string;
-    increaseTitle?: string;
     step?: number;
   }>(),
   {
     unit: 'px',
-    decreaseTitle: '値を小さく',
-    increaseTitle: '値を大きく',
     step: 2,
   }
 );
@@ -49,7 +45,7 @@ const handleColorChange = (color: string) => {
         <button
           @click="handleDecrease"
           class="bg-dark-panel hover:bg-dark-elevated border-dark-border flex h-9 w-9 items-center justify-center rounded border transition-colors"
-          :title="decreaseTitle"
+          title="値を小さく"
         >
           <span class="text-lg">−</span>
         </button>
@@ -59,7 +55,7 @@ const handleColorChange = (color: string) => {
         <button
           @click="handleIncrease"
           class="bg-dark-panel hover:bg-dark-elevated border-dark-border flex h-9 w-9 items-center justify-center rounded border transition-colors"
-          :title="increaseTitle"
+          title="値を大きく"
         >
           <span class="text-lg">+</span>
         </button>
