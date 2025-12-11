@@ -13,14 +13,11 @@ import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
 import useShapeStore from '@/stores/useShapeStore';
 import useImageStore from '@/stores/useImageStore';
 import useSettingsStore from '@/stores/useSettingsStore';
-import useCounterStore from '@/stores/useCounterStore';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
 // Pinia stores
-const { selectLayer, addShape } = useShapeStore();
-const { getNextRectName, getNextArrowName, getNextTextName, resetCounters } =
-  useCounterStore();
+const { selectLayer, addShape, getNextRectName, getNextArrowName, getNextTextName } = useShapeStore();
 
 const {
   originalImage,
@@ -51,7 +48,7 @@ const { open: openImageSourceModal, close: closeImageSourceModal } = useModal<
       fileInputRef.value?.click();
     },
     onOpenClipboardImage(blob: Blob) {
-      loadImageFromBlob(blob, resetCounters, targetWidth);
+      loadImageFromBlob(blob, targetWidth);
     },
   },
 });
@@ -111,7 +108,7 @@ const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (file) {
-    handleImageUpload(file, resetCounters, targetWidth);
+    handleImageUpload(file, targetWidth);
   }
 };
 

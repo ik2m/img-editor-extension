@@ -10,7 +10,7 @@ import useDrawingStore from './useDrawingStore';
 const useImageStore = defineStore('image', () => {
   const shapeStore = useShapeStore();
   const drawingStore = useDrawingStore();
-  const { resetShapes, scaleShapes } = shapeStore;
+  const { resetShapes, resetCounters, scaleShapes } = shapeStore;
   const { resetDrawingLayer, scaleDrawingLayer } = drawingStore;
 
   const imageUrl = ref<string>('');
@@ -24,20 +24,18 @@ const useImageStore = defineStore('image', () => {
 
   const handleImageUpload = (
     file: File,
-    resetCounters: () => void,
     targetWidth: Ref<number | 'original'>
   ) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       imageUrl.value = e.target?.result as string;
-      loadImageToStage(imageUrl.value, resetCounters, targetWidth);
+      loadImageToStage(imageUrl.value, targetWidth);
     };
     reader.readAsDataURL(file);
   };
 
   const loadImageToStage = (
     url: string,
-    resetCounters: () => void,
     targetWidth: Ref<number | 'original'>
   ) => {
     const img = new Image();
@@ -110,12 +108,11 @@ const useImageStore = defineStore('image', () => {
 
   const loadImageFromBlob = (
     blob: Blob,
-    resetCounters: () => void,
     targetWidth: Ref<number | 'original'>
   ) => {
     const url = URL.createObjectURL(blob);
     imageUrl.value = url;
-    loadImageToStage(url, resetCounters, targetWidth);
+    loadImageToStage(url, targetWidth);
     toast.success('クリップボードから画像を読み込みました');
   };
 
