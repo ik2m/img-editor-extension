@@ -1,5 +1,6 @@
 import { ref, watch } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
+import { storage } from '#imports';
 
 /**
  * エディタ設定の型定義
@@ -22,13 +23,27 @@ const DEFAULT_SETTINGS: EditorSettings = {
 };
 
 /**
- * ストレージキーのプレフィックス
+ * ストレージアイテムの定義
  */
-const STORAGE_PREFIX = 'editor_';
+const rectangleColorItem = storage.defineItem<string>('local:editor_rectangleColor', {
+  fallback: DEFAULT_SETTINGS.rectangleColor,
+});
+
+const arrowColorItem = storage.defineItem<string>('local:editor_arrowColor', {
+  fallback: DEFAULT_SETTINGS.arrowColor,
+});
+
+const textColorItem = storage.defineItem<string>('local:editor_textColor', {
+  fallback: DEFAULT_SETTINGS.textColor,
+});
+
+const targetWidthItem = storage.defineItem<number | 'original'>('local:editor_targetWidth', {
+  fallback: DEFAULT_SETTINGS.targetWidth,
+});
 
 /**
  * エディタ設定を管理するstore
- * browser.storage.localを使用して設定を永続化
+ * WXTのstorage APIを使用して設定を永続化
  */
 const useSettingsStore = defineStore('settings', () => {
   // State
@@ -43,41 +58,15 @@ const useSettingsStore = defineStore('settings', () => {
    */
   const loadSettings = async () => {
     try {
-      const keys = Object.keys(DEFAULT_SETTINGS).map(
-        (key) => `${STORAGE_PREFIX}${key}`
-      );
-      const result = await browser.storage.local.get(keys);
-
-      // 読み込んだ設定を適用
-      if (result[`${STORAGE_PREFIX}rectangleColor`] !== undefined) {
-        rectangleColor.value = result[`${STORAGE_PREFIX}rectangleColor`];
-      }
-      if (result[`${STORAGE_PREFIX}arrowColor`] !== undefined) {
-        arrowColor.value = result[`${STORAGE_PREFIX}arrowColor`];
-      }
-      if (result[`${STORAGE_PREFIX}textColor`] !== undefined) {
-        textColor.value = result[`${STORAGE_PREFIX}textColor`];
-      }
-      if (result[`${STORAGE_PREFIX}targetWidth`] !== undefined) {
-        targetWidth.value = result[`${STORAGE_PREFIX}targetWidth`];
-      }
+      rectangleColor.value = await rectangleColorItem.getValue();
+      arrowColor.value = await arrowColorItem.getValue();
+      textColor.value = await textColorItem.getValue();
+      targetWidth.value = await targetWidthItem.getValue();
 
       isLoaded.value = true;
     } catch (error) {
       console.error('Failed to load settings from storage:', error);
       isLoaded.value = true;
-    }
-  };
-
-  /**
-   * 特定の設定値をストレージに保存
-   */
-  const saveSetting = async (key: string, value: any) => {
-    try {
-      const storageKey = `${STORAGE_PREFIX}${key}`;
-      await browser.storage.local.set({ [storageKey]: value });
-    } catch (error) {
-      console.error(`Failed to save setting ${key}:`, error);
     }
   };
 
@@ -104,25 +93,25 @@ const useSettingsStore = defineStore('settings', () => {
   // 設定の各プロパティを監視して自動保存
   watch(rectangleColor, (newValue) => {
     if (isLoaded.value) {
-      saveSetting('rectangleColor', newValue);
+      rectangleColorItem.setValue(newValue);
     }
   });
 
   watch(arrowColor, (newValue) => {
     if (isLoaded.value) {
-      saveSetting('arrowColor', newValue);
+      arrowColorItem.setValue(newValue);
     }
   });
 
   watch(textColor, (newValue) => {
     if (isLoaded.value) {
-      saveSetting('textColor', newValue);
+      textColorItem.setValue(newValue);
     }
   });
 
   watch(targetWidth, (newValue) => {
     if (isLoaded.value) {
-      saveSetting('targetWidth', newValue);
+      targetWidthItem.setValue(newValue);
     }
   });
 
