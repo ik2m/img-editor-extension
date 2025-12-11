@@ -1,17 +1,16 @@
-import { ref, type Ref } from 'vue';
+import { ref, computed, type Ref } from 'vue';
+import { defineStore, storeToRefs } from 'pinia';
 import { toast } from 'vue-sonner';
 import type { Shape } from '@/components/editor/types';
-
-type UseShapeNameCounters = ReturnType<typeof import('./useShapeNameCounters').useShapeNameCounters>;
+import useLayerStore from './useLayerStore';
 
 /**
- * 画像の読み込み、リサイズ、ステージ寸法管理を行うcomposable
+ * 画像の読み込み、リサイズ、ステージ寸法管理を行うstore
  */
-export function useImageManagement(
-  nameCounters: UseShapeNameCounters,
-  shapes: Ref<Shape[]>,
-  targetWidth: Ref<number | 'original'>
-) {
+const useImageStore = defineStore('image', () => {
+  const layerStore = useLayerStore();
+  const { shapes } = layerStore;
+
   const imageUrl = ref<string>('');
   const originalImage = ref<HTMLImageElement | null>(null);
   const stageWidth = ref<number>(0);
@@ -19,22 +18,32 @@ export function useImageManagement(
   const layerScale = ref<{ x: number; y: number }>({ x: 1, y: 1 });
   const imageElement = ref<HTMLImageElement | null>(null);
 
-  const handleImageUpload = (file: File) => {
+  const isImageLoaded = computed(() => !!imageElement.value);
+
+  const handleImageUpload = (
+    file: File,
+    resetCounters: () => void,
+    targetWidth: Ref<number | 'original'>
+  ) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       imageUrl.value = e.target?.result as string;
-      loadImageToStage(imageUrl.value);
+      loadImageToStage(imageUrl.value, resetCounters, targetWidth);
     };
     reader.readAsDataURL(file);
   };
 
-  const loadImageToStage = (url: string) => {
+  const loadImageToStage = (
+    url: string,
+    resetCounters: () => void,
+    targetWidth: Ref<number | 'original'>
+  ) => {
     const img = new Image();
     img.onload = () => {
       originalImage.value = img;
 
       // カウンターとshapes配列をリセット
-      nameCounters.resetCounters();
+      resetCounters();
       shapes.value = [];
 
       // ターゲット幅が指定されている場合はリサイズ
@@ -121,10 +130,14 @@ export function useImageManagement(
     resizedImg.src = resizedDataURL;
   };
 
-  const loadImageFromBlob = (blob: Blob) => {
+  const loadImageFromBlob = (
+    blob: Blob,
+    resetCounters: () => void,
+    targetWidth: Ref<number | 'original'>
+  ) => {
     const url = URL.createObjectURL(blob);
     imageUrl.value = url;
-    loadImageToStage(url);
+    loadImageToStage(url, resetCounters, targetWidth);
     toast.success('クリップボードから画像を読み込みました');
   };
 
@@ -142,8 +155,6 @@ export function useImageManagement(
     }
   };
 
-  const isImageLoaded = computed(() => !!imageElement.value);
-
   return {
     imageUrl,
     originalImage,
@@ -157,4 +168,13 @@ export function useImageManagement(
     loadImageFromBlob,
     applyTargetWidth,
   };
-}
+});
+
+/**
+ * 画像ストアを使用する
+ * stateとactionsを分割代入可能な形で返す
+ */
+export default () => {
+  const store = useImageStore();
+  return { ...store, ...storeToRefs(store) };
+};

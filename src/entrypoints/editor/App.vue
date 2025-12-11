@@ -11,11 +11,11 @@ import InfoPanel from '@/components/editor/InfoPanel.vue';
 import TextInputModal from '@/components/editor/TextInputModal.vue';
 import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
 import { useShapeNameCounters } from '@/composables/editor/useShapeNameCounters';
-import { useImageManagement } from '@/composables/editor/useImageManagement';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
 import { useSettings } from '@/composables/editor/useSettings';
 import useLayerStore from '@/stores/useLayerStore';
+import useImageStore from '@/stores/useImageStore';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
@@ -60,19 +60,7 @@ const {
   loadImageToStage,
   loadImageFromBlob,
   applyTargetWidth,
-} = useImageManagement(
-  {
-    rectCounter,
-    arrowCounter,
-    textCounter,
-    getNextRectName,
-    getNextArrowName,
-    getNextTextName,
-    resetCounters,
-  },
-  shapes,
-  targetWidth
-);
+} = useImageStore();
 
 const {
   rectangleColor,
@@ -109,7 +97,7 @@ const { open: openImageSourceModal, close: closeImageSourceModal } = useModal<
       fileInputRef.value?.click();
     },
     onOpenClipboardImage(blob: Blob) {
-      loadImageFromBlob(blob);
+      loadImageFromBlob(blob, resetCounters, targetWidth);
     },
   },
 });
@@ -173,7 +161,7 @@ const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (file) {
-    handleImageUpload(file);
+    handleImageUpload(file, resetCounters, targetWidth);
   }
 };
 
