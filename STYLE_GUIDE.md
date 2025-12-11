@@ -169,15 +169,20 @@ export function useLayerManagement() {
 }
 ```
 
-### Composables の使用方法
+### Composables と Pinia Stores の使用方法
+
+#### 分割代入パターン
 
 **✅ Good: 分割代入でプロパティを取り出す**
 
 ```typescript
 // script setup内
-const { shapes, selectedShapeId, selectLayer, moveLayerUp, moveLayerDown } = useLayerManagement();
-const { imageUrl, stageWidth, stageHeight, isImageLoaded, handleImageUpload } = useImageManagement();
+// Composables
 const { rectangleColor, arrowColor, setRectangleColor, setArrowColor } = useShapeColor();
+
+// Pinia Stores
+const { shapes, selectedShapeId, selectLayer, moveLayerUp, moveLayerDown } = useLayerStore();
+const { imageUrl, stageWidth, stageHeight, isImageLoaded, handleImageUpload } = useImageStore();
 
 // 使用時
 const handleAddShape = () => {
@@ -201,8 +206,8 @@ const handleAddShape = () => {
 
 ```typescript
 // BAD: ドット記法でアクセスする必要があり冗長
-const layers = useLayerManagement();
-const image = useImageManagement();
+const layers = useLayerStore();
+const image = useImageStore();
 
 const handleAddShape = () => {
   if (!image.isImageLoaded.value) return;
@@ -228,6 +233,77 @@ const handleAddShape = () => {
 **注意点**:
 - **script setup内**: Refの値にアクセスする際は`.value`が必要
 - **template内**: `.value`は不要（Vueが自動的に展開）
+
+#### Pinia Store の実装パターン
+
+**✅ Good: 分割代入可能なexport default パターン**
+
+```typescript
+import { ref } from 'vue';
+import { defineStore, storeToRefs } from 'pinia';
+import type { Shape } from '@/components/editor/types';
+
+const useLayerStore = defineStore('layer', () => {
+  // State
+  const shapes = ref<Shape[]>([]);
+  const selectedShapeId = ref('');
+
+  // Actions
+  const selectLayer = (id: string) => {
+    selectedShapeId.value = id;
+  };
+
+  const moveLayerUp = (id: string) => {
+    // ... implementation
+  };
+
+  return {
+    shapes,
+    selectedShapeId,
+    selectLayer,
+    moveLayerUp,
+  };
+});
+
+/**
+ * レイヤーストアを使用する
+ * stateとactionsを分割代入可能な形で返す
+ */
+export default () => {
+  const store = useLayerStore();
+  return { ...store, ...storeToRefs(store) };
+};
+```
+
+**❌ Avoid: 直接 named export**
+
+```typescript
+// BAD: 使用側でstoreToRefsを呼ぶ必要がある
+export const useLayerStore = defineStore('layer', () => {
+  // ... implementation
+  return { shapes, selectedShapeId, selectLayer };
+});
+
+// 使用側で追加の記述が必要
+import { storeToRefs } from 'pinia';
+const store = useLayerStore();
+const { shapes, selectedShapeId } = storeToRefs(store);
+const { selectLayer } = store;
+```
+
+**理由**:
+- `storeToRefs`を使用側で意識する必要がない
+- composableと同じ使い勝手で一貫性がある
+- 分割代入だけで state も actions も取得できる
+- リアクティビティが自動的に保たれる
+
+**Store実装時の注意点**:
+- Store定義は内部の `const` として定義（`const useLayerStore = defineStore(...)`）
+- `export default` でラッパー関数を公開
+- ラッパー関数内で `storeToRefs` を適用してから返す
+- これにより、使用側は単純な分割代入だけで使える
+
+**ファイル名**: `useXxxStore.ts` の形式（例: `useLayerStore.ts`, `useImageStore.ts`）
 
 ### JSDoc コメント
 
