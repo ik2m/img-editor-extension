@@ -25,6 +25,7 @@ const {
   addArrowShape,
   addTextShape,
   updateTextFontSize,
+  updateTextColor,
 } = useShapeStore();
 
 const {
@@ -53,6 +54,11 @@ const handleFontSizeChange = (delta: number) => {
   if (!selectedTextLayer.value) return;
   const newSize = Math.max(8, Math.min(200, selectedTextLayer.value.fontSize + delta));
   updateTextFontSize(selectedTextLayer.value.id, newSize);
+};
+
+const handleTextColorChange = (color: string) => {
+  if (!selectedTextLayer.value) return;
+  updateTextColor(selectedTextLayer.value.id, color);
 };
 
 // Image source modal
@@ -193,13 +199,15 @@ const handleCopyImage = async () => {
 
     <FloatingControl
       v-if="selectedTextLayer"
-      label="フォントサイズ"
+      label="テキスト"
       :value="selectedTextLayer.fontSize"
+      :color="selectedTextLayer.fill"
       unit="px"
       decrease-title="サイズを小さく"
       increase-title="サイズを大きく"
       :step="2"
       @change="handleFontSizeChange"
+      @color-change="handleTextColorChange"
     />
 
     <ModalsContainer />

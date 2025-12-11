@@ -233,6 +233,13 @@ const useShapeStore = defineStore('shape', () => {
     replaceShape(shapeId, { fontSize });
   };
 
+  const updateTextColor = (shapeId: string, color: string) => {
+    const shape = shapes.value.find((s) => s.id === shapeId);
+    if (!shape || shape.type !== 'text') return;
+
+    replaceShape(shapeId, { fill: color });
+  };
+
   return {
     shapes,
     selectedShapeId,
@@ -256,6 +263,7 @@ const useShapeStore = defineStore('shape', () => {
     updateRectPosition,
     updateArrowPosition,
     updateTextFontSize,
+    updateTextColor,
   };
 });
 
