@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import LayerItem from './LayerItem.vue';
 import type { Shape } from './types';
-import { isDrawingShape } from './types';
+import { isDrawingShape, isTextShape } from './types';
 
 const props = defineProps<{
   shapes: Shape[];
@@ -19,6 +19,7 @@ const emit = defineEmits<{
   moveLayerDown: [id: string];
   deleteLayer: [id: string];
   reorderLayers: [fromIndex: number, toIndex: number];
+  updateTextFontSize: [id: string, fontSize: number];
 }>();
 
 // お絵描きレイヤー以外のレイヤーをフィルタ
@@ -31,7 +32,19 @@ const drawingLayer = computed(() => {
   return props.shapes.find(isDrawingShape);
 });
 
+// 選択されたテキストレイヤーを取得
+const selectedTextLayer = computed(() => {
+  const shape = props.shapes.find((s) => s.id === props.selectedShapeId);
+  return shape && isTextShape(shape) ? shape : null;
+});
+
 const draggedIndex = ref<number | null>(null);
+
+const handleFontSizeChange = (delta: number) => {
+  if (!selectedTextLayer.value) return;
+  const newSize = Math.max(8, Math.min(200, selectedTextLayer.value.fontSize + delta));
+  emit('updateTextFontSize', selectedTextLayer.value.id, newSize);
+};
 
 const handleDragStart = (index: number) => {
   draggedIndex.value = index;
@@ -59,6 +72,33 @@ const handleDragEnd = () => {
   >
     <div class="mb-3">
       <h3 class="text-dark-text m-0 text-sm font-semibold">レイヤー</h3>
+    </div>
+
+    <!-- テキストのフォントサイズ変更 -->
+    <div
+      v-if="selectedTextLayer"
+      class="bg-dark-elevated border-dark-border mb-3 rounded border p-3"
+    >
+      <div class="text-dark-text mb-2 text-xs font-semibold">フォントサイズ</div>
+      <div class="flex items-center gap-2">
+        <button
+          @click="handleFontSizeChange(-2)"
+          class="bg-dark-panel hover:bg-dark-elevated border-dark-border flex h-8 w-8 items-center justify-center rounded border transition-colors"
+          title="サイズを小さく"
+        >
+          <span class="text-lg">−</span>
+        </button>
+        <div class="text-dark-text flex-1 text-center text-sm">
+          {{ selectedTextLayer.fontSize }}px
+        </div>
+        <button
+          @click="handleFontSizeChange(2)"
+          class="bg-dark-panel hover:bg-dark-elevated border-dark-border flex h-8 w-8 items-center justify-center rounded border transition-colors"
+          title="サイズを大きく"
+        >
+          <span class="text-lg">+</span>
+        </button>
+      </div>
     </div>
 
     <div class="flex flex-col gap-1">

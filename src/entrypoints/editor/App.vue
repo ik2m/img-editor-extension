@@ -189,6 +189,21 @@ const handleUpdateRectCorner = (
   ];
 };
 
+const handleUpdateTextFontSize = (shapeId: string, fontSize: number) => {
+  const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
+  if (shapeIndex === -1) return;
+
+  const shape = layers.shapes.value[shapeIndex];
+  if (!('fontSize' in shape)) return;
+
+  // 配列全体を更新してリアクティビティをトリガー
+  layers.shapes.value = [
+    ...layers.shapes.value.slice(0, shapeIndex),
+    { ...shape, fontSize },
+    ...layers.shapes.value.slice(shapeIndex + 1),
+  ];
+};
+
 const handleSaveImage = () => {
   const stage = canvasRef.value?.getStage();
   if (!stage) return;
@@ -282,6 +297,7 @@ const handleCopyImage = async () => {
         @move-layer-down="layers.moveLayerDown"
         @delete-layer="layers.deleteLayer"
         @reorder-layers="layers.reorderLayers"
+        @update-text-font-size="handleUpdateTextFontSize"
       />
     </div>
 

@@ -42,9 +42,9 @@ const updateTransformer = () => {
     return;
   }
 
-  // 矢印または矩形が選択されている場合はトランスフォーマーを無効化（カスタムハンドラを使用）
+  // 矢印、矩形、テキストが選択されている場合はトランスフォーマーを無効化（カスタム操作を使用）
   const selectedShape = props.shapes.find((s) => s.id === props.selectedShapeId);
-  if (selectedShape && (isArrowShape(selectedShape) || isRectShape(selectedShape))) {
+  if (selectedShape && (isArrowShape(selectedShape) || isRectShape(selectedShape) || isTextShape(selectedShape))) {
     transformerNode.nodes([]);
     return;
   }
@@ -237,9 +237,8 @@ defineExpose({
               fontStyle: shape.fontStyle,
               fill: shape.fill,
               align: shape.align,
-              draggable: shape.draggable,
+              draggable: false,
             }"
-            @transformend="(e: any) => emit('transformEnd', e)"
           />
         </template>
         <!-- 描画中の一時表示 -->
