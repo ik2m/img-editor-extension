@@ -1,23 +1,23 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue';
 import { Toaster } from 'vue-sonner';
-import { ModalsContainer } from 'vue-final-modal';
+import { ModalsContainer, useModal } from 'vue-final-modal';
 import type Konva from 'konva';
 import EditorHeader from '@/components/editor/EditorHeader.vue';
 import EditorToolbar from '@/components/editor/EditorToolbar.vue';
 import EditorCanvas from '@/components/editor/EditorCanvas.vue';
 import LayerPanel from '@/components/editor/LayerPanel.vue';
 import InfoPanel from '@/components/editor/InfoPanel.vue';
+import TextInputModal from '@/components/editor/TextInputModal.vue';
 import { useShapeNameCounters } from '@/composables/editor/useShapeNameCounters';
 import { useLayerManagement } from '@/composables/editor/useLayerManagement';
 import { useImageManagement } from '@/composables/editor/useImageManagement';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
-import { useTextMode } from '@/composables/editor/useTextMode';
 import { useImageSourceModal } from '@/composables/editor/useImageSourceModal';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
 import { useSettings } from '@/composables/editor/useSettings';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
-import { createRectangle, createArrow } from '@/utils/shapeFactory';
+import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
 // Settings
 const { settings, updateSetting } = useSettings();
@@ -32,28 +32,63 @@ const layers = useLayerManagement();
 const image = useImageManagement(nameCounters, layers.shapes, targetWidth);
 const shapeColor = useShapeColor();
 const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
-const drawing = useDrawingMode(layers.shapes, layers.selectLayer, image.layerScale);
-const fileInputRef = ref<HTMLInputElement | null>(null);
-const text = useTextMode(
+const drawing = useDrawingMode(
   layers.shapes,
   layers.selectLayer,
-  nameCounters.getNextTextName,
-  image.originalImage,
-  shapeColor.textColor
+  image.layerScale
 );
-const imageSourceModal = useImageSourceModal(fileInputRef, image.loadImageFromBlob);
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const imageSourceModal = useImageSourceModal(
+  fileInputRef,
+  image.loadImageFromBlob
+);
+
+// Text modal
+const { open: openTextModal, close: closeTextModal } = useModal({
+  component: TextInputModal,
+  attrs: {
+    isOpen: true,
+    onClose() {
+      closeTextModal();
+    },
+    onSubmit(inputText: string) {
+      if (!image.originalImage.value) return;
+
+      // 画像の中央に配置
+      const centerX = image.originalImage.value.width / 2;
+      const centerY = image.originalImage.value.height / 2;
+
+      const text = createText(
+        nameCounters.getNextTextName(),
+        inputText,
+        shapeColor.textColor.value,
+        centerX,
+        centerY
+      );
+      layers.shapes.value.push(text);
+      layers.selectLayer(text.id);
+      closeTextModal();
+    },
+  },
+});
 
 // Shape creation handlers
 const handleAddRectangle = () => {
   if (!image.imageElement.value) return;
-  const rect = createRectangle(nameCounters.getNextRectName(), shapeColor.rectangleColor.value);
+  const rect = createRectangle(
+    nameCounters.getNextRectName(),
+    shapeColor.rectangleColor.value
+  );
   layers.shapes.value.push(rect);
   layers.selectLayer(rect.id);
 };
 
 const handleAddArrow = () => {
   if (!image.imageElement.value) return;
-  const arrow = createArrow(nameCounters.getNextArrowName(), shapeColor.arrowColor.value);
+  const arrow = createArrow(
+    nameCounters.getNextArrowName(),
+    shapeColor.arrowColor.value
+  );
   layers.shapes.value.push(arrow);
   layers.selectLayer(arrow.id);
 };
@@ -203,7 +238,11 @@ const handleUpdateRectPosition = (shapeId: string, x: number, y: number) => {
   ];
 };
 
-const handleUpdateArrowPosition = (shapeId: string, deltaX: number, deltaY: number) => {
+const handleUpdateArrowPosition = (
+  shapeId: string,
+  deltaX: number,
+  deltaY: number
+) => {
   const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
   if (shapeIndex === -1) return;
 
@@ -281,7 +320,7 @@ const handleCopyImage = async () => {
         @add-rectangle="handleAddRectangle"
         @add-arrow="handleAddArrow"
         @toggle-drawing-mode="drawing.toggleDrawingMode"
-        @add-text="text.openTextInput"
+        @add-text="openTextModal"
         @select-rectangle-color="shapeColor.setRectangleColor"
         @select-arrow-color="shapeColor.setArrowColor"
         @select-text-color="shapeColor.setTextColor"
@@ -335,7 +374,10 @@ const handleCopyImage = async () => {
 
     <Toaster position="top-center" />
 
-    <InfoPanel :width="image.stageWidth.value" :height="image.stageHeight.value" />
+    <InfoPanel
+      :width="image.stageWidth.value"
+      :height="image.stageHeight.value"
+    />
 
     <ModalsContainer />
   </div>
