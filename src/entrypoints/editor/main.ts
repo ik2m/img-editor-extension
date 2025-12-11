@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import App from './App.vue';
 import './style.css';
 import VueKonva from 'vue-konva';
@@ -8,6 +9,8 @@ import 'vue-final-modal/style.css';
 
 import { createVfm } from 'vue-final-modal';
 
+const app = createApp(App);
+const pinia = createPinia();
 const vfm = createVfm();
 
-createApp(App).use(VueKonva).use(vfm).mount('#app');
+app.use(pinia).use(VueKonva).use(vfm).mount('#app');
