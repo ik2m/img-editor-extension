@@ -9,9 +9,7 @@ import useImageStore from './useImageStore';
  */
 const useDrawingStore = defineStore('drawing', () => {
   const shapeStore = useShapeStore();
-  const imageStore = useImageStore();
   const { selectLayer } = shapeStore;
-  const { layerScale } = imageStore;
 
   // State
   const drawingMode = ref<boolean>(false);
@@ -70,6 +68,7 @@ const useDrawingStore = defineStore('drawing', () => {
 
   const startDrawing = (pos: { x: number; y: number }) => {
     if (!drawingMode.value) return;
+    const { layerScale } = useImageStore();
     currentLine.value = [
       pos.x / layerScale.value.x,
       pos.y / layerScale.value.y,
@@ -78,6 +77,7 @@ const useDrawingStore = defineStore('drawing', () => {
 
   const continueDrawing = (pos: { x: number; y: number }) => {
     if (currentLine.value.length === 0) return;
+    const { layerScale } = useImageStore();
     currentLine.value.push(
       pos.x / layerScale.value.x,
       pos.y / layerScale.value.y
