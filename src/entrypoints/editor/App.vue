@@ -18,7 +18,7 @@ import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
 // Pinia stores
-const { shapes, selectLayer } = useLayerStore();
+const { shapes, selectLayer, addShape } = useLayerStore();
 const { getNextRectName, getNextArrowName, getNextTextName, resetCounters } = useCounterStore();
 
 const {
@@ -78,7 +78,7 @@ const { open: openTextModal, close: closeTextModal } = useModal<
         centerX,
         centerY
       );
-      shapes.value.push(text);
+      addShape(text);
       selectLayer(text.id);
     },
   },
@@ -88,14 +88,14 @@ const { open: openTextModal, close: closeTextModal } = useModal<
 const handleAddRectangle = () => {
   if (!isImageLoaded.value) return;
   const rect = createRectangle(getNextRectName(), rectangleColor.value);
-  shapes.value.push(rect);
+  addShape(rect);
   selectLayer(rect.id);
 };
 
 const handleAddArrow = () => {
   if (!isImageLoaded.value) return;
   const arrow = createArrow(getNextArrowName(), arrowColor.value);
-  shapes.value.push(arrow);
+  addShape(arrow);
   selectLayer(arrow.id);
 };
 

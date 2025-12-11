@@ -10,7 +10,7 @@ import useImageStore from './useImageStore';
 const useDrawingStore = defineStore('drawing', () => {
   const layerStore = useLayerStore();
   const imageStore = useImageStore();
-  const { shapes, selectLayer } = layerStore;
+  const { shapes, selectLayer, addShapeAt } = layerStore;
   const { layerScale } = imageStore;
 
   // State
@@ -37,7 +37,7 @@ const useDrawingStore = defineStore('drawing', () => {
         draggable: false,
       };
       // 画像レイヤーの直前に配置（配列の先頭）
-      shapes.value.unshift(layer);
+      addShapeAt(layer, 0);
     }
     return layer;
   };

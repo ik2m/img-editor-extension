@@ -13,6 +13,14 @@ const useLayerStore = defineStore('layer', () => {
     selectedShapeId.value = id;
   };
 
+  const addShape = (shape: Shape) => {
+    shapes.value.push(shape);
+  };
+
+  const addShapeAt = (shape: Shape, index: number) => {
+    shapes.value.splice(index, 0, shape);
+  };
+
   const moveLayerUp = (id: string) => {
     // お絵描きレイヤーは移動不可
     const shape = shapes.value.find((s) => s.id === id);
@@ -223,6 +231,8 @@ const useLayerStore = defineStore('layer', () => {
     shapes,
     selectedShapeId,
     selectLayer,
+    addShape,
+    addShapeAt,
     moveLayerUp,
     moveLayerDown,
     deleteLayer,
@@ -239,8 +249,15 @@ const useLayerStore = defineStore('layer', () => {
 /**
  * レイヤーストアを使用する
  * stateとactionsを分割代入可能な形で返す
+ * shapes は readonly として扱う（storeToRefsで自動的にreadonlyになる）
  */
 export default () => {
   const store = useLayerStore();
-  return { ...store, ...storeToRefs(store) };
+  const refs = storeToRefs(store);
+  return {
+    ...store,
+    ...refs,
+    // shapesは明示的にreadonlyとして扱う
+    shapes: refs.shapes as Readonly<typeof refs.shapes>,
+  };
 };
