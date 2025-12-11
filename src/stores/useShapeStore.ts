@@ -1,7 +1,7 @@
 import { ref, readonly } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
 import type { Shape } from '@/components/editor/types';
-import { createText } from '@/utils/shapeFactory';
+import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
 /**
  * Shape配列の管理と図形名の自動採番を行うstore
@@ -19,18 +19,22 @@ const useShapeStore = defineStore('shape', () => {
     selectedShapeId.value = id;
   };
 
-  const addShape = (shape: Shape) => {
-    shapes.value.push(shape);
+  const addRectShape = (color: string) => {
+    const rect = createRectangle(getNextRectName(), color);
+    shapes.value.push(rect);
+    return rect;
+  };
+
+  const addArrowShape = (color: string) => {
+    const arrow = createArrow(getNextArrowName(), color);
+    shapes.value.push(arrow);
+    return arrow;
   };
 
   const addTextShape = (inputText: string, color: string, x: number, y: number) => {
     const text = createText(getNextTextName(), inputText, color, x, y);
     shapes.value.push(text);
     return text;
-  };
-
-  const addShapeAt = (shape: Shape, index: number) => {
-    shapes.value.splice(index, 0, shape);
   };
 
   const resetShapes = () => {
@@ -271,9 +275,9 @@ const useShapeStore = defineStore('shape', () => {
     arrowCounter,
     textCounter,
     selectLayer,
-    addShape,
+    addRectShape,
+    addArrowShape,
     addTextShape,
-    addShapeAt,
     resetShapes,
     resetCounters,
     getNextRectName,

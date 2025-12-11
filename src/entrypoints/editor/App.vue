@@ -14,16 +14,13 @@ import useShapeStore from '@/stores/useShapeStore';
 import useImageStore from '@/stores/useImageStore';
 import useSettingsStore from '@/stores/useSettingsStore';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
-import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
 // Pinia stores
 const {
   selectLayer,
-  addShape,
+  addRectShape,
+  addArrowShape,
   addTextShape,
-  getNextRectName,
-  getNextArrowName,
-  getNextTextName,
 } = useShapeStore();
 
 const {
@@ -85,15 +82,13 @@ const { open: openTextModal, close: closeTextModal } = useModal<
 // Shape creation handlers
 const handleAddRectangle = () => {
   if (!isImageLoaded.value) return;
-  const rect = createRectangle(getNextRectName(), rectangleColor.value);
-  addShape(rect);
+  const rect = addRectShape(rectangleColor.value);
   selectLayer(rect.id);
 };
 
 const handleAddArrow = () => {
   if (!isImageLoaded.value) return;
-  const arrow = createArrow(getNextArrowName(), arrowColor.value);
-  addShape(arrow);
+  const arrow = addArrowShape(arrowColor.value);
   selectLayer(arrow.id);
 };
 
