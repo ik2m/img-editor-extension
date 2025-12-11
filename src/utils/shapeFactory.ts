@@ -70,16 +70,23 @@ export function createText(
   centerX: number,
   centerY: number
 ): TextShape {
+  const fontSize = 24;
+  // テキストの幅を推定（日本語の場合、フォントサイズとほぼ同じ幅）
+  const estimatedWidth = text.length * fontSize;
+
   return {
     id: `text-${Date.now()}`,
     name,
     x: centerX,
     y: centerY,
     text,
-    fontSize: 24,
+    fontSize,
     fontFamily: 'Noto Sans JP',
+    fontStyle: 'bold',
     fill: color,
     align: 'center',
+    offsetX: estimatedWidth / 2,
+    offsetY: fontSize / 2,
     draggable: true,
   };
 }
