@@ -106,11 +106,9 @@ const { open: openImageSourceModal, close: closeImageSourceModal } = useModal<
     },
     onOpenFile() {
       fileInputRef.value?.click();
-      closeImageSourceModal();
     },
     onOpenClipboardImage(blob: Blob) {
       loadImageFromBlob(blob);
-      closeImageSourceModal();
     },
   },
 });
@@ -140,7 +138,6 @@ const { open: openTextModal, close: closeTextModal } = useModal<
       );
       shapes.value.push(text);
       selectLayer(text.id);
-      closeTextModal();
     },
   },
 });
