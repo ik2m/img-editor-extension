@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, readonly } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
 import type { Shape } from '@/components/editor/types';
 
@@ -228,7 +228,7 @@ const useLayerStore = defineStore('layer', () => {
   };
 
   return {
-    shapes,
+    shapes: readonly(shapes),
     selectedShapeId,
     selectLayer,
     addShape,
@@ -257,7 +257,5 @@ export default () => {
   return {
     ...store,
     ...refs,
-    // shapesは明示的にreadonlyとして扱う
-    shapes: refs.shapes as Readonly<typeof refs.shapes>,
   };
 };
