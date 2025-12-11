@@ -1,6 +1,6 @@
 import { ref, readonly } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
-import type { Shape } from '@/components/editor/types';
+import type { Shape, RectShape, ArrowShape, TextShape } from '@/components/editor/types';
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
 /**
@@ -122,6 +122,13 @@ const useShapeStore = defineStore('shape', () => {
     shapes.value.splice(toIndex, 0, removed);
   };
 
+  // 図形更新のヘルパー関数
+  const replaceShape = (shapeId: string, updates: Partial<Shape>) => {
+    shapes.value = shapes.value.map((s) =>
+      s.id === shapeId ? { ...s, ...updates } : s
+    ) as Shape[];
+  };
+
   // 図形更新のアクション
   const updateArrowPoint = (
     shapeId: string,
@@ -129,11 +136,8 @@ const useShapeStore = defineStore('shape', () => {
     x: number,
     y: number
   ) => {
-    const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
-    if (shapeIndex === -1) return;
-
-    const shape = shapes.value[shapeIndex];
-    if (shape.type !== 'arrow') return;
+    const shape = shapes.value.find((s) => s.id === shapeId);
+    if (!shape || shape.type !== 'arrow') return;
 
     const newPoints = [...shape.points] as [number, number, number, number];
     if (pointIndex === 0) {
@@ -144,11 +148,7 @@ const useShapeStore = defineStore('shape', () => {
       newPoints[3] = y;
     }
 
-    shapes.value = [
-      ...shapes.value.slice(0, shapeIndex),
-      { ...shape, points: newPoints },
-      ...shapes.value.slice(shapeIndex + 1),
-    ];
+    replaceShape(shapeId, { points: newPoints });
   };
 
   const updateRectCorner = (
@@ -157,11 +157,8 @@ const useShapeStore = defineStore('shape', () => {
     x: number,
     y: number
   ) => {
-    const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
-    if (shapeIndex === -1) return;
-
-    const shape = shapes.value[shapeIndex];
-    if (shape.type !== 'rect') return;
+    const shape = shapes.value.find((s) => s.id === shapeId);
+    if (!shape || shape.type !== 'rect') return;
 
     let newX = shape.x;
     let newY = shape.y;
@@ -194,39 +191,21 @@ const useShapeStore = defineStore('shape', () => {
     if (newWidth < 10) newWidth = 10;
     if (newHeight < 10) newHeight = 10;
 
-    shapes.value = [
-      ...shapes.value.slice(0, shapeIndex),
-      { ...shape, x: newX, y: newY, width: newWidth, height: newHeight },
-      ...shapes.value.slice(shapeIndex + 1),
-    ];
+    replaceShape(shapeId, { x: newX, y: newY, width: newWidth, height: newHeight });
   };
 
   const updateTextPosition = (shapeId: string, x: number, y: number) => {
-    const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
-    if (shapeIndex === -1) return;
+    const shape = shapes.value.find((s) => s.id === shapeId);
+    if (!shape || shape.type !== 'text') return;
 
-    const shape = shapes.value[shapeIndex];
-    if (shape.type !== 'text') return;
-
-    shapes.value = [
-      ...shapes.value.slice(0, shapeIndex),
-      { ...shape, x, y },
-      ...shapes.value.slice(shapeIndex + 1),
-    ];
+    replaceShape(shapeId, { x, y });
   };
 
   const updateRectPosition = (shapeId: string, x: number, y: number) => {
-    const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
-    if (shapeIndex === -1) return;
+    const shape = shapes.value.find((s) => s.id === shapeId);
+    if (!shape || shape.type !== 'rect') return;
 
-    const shape = shapes.value[shapeIndex];
-    if (shape.type !== 'rect') return;
-
-    shapes.value = [
-      ...shapes.value.slice(0, shapeIndex),
-      { ...shape, x, y },
-      ...shapes.value.slice(shapeIndex + 1),
-    ];
+    replaceShape(shapeId, { x, y });
   };
 
   const updateArrowPosition = (
@@ -234,11 +213,8 @@ const useShapeStore = defineStore('shape', () => {
     deltaX: number,
     deltaY: number
   ) => {
-    const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
-    if (shapeIndex === -1) return;
-
-    const shape = shapes.value[shapeIndex];
-    if (shape.type !== 'arrow') return;
+    const shape = shapes.value.find((s) => s.id === shapeId);
+    if (!shape || shape.type !== 'arrow') return;
 
     const newPoints: [number, number, number, number] = [
       shape.points[0] + deltaX,
@@ -247,25 +223,14 @@ const useShapeStore = defineStore('shape', () => {
       shape.points[3] + deltaY,
     ];
 
-    shapes.value = [
-      ...shapes.value.slice(0, shapeIndex),
-      { ...shape, points: newPoints },
-      ...shapes.value.slice(shapeIndex + 1),
-    ];
+    replaceShape(shapeId, { points: newPoints });
   };
 
   const updateTextFontSize = (shapeId: string, fontSize: number) => {
-    const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
-    if (shapeIndex === -1) return;
+    const shape = shapes.value.find((s) => s.id === shapeId);
+    if (!shape || shape.type !== 'text') return;
 
-    const shape = shapes.value[shapeIndex];
-    if (shape.type !== 'text') return;
-
-    shapes.value = [
-      ...shapes.value.slice(0, shapeIndex),
-      { ...shape, fontSize },
-      ...shapes.value.slice(shapeIndex + 1),
-    ];
+    replaceShape(shapeId, { fontSize });
   };
 
   return {
