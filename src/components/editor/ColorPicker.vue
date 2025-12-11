@@ -10,9 +10,9 @@ const emit = defineEmits<{
 }>();
 
 const colors = [
-  { name: '赤', value: '#ff0000' },
-  { name: '青', value: '#0000ff' },
-  { name: '緑', value: '#00ff00' },
+  { name: '赤', value: '#FF3333' },
+  { name: '青', value: '#213FFF' },
+  { name: '緑', value: '#33FF33' },
 ];
 </script>
 
