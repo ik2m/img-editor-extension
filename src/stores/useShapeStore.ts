@@ -4,6 +4,16 @@ import type { Shape, RectShape, ArrowShape, TextShape } from '@/components/edito
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
 /**
+ * 16進数カラーコードからRGBA文字列を生成
+ */
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/**
  * Shape配列の管理と図形名の自動採番を行うstore
  */
 const useShapeStore = defineStore('shape', () => {
@@ -244,14 +254,16 @@ const useShapeStore = defineStore('shape', () => {
     const shape = shapes.value.find((s) => s.id === shapeId);
     if (!shape || shape.type !== 'arrow') return;
 
-    replaceShape(shapeId, { stroke: color });
+    const rgba = hexToRgba(color, 0.7);
+    replaceShape(shapeId, { stroke: rgba, fill: rgba });
   };
 
   const updateRectColor = (shapeId: string, color: string) => {
     const shape = shapes.value.find((s) => s.id === shapeId);
     if (!shape || shape.type !== 'rect') return;
 
-    replaceShape(shapeId, { stroke: color });
+    const rgba = hexToRgba(color, 0.7);
+    replaceShape(shapeId, { stroke: rgba });
   };
 
   return {
