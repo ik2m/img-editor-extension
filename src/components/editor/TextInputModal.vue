@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
+import { VueFinalModal } from 'vue-final-modal';
 import BaseButton from '@/components/common/BaseButton.vue';
 
 const props = defineProps<{
@@ -13,6 +14,13 @@ const emit = defineEmits<{
 
 const inputText = ref('');
 const inputRef = ref<HTMLInputElement | null>(null);
+
+const open = computed({
+  get: () => props.isOpen,
+  set: (value) => {
+    if (!value) emit('close');
+  },
+});
 
 watch(
   () => props.isOpen,
@@ -34,54 +42,41 @@ const handleSubmit = () => {
   }
 };
 
-const handleCancel = () => {
-  emit('close');
-};
-
-const handleBackdropClick = (event: MouseEvent) => {
-  if (event.target === event.currentTarget) {
-    emit('close');
-  }
-};
-
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Enter') {
+    event.preventDefault();
     handleSubmit();
-  } else if (event.key === 'Escape') {
-    handleCancel();
   }
 };
 </script>
 
 <template>
-  <div
-    v-if="isOpen"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-    @click="handleBackdropClick"
+  <VueFinalModal
+    v-model="open"
+    class="flex items-center justify-center"
+    content-class="bg-dark-panel border-dark-border w-full max-w-md rounded-lg border p-6 shadow-lg"
+    overlay-transition="vfm-fade"
+    content-transition="vfm-fade"
   >
-    <div
-      class="bg-dark-panel border-dark-border w-full max-w-md rounded-lg border p-6 shadow-lg"
-    >
-      <h2 class="mb-4 text-xl font-bold text-white">テキストを入力</h2>
+    <h2 class="mb-4 text-xl font-bold text-white">テキストを入力</h2>
 
-      <input
-        ref="inputRef"
-        v-model="inputText"
-        type="text"
-        class="bg-dark-bg border-dark-border focus:border-primary mb-6 w-full rounded border px-4 py-2 text-white outline-none"
-        placeholder="テキストを入力してください"
-        @keydown="handleKeydown"
-      />
+    <input
+      ref="inputRef"
+      v-model="inputText"
+      type="text"
+      class="bg-dark-bg border-dark-border focus:border-primary mb-6 w-full rounded border px-4 py-2 text-white outline-none"
+      placeholder="テキストを入力してください"
+      @keydown="handleKeydown"
+    />
 
-      <div class="flex gap-4">
-        <BaseButton color="primary" @click="handleSubmit" class="flex-1">
-          OK
-        </BaseButton>
+    <div class="flex gap-4">
+      <BaseButton color="primary" @click="handleSubmit" class="flex-1">
+        OK
+      </BaseButton>
 
-        <BaseButton color="tertiary" @click="handleCancel" class="flex-1">
-          キャンセル
-        </BaseButton>
-      </div>
+      <BaseButton color="tertiary" @click="open = false" class="flex-1">
+        キャンセル
+      </BaseButton>
     </div>
-  </div>
+  </VueFinalModal>
 </template>
