@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue';
-import { storeToRefs } from 'pinia';
 import { Toaster } from 'vue-sonner';
 import { ModalsContainer, useModal } from 'vue-final-modal';
 import type Konva from 'konva';
@@ -16,7 +15,7 @@ import { useImageManagement } from '@/composables/editor/useImageManagement';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
 import { useSettings } from '@/composables/editor/useSettings';
-import { useLayerStore } from '@/stores/layerStore';
+import useLayerStore from '@/stores/layerStore';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
@@ -39,9 +38,15 @@ const {
 } = useShapeNameCounters();
 
 // Pinia store
-const layerStore = useLayerStore();
-const { shapes, selectedShapeId } = storeToRefs(layerStore);
-const { selectLayer, moveLayerUp, moveLayerDown, deleteLayer, reorderLayers } = layerStore;
+const {
+  shapes,
+  selectedShapeId,
+  selectLayer,
+  moveLayerUp,
+  moveLayerDown,
+  deleteLayer,
+  reorderLayers,
+} = useLayerStore();
 
 const {
   imageUrl,

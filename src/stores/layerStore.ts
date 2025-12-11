@@ -1,12 +1,12 @@
 import { ref } from 'vue';
-import { defineStore } from 'pinia';
+import { defineStore, storeToRefs } from 'pinia';
 import type { Shape } from '@/components/editor/types';
 import { isDrawingShape } from '@/components/editor/types';
 
 /**
  * レイヤー（Shape配列）の管理を行うstore
  */
-export const useLayerStore = defineStore('layer', () => {
+const useLayerStore = defineStore('layer', () => {
   const shapes = ref<Shape[]>([]);
   const selectedShapeId = ref('');
 
@@ -84,3 +84,12 @@ export const useLayerStore = defineStore('layer', () => {
     reorderLayers,
   };
 });
+
+/**
+ * レイヤーストアを使用する
+ * stateとactionsを分割代入可能な形で返す
+ */
+export default () => {
+  const store = useLayerStore();
+  return { ...store, ...storeToRefs(store) };
+};
