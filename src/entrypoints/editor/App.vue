@@ -27,16 +27,72 @@ const targetWidth = computed({
 });
 
 // Composables
-const nameCounters = useShapeNameCounters();
-const layers = useLayerManagement();
-const image = useImageManagement(nameCounters, layers.shapes, targetWidth);
-const shapeColor = useShapeColor();
-const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
-const drawing = useDrawingMode(
-  layers.shapes,
-  layers.selectLayer,
-  image.layerScale
+const {
+  rectCounter,
+  arrowCounter,
+  textCounter,
+  getNextRectName,
+  getNextArrowName,
+  getNextTextName,
+  resetCounters,
+} = useShapeNameCounters();
+
+const {
+  shapes,
+  selectedShapeId,
+  selectLayer,
+  moveLayerUp,
+  moveLayerDown,
+  deleteLayer,
+  reorderLayers,
+} = useLayerManagement();
+
+const {
+  imageUrl,
+  originalImage,
+  imageElement,
+  stageWidth,
+  stageHeight,
+  layerScale,
+  isImageLoaded,
+  handleImageUpload,
+  loadImageToStage,
+  loadImageFromBlob,
+  applyTargetWidth,
+} = useImageManagement(
+  {
+    rectCounter,
+    arrowCounter,
+    textCounter,
+    getNextRectName,
+    getNextArrowName,
+    getNextTextName,
+    resetCounters,
+  },
+  shapes,
+  targetWidth
 );
+
+const {
+  rectangleColor,
+  arrowColor,
+  textColor,
+  setRectangleColor,
+  setArrowColor,
+  setTextColor,
+} = useShapeColor();
+
+const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
+
+const {
+  drawingMode,
+  currentDrawing,
+  toggleDrawingMode,
+  startDrawing,
+  continueDrawing,
+  finishDrawing,
+} = useDrawingMode(shapes, selectLayer, layerScale);
+
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
 // Image source modal
@@ -53,7 +109,7 @@ const { open: openImageSourceModal, close: closeImageSourceModal } = useModal<
       closeImageSourceModal();
     },
     onOpenClipboardImage(blob: Blob) {
-      image.loadImageFromBlob(blob);
+      loadImageFromBlob(blob);
       closeImageSourceModal();
     },
   },
@@ -69,21 +125,21 @@ const { open: openTextModal, close: closeTextModal } = useModal<
       closeTextModal();
     },
     onSubmit(inputText: string) {
-      if (!image.originalImage.value) return;
+      if (!originalImage.value) return;
 
       // 画像の中央に配置
-      const centerX = image.originalImage.value.width / 2;
-      const centerY = image.originalImage.value.height / 2;
+      const centerX = originalImage.value.width / 2;
+      const centerY = originalImage.value.height / 2;
 
       const text = createText(
-        nameCounters.getNextTextName(),
+        getNextTextName(),
         inputText,
-        shapeColor.textColor.value,
+        textColor.value,
         centerX,
         centerY
       );
-      layers.shapes.value.push(text);
-      layers.selectLayer(text.id);
+      shapes.value.push(text);
+      selectLayer(text.id);
       closeTextModal();
     },
   },
@@ -91,41 +147,35 @@ const { open: openTextModal, close: closeTextModal } = useModal<
 
 // Shape creation handlers
 const handleAddRectangle = () => {
-  if (!image.imageElement.value) return;
-  const rect = createRectangle(
-    nameCounters.getNextRectName(),
-    shapeColor.rectangleColor.value
-  );
-  layers.shapes.value.push(rect);
-  layers.selectLayer(rect.id);
+  if (!isImageLoaded.value) return;
+  const rect = createRectangle(getNextRectName(), rectangleColor.value);
+  shapes.value.push(rect);
+  selectLayer(rect.id);
 };
 
 const handleAddArrow = () => {
-  if (!image.imageElement.value) return;
-  const arrow = createArrow(
-    nameCounters.getNextArrowName(),
-    shapeColor.arrowColor.value
-  );
-  layers.shapes.value.push(arrow);
-  layers.selectLayer(arrow.id);
+  if (!isImageLoaded.value) return;
+  const arrow = createArrow(getNextArrowName(), arrowColor.value);
+  shapes.value.push(arrow);
+  selectLayer(arrow.id);
 };
 
 // targetWidthの変更を監視して、画像が読み込まれている場合はリサイズ
 watch(targetWidth, (newWidth) => {
-  if (image.originalImage.value) {
-    image.applyTargetWidth(newWidth);
+  if (originalImage.value) {
+    applyTargetWidth(newWidth);
   }
 });
 
 const handleStageClick = (targetId: string) => {
-  layers.selectLayer(targetId);
+  selectLayer(targetId);
 };
 
 const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (file) {
-    image.handleImageUpload(file);
+    handleImageUpload(file);
   }
 };
 
@@ -135,10 +185,10 @@ const handleUpdateArrowPoint = (
   x: number,
   y: number
 ) => {
-  const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
+  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
   if (shapeIndex === -1) return;
 
-  const shape = layers.shapes.value[shapeIndex];
+  const shape = shapes.value[shapeIndex];
   if (!('points' in shape)) return;
 
   const newPoints = [...shape.points] as [number, number, number, number];
@@ -151,10 +201,10 @@ const handleUpdateArrowPoint = (
   }
 
   // 配列全体を更新してリアクティビティをトリガー
-  layers.shapes.value = [
-    ...layers.shapes.value.slice(0, shapeIndex),
+  shapes.value = [
+    ...shapes.value.slice(0, shapeIndex),
     { ...shape, points: newPoints },
-    ...layers.shapes.value.slice(shapeIndex + 1),
+    ...shapes.value.slice(shapeIndex + 1),
   ];
 };
 
@@ -164,10 +214,10 @@ const handleUpdateRectCorner = (
   x: number,
   y: number
 ) => {
-  const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
+  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
   if (shapeIndex === -1) return;
 
-  const shape = layers.shapes.value[shapeIndex];
+  const shape = shapes.value[shapeIndex];
   if (!('width' in shape && 'height' in shape)) return;
 
   let newX = shape.x;
@@ -203,55 +253,55 @@ const handleUpdateRectCorner = (
   if (newHeight < 10) newHeight = 10;
 
   // 配列全体を更新してリアクティビティをトリガー
-  layers.shapes.value = [
-    ...layers.shapes.value.slice(0, shapeIndex),
+  shapes.value = [
+    ...shapes.value.slice(0, shapeIndex),
     { ...shape, x: newX, y: newY, width: newWidth, height: newHeight },
-    ...layers.shapes.value.slice(shapeIndex + 1),
+    ...shapes.value.slice(shapeIndex + 1),
   ];
 };
 
 const handleUpdateTextFontSize = (shapeId: string, fontSize: number) => {
-  const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
+  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
   if (shapeIndex === -1) return;
 
-  const shape = layers.shapes.value[shapeIndex];
+  const shape = shapes.value[shapeIndex];
   if (!('fontSize' in shape)) return;
 
   // 配列全体を更新してリアクティビティをトリガー
-  layers.shapes.value = [
-    ...layers.shapes.value.slice(0, shapeIndex),
+  shapes.value = [
+    ...shapes.value.slice(0, shapeIndex),
     { ...shape, fontSize },
-    ...layers.shapes.value.slice(shapeIndex + 1),
+    ...shapes.value.slice(shapeIndex + 1),
   ];
 };
 
 const handleUpdateTextPosition = (shapeId: string, x: number, y: number) => {
-  const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
+  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
   if (shapeIndex === -1) return;
 
-  const shape = layers.shapes.value[shapeIndex];
+  const shape = shapes.value[shapeIndex];
   if (!('text' in shape)) return;
 
   // 配列全体を更新してリアクティビティをトリガー
-  layers.shapes.value = [
-    ...layers.shapes.value.slice(0, shapeIndex),
+  shapes.value = [
+    ...shapes.value.slice(0, shapeIndex),
     { ...shape, x, y },
-    ...layers.shapes.value.slice(shapeIndex + 1),
+    ...shapes.value.slice(shapeIndex + 1),
   ];
 };
 
 const handleUpdateRectPosition = (shapeId: string, x: number, y: number) => {
-  const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
+  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
   if (shapeIndex === -1) return;
 
-  const shape = layers.shapes.value[shapeIndex];
+  const shape = shapes.value[shapeIndex];
   if (!('width' in shape && 'height' in shape)) return;
 
   // 配列全体を更新してリアクティビティをトリガー
-  layers.shapes.value = [
-    ...layers.shapes.value.slice(0, shapeIndex),
+  shapes.value = [
+    ...shapes.value.slice(0, shapeIndex),
     { ...shape, x, y },
-    ...layers.shapes.value.slice(shapeIndex + 1),
+    ...shapes.value.slice(shapeIndex + 1),
   ];
 };
 
@@ -260,10 +310,10 @@ const handleUpdateArrowPosition = (
   deltaX: number,
   deltaY: number
 ) => {
-  const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
+  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
   if (shapeIndex === -1) return;
 
-  const shape = layers.shapes.value[shapeIndex];
+  const shape = shapes.value[shapeIndex];
   if (!('points' in shape)) return;
 
   // 始点と終点を移動量分だけ移動
@@ -275,10 +325,10 @@ const handleUpdateArrowPosition = (
   ];
 
   // 配列全体を更新してリアクティビティをトリガー
-  layers.shapes.value = [
-    ...layers.shapes.value.slice(0, shapeIndex),
+  shapes.value = [
+    ...shapes.value.slice(0, shapeIndex),
     { ...shape, points: newPoints },
-    ...layers.shapes.value.slice(shapeIndex + 1),
+    ...shapes.value.slice(shapeIndex + 1),
   ];
 };
 
@@ -325,40 +375,40 @@ const handleCopyImage = async () => {
 
     <div class="flex flex-1 overflow-hidden">
       <EditorToolbar
-        :image-url="image.imageUrl.value"
-        :drawing-mode="drawing.drawingMode.value"
-        :rectangle-color="shapeColor.rectangleColor.value"
-        :arrow-color="shapeColor.arrowColor.value"
-        :text-color="shapeColor.textColor.value"
+        :image-url="imageUrl"
+        :drawing-mode="drawingMode"
+        :rectangle-color="rectangleColor"
+        :arrow-color="arrowColor"
+        :text-color="textColor"
         :target-width="targetWidth"
         @open-image-source-modal="openImageSourceModal"
         @save-image="handleSaveImage"
         @copy-image="handleCopyImage"
         @add-rectangle="handleAddRectangle"
         @add-arrow="handleAddArrow"
-        @toggle-drawing-mode="drawing.toggleDrawingMode"
+        @toggle-drawing-mode="toggleDrawingMode"
         @add-text="openTextModal"
-        @select-rectangle-color="shapeColor.setRectangleColor"
-        @select-arrow-color="shapeColor.setArrowColor"
-        @select-text-color="shapeColor.setTextColor"
+        @select-rectangle-color="setRectangleColor"
+        @select-arrow-color="setArrowColor"
+        @select-text-color="setTextColor"
         @select-target-width="targetWidth = $event"
       />
 
       <EditorCanvas
         ref="canvasRef"
-        :image-element="image.imageElement.value"
-        :stage-width="image.stageWidth.value"
-        :stage-height="image.stageHeight.value"
-        :layer-scale="image.layerScale.value"
-        :shapes="layers.shapes.value"
-        :selected-shape-id="layers.selectedShapeId.value"
-        :original-image="image.originalImage.value"
-        :drawing-mode="drawing.drawingMode.value"
-        :current-drawing="drawing.currentDrawing.value"
+        :image-element="imageElement"
+        :stage-width="stageWidth"
+        :stage-height="stageHeight"
+        :layer-scale="layerScale"
+        :shapes="shapes"
+        :selected-shape-id="selectedShapeId"
+        :original-image="originalImage"
+        :drawing-mode="drawingMode"
+        :current-drawing="currentDrawing"
         @stage-click="handleStageClick"
-        @start-drawing="drawing.startDrawing"
-        @continue-drawing="drawing.continueDrawing"
-        @finish-drawing="drawing.finishDrawing"
+        @start-drawing="startDrawing"
+        @continue-drawing="continueDrawing"
+        @finish-drawing="finishDrawing"
         @update-arrow-point="handleUpdateArrowPoint"
         @update-rect-corner="handleUpdateRectCorner"
         @update-text-position="handleUpdateTextPosition"
@@ -367,16 +417,16 @@ const handleCopyImage = async () => {
       />
 
       <LayerPanel
-        :shapes="layers.shapes.value"
-        :selected-shape-id="layers.selectedShapeId.value"
-        :image-url="image.imageUrl.value"
-        :drawing-mode="drawing.drawingMode.value"
+        :shapes="shapes"
+        :selected-shape-id="selectedShapeId"
+        :image-url="imageUrl"
+        :drawing-mode="drawingMode"
         @add-rectangle="handleAddRectangle"
-        @select-layer="layers.selectLayer"
-        @move-layer-up="layers.moveLayerUp"
-        @move-layer-down="layers.moveLayerDown"
-        @delete-layer="layers.deleteLayer"
-        @reorder-layers="layers.reorderLayers"
+        @select-layer="selectLayer"
+        @move-layer-up="moveLayerUp"
+        @move-layer-down="moveLayerDown"
+        @delete-layer="deleteLayer"
+        @reorder-layers="reorderLayers"
         @update-text-font-size="handleUpdateTextFontSize"
       />
     </div>
@@ -391,10 +441,7 @@ const handleCopyImage = async () => {
 
     <Toaster position="top-center" />
 
-    <InfoPanel
-      :width="image.stageWidth.value"
-      :height="image.stageHeight.value"
-    />
+    <InfoPanel :width="stageWidth" :height="stageHeight" />
 
     <ModalsContainer />
   </div>

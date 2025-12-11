@@ -142,6 +142,8 @@ export function useImageManagement(
     }
   };
 
+  const isImageLoaded = computed(() => !!imageElement.value);
+
   return {
     imageUrl,
     originalImage,
@@ -149,6 +151,7 @@ export function useImageManagement(
     stageWidth,
     stageHeight,
     layerScale,
+    isImageLoaded,
     handleImageUpload,
     loadImageToStage,
     loadImageFromBlob,
