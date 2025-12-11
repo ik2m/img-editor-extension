@@ -197,6 +197,7 @@ defineExpose({
               text: shape.text,
               fontSize: shape.fontSize,
               fontFamily: shape.fontFamily,
+              fontStyle: shape.fontStyle,
               fill: shape.fill,
               align: shape.align,
               draggable: shape.draggable,

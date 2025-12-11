@@ -32,6 +32,7 @@ export function useTextMode(
       text: inputText,
       fontSize: 24,
       fontFamily: 'Noto Sans JP',
+      fontStyle: 'bold',
       fill: selectedColor.value,
       align: 'center',
       draggable: true,

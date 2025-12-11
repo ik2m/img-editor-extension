@@ -47,6 +47,7 @@ export type TextShape = {
   text: string;
   fontSize: number;
   fontFamily: string;
+  fontStyle: string;
   fill: string;
   align: 'left' | 'center' | 'right';
   draggable: true;
