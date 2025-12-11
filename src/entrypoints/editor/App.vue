@@ -17,7 +17,14 @@ import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
 // Pinia stores
-const { selectLayer, addShape, getNextRectName, getNextArrowName, getNextTextName } = useShapeStore();
+const {
+  selectLayer,
+  addShape,
+  addTextShape,
+  getNextRectName,
+  getNextArrowName,
+  getNextTextName,
+} = useShapeStore();
 
 const {
   originalImage,
@@ -69,14 +76,7 @@ const { open: openTextModal, close: closeTextModal } = useModal<
       const centerX = originalImage.value.width / 2;
       const centerY = originalImage.value.height / 2;
 
-      const text = createText(
-        getNextTextName(),
-        inputText,
-        textColor.value,
-        centerX,
-        centerY
-      );
-      addShape(text);
+      const text = addTextShape(inputText, textColor.value, centerX, centerY);
       selectLayer(text.id);
     },
   },

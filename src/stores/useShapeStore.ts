@@ -1,6 +1,7 @@
 import { ref, readonly } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
 import type { Shape } from '@/components/editor/types';
+import { createText } from '@/utils/shapeFactory';
 
 /**
  * Shape配列の管理と図形名の自動採番を行うstore
@@ -20,6 +21,12 @@ const useShapeStore = defineStore('shape', () => {
 
   const addShape = (shape: Shape) => {
     shapes.value.push(shape);
+  };
+
+  const addTextShape = (inputText: string, color: string, x: number, y: number) => {
+    const text = createText(getNextTextName(), inputText, color, x, y);
+    shapes.value.push(text);
+    return text;
   };
 
   const addShapeAt = (shape: Shape, index: number) => {
@@ -265,6 +272,7 @@ const useShapeStore = defineStore('shape', () => {
     textCounter,
     selectLayer,
     addShape,
+    addTextShape,
     addShapeAt,
     resetShapes,
     resetCounters,
