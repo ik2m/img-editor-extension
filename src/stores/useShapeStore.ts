@@ -3,11 +3,10 @@ import { defineStore, storeToRefs } from 'pinia';
 import type { Shape } from '@/components/editor/types';
 
 /**
- * レイヤー（Shape配列）の管理を行うstore
+ * Shape配列の管理を行うstore
  */
-const useLayerStore = defineStore('layer', () => {
+const useShapeStore = defineStore('shape', () => {
   const shapes = ref<Shape[]>([]);
-  const drawingLayer = ref<Shape | null>(null);
   const selectedShapeId = ref('');
 
   const selectLayer = (id: string) => {
@@ -24,15 +23,6 @@ const useLayerStore = defineStore('layer', () => {
 
   const resetShapes = () => {
     shapes.value = [];
-    drawingLayer.value = null;
-  };
-
-  const setDrawingLayer = (layer: Shape) => {
-    drawingLayer.value = layer;
-  };
-
-  const resetDrawingLayer = () => {
-    drawingLayer.value = null;
   };
 
   const scaleShapes = (ratio: number) => {
@@ -69,9 +59,6 @@ const useLayerStore = defineStore('layer', () => {
     };
 
     shapes.value.forEach(scaleShape);
-    if (drawingLayer.value) {
-      scaleShape(drawingLayer.value);
-    }
   };
 
   const moveLayerUp = (id: string) => {
@@ -256,15 +243,12 @@ const useLayerStore = defineStore('layer', () => {
   };
 
   return {
-    shapes: readonly(shapes),
-    drawingLayer: readonly(drawingLayer),
+    shapes,
     selectedShapeId,
     selectLayer,
     addShape,
     addShapeAt,
     resetShapes,
-    setDrawingLayer,
-    resetDrawingLayer,
     scaleShapes,
     moveLayerUp,
     moveLayerDown,
@@ -280,15 +264,11 @@ const useLayerStore = defineStore('layer', () => {
 });
 
 /**
- * レイヤーストアを使用する
+ * Shapeストアを使用する
  * stateとactionsを分割代入可能な形で返す
- * shapes は readonly として扱う（storeToRefsで自動的にreadonlyになる）
+ * shapes配列の参照は外部から直接変更できないようにアクションを経由して操作する
  */
 export default () => {
-  const store = useLayerStore();
-  const refs = storeToRefs(store);
-  return {
-    ...store,
-    ...refs,
-  };
+  const store = useShapeStore();
+  return { ...store, ...storeToRefs(store) };
 };

@@ -1,14 +1,13 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
 import LayerItem from './LayerItem.vue';
-import useLayerStore from '@/stores/useLayerStore';
+import useShapeStore from '@/stores/useShapeStore';
 import useImageStore from '@/stores/useImageStore';
 import useDrawingStore from '@/stores/useDrawingStore';
 
 // Stores
 const {
   shapes,
-  drawingLayer,
   selectedShapeId,
   selectLayer,
   moveLayerUp,
@@ -16,9 +15,9 @@ const {
   deleteLayer,
   reorderLayers,
   updateTextFontSize,
-} = useLayerStore();
+} = useShapeStore();
 const { imageUrl } = useImageStore();
-const { drawingMode } = useDrawingStore();
+const { drawingMode, drawingLayer } = useDrawingStore();
 
 // お絵描きレイヤー以外のレイヤー = shapes配列そのもの
 const editableLayers = computed(() => {

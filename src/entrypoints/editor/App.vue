@@ -10,7 +10,7 @@ import LayerPanel from '@/components/editor/LayerPanel.vue';
 import InfoPanel from '@/components/editor/InfoPanel.vue';
 import TextInputModal from '@/components/editor/TextInputModal.vue';
 import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
-import useLayerStore from '@/stores/useLayerStore';
+import useShapeStore from '@/stores/useShapeStore';
 import useImageStore from '@/stores/useImageStore';
 import useSettingsStore from '@/stores/useSettingsStore';
 import useCounterStore from '@/stores/useCounterStore';
@@ -18,7 +18,7 @@ import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
 // Pinia stores
-const { selectLayer, addShape } = useLayerStore();
+const { selectLayer, addShape } = useShapeStore();
 const { getNextRectName, getNextArrowName, getNextTextName, resetCounters } =
   useCounterStore();
 

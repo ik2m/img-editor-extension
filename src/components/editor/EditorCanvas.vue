@@ -1,14 +1,13 @@
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import Konva from 'konva';
-import useLayerStore from '@/stores/useLayerStore';
+import useShapeStore from '@/stores/useShapeStore';
 import useImageStore from '@/stores/useImageStore';
 import useDrawingStore from '@/stores/useDrawingStore';
 
 // Stores
 const {
   shapes,
-  drawingLayer,
   selectedShapeId,
   selectLayer,
   updateArrowPoint,
@@ -16,10 +15,17 @@ const {
   updateTextPosition,
   updateRectPosition,
   updateArrowPosition,
-} = useLayerStore();
-const { imageElement, stageWidth, stageHeight, layerScale, originalImage } = useImageStore();
-const { drawingMode, currentDrawing, startDrawing, continueDrawing, finishDrawing } =
-  useDrawingStore();
+} = useShapeStore();
+const { imageElement, stageWidth, stageHeight, layerScale, originalImage } =
+  useImageStore();
+const {
+  drawingMode,
+  drawingLayer,
+  currentDrawing,
+  startDrawing,
+  continueDrawing,
+  finishDrawing,
+} = useDrawingStore();
 
 // 全レイヤー（お絵描きレイヤー + shapes）
 const allLayers = computed(() => {
@@ -47,8 +53,15 @@ const updateTransformer = () => {
   }
 
   // 矢印、矩形、テキストが選択されている場合はトランスフォーマーを無効化（カスタム操作を使用）
-  const selectedShape = allLayers.value.find((s) => s.id === selectedShapeId.value);
-  if (selectedShape && (selectedShape.type === 'arrow' || selectedShape.type === 'rect' || selectedShape.type === 'text')) {
+  const selectedShape = allLayers.value.find(
+    (s) => s.id === selectedShapeId.value
+  );
+  if (
+    selectedShape &&
+    (selectedShape.type === 'arrow' ||
+      selectedShape.type === 'rect' ||
+      selectedShape.type === 'text')
+  ) {
     transformerNode.nodes([]);
     return;
   }
@@ -86,7 +99,11 @@ const selectedText = computed(() => {
 });
 
 // 矢印ハンドラのドラッグ処理
-const handleArrowHandleDragMove = (e: any, shapeId: string, pointIndex: number) => {
+const handleArrowHandleDragMove = (
+  e: any,
+  shapeId: string,
+  pointIndex: number
+) => {
   const pos = e.target.position();
   updateArrowPoint(shapeId, pointIndex, pos.x, pos.y);
 };
@@ -329,7 +346,9 @@ defineExpose({
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
-            @dragmove="(e: any) => handleRectHandleDragMove(e, selectedRect.id, 'tl')"
+            @dragmove="
+              (e: any) => handleRectHandleDragMove(e, selectedRect!.id, 'tl')
+            "
           />
           <!-- 右上 -->
           <v-circle
@@ -342,7 +361,9 @@ defineExpose({
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
-            @dragmove="(e: any) => handleRectHandleDragMove(e, selectedRect.id, 'tr')"
+            @dragmove="
+              (e: any) => handleRectHandleDragMove(e, selectedRect!.id, 'tr')
+            "
           />
           <!-- 左下 -->
           <v-circle
@@ -355,7 +376,9 @@ defineExpose({
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
-            @dragmove="(e: any) => handleRectHandleDragMove(e, selectedRect.id, 'bl')"
+            @dragmove="
+              (e: any) => handleRectHandleDragMove(e, selectedRect!.id, 'bl')
+            "
           />
           <!-- 右下 -->
           <v-circle
@@ -368,7 +391,9 @@ defineExpose({
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
-            @dragmove="(e: any) => handleRectHandleDragMove(e, selectedRect.id, 'br')"
+            @dragmove="
+              (e: any) => handleRectHandleDragMove(e, selectedRect!.id, 'br')
+            "
           />
           <!-- 中央（移動用） -->
           <v-circle
@@ -380,8 +405,12 @@ defineExpose({
               fill: 'rgba(255, 255, 255, 0.6)',
               draggable: true,
             }"
-            @mousedown="(e: any) => handleRectMoveHandleMouseDown(e, selectedRect.id)"
-            @dragmove="(e: any) => handleRectMoveHandleDragMove(e, selectedRect.id)"
+            @mousedown="
+              (e: any) => handleRectMoveHandleMouseDown(e, selectedRect!.id)
+            "
+            @dragmove="
+              (e: any) => handleRectMoveHandleDragMove(e, selectedRect!.id)
+            "
           />
         </template>
         <!-- 矢印の始点・終点ハンドラ -->
@@ -396,7 +425,9 @@ defineExpose({
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
-            @dragmove="(e: any) => handleArrowHandleDragMove(e, selectedArrow.id, 0)"
+            @dragmove="
+              (e: any) => handleArrowHandleDragMove(e, selectedArrow!.id, 0)
+            "
           />
           <v-circle
             :config="{
@@ -408,7 +439,9 @@ defineExpose({
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
-            @dragmove="(e: any) => handleArrowHandleDragMove(e, selectedArrow.id, 2)"
+            @dragmove="
+              (e: any) => handleArrowHandleDragMove(e, selectedArrow!.id, 2)
+            "
           />
           <!-- 中央（移動用） -->
           <v-circle
@@ -420,8 +453,12 @@ defineExpose({
               fill: 'rgba(255, 255, 255, 0.6)',
               draggable: true,
             }"
-            @mousedown="(e: any) => handleArrowMoveHandleMouseDown(e, selectedArrow.id)"
-            @dragmove="(e: any) => handleArrowMoveHandleDragMove(e, selectedArrow.id)"
+            @mousedown="
+              (e: any) => handleArrowMoveHandleMouseDown(e, selectedArrow!.id)
+            "
+            @dragmove="
+              (e: any) => handleArrowMoveHandleDragMove(e, selectedArrow!.id)
+            "
           />
         </template>
         <!-- テキストの移動ハンドラ -->
@@ -436,7 +473,9 @@ defineExpose({
               draggable: true,
             }"
             @mousedown="handleHandleMouseDown"
-            @dragmove="(e: any) => handleTextHandleDragMove(e, selectedText.id)"
+            @dragmove="
+              (e: any) => handleTextHandleDragMove(e, selectedText!.id)
+            "
           />
         </template>
         <v-transformer ref="transformer" />

@@ -1,26 +1,26 @@
-import { ref, computed } from 'vue';
+import { ref, computed, readonly } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
 import type { DrawingShape, DrawingLine } from '@/components/editor/types';
-import useLayerStore from './useLayerStore';
+import useShapeStore from './useShapeStore';
 import useImageStore from './useImageStore';
 
 /**
  * お絵描きモード（フリーハンド描画）を管理するstore
  */
 const useDrawingStore = defineStore('drawing', () => {
-  const layerStore = useLayerStore();
+  const shapeStore = useShapeStore();
   const imageStore = useImageStore();
-  const { drawingLayer, selectLayer, setDrawingLayer } = layerStore;
+  const { selectLayer } = shapeStore;
   const { layerScale } = imageStore;
 
   // State
   const drawingMode = ref<boolean>(false);
   const currentLine = ref<number[]>([]);
+  const drawingLayer = ref<DrawingShape | null>(null);
 
   const getOrCreateDrawingLayer = (): DrawingShape => {
-    let layer = drawingLayer.value;
-    if (!layer) {
-      layer = {
+    if (!drawingLayer.value) {
+      drawingLayer.value = {
         type: 'drawing' as const,
         id: 'drawing-layer',
         name: 'お絵描き',
@@ -30,9 +30,22 @@ const useDrawingStore = defineStore('drawing', () => {
         lineJoin: 'round',
         draggable: false,
       };
-      setDrawingLayer(layer);
     }
-    return layer as DrawingShape;
+    return drawingLayer.value;
+  };
+
+  const resetDrawingLayer = () => {
+    drawingLayer.value = null;
+  };
+
+  const scaleDrawingLayer = (ratio: number) => {
+    if (!drawingLayer.value) return;
+    if ('lines' in drawingLayer.value) {
+      drawingLayer.value.lines.forEach((line) => {
+        line.points = line.points.map((p) => p * ratio);
+        line.strokeWidth = Math.max(1, Math.round(line.strokeWidth * ratio));
+      });
+    }
   };
 
   const currentDrawing = computed(() => {
@@ -41,6 +54,9 @@ const useDrawingStore = defineStore('drawing', () => {
       points: currentLine.value,
       stroke: '#000000',
       strokeWidth: 2,
+      tension: 0.5,
+      lineCap: 'round' as const,
+      lineJoin: 'round' as const,
     };
   });
 
@@ -89,6 +105,7 @@ const useDrawingStore = defineStore('drawing', () => {
     // State
     drawingMode,
     currentLine,
+    drawingLayer,
     // Getters
     currentDrawing,
     // Actions
@@ -96,6 +113,8 @@ const useDrawingStore = defineStore('drawing', () => {
     startDrawing,
     continueDrawing,
     finishDrawing,
+    resetDrawingLayer,
+    scaleDrawingLayer,
   };
 });
 

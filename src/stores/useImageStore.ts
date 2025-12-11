@@ -1,14 +1,17 @@
 import { ref, computed, type Ref } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
 import { toast } from 'vue-sonner';
-import useLayerStore from './useLayerStore';
+import useShapeStore from './useShapeStore';
+import useDrawingStore from './useDrawingStore';
 
 /**
  * 画像の読み込み、リサイズ、ステージ寸法管理を行うstore
  */
 const useImageStore = defineStore('image', () => {
-  const layerStore = useLayerStore();
-  const { resetShapes, scaleShapes } = layerStore;
+  const shapeStore = useShapeStore();
+  const drawingStore = useDrawingStore();
+  const { resetShapes, scaleShapes } = shapeStore;
+  const { resetDrawingLayer, scaleDrawingLayer } = drawingStore;
 
   const imageUrl = ref<string>('');
   const originalImage = ref<HTMLImageElement | null>(null);
@@ -44,6 +47,7 @@ const useImageStore = defineStore('image', () => {
       // カウンターとshapes配列をリセット
       resetCounters();
       resetShapes();
+      resetDrawingLayer();
 
       // ターゲット幅が指定されている場合はリサイズ
       if (targetWidth.value !== 'original' && img.width !== targetWidth.value) {
@@ -97,6 +101,7 @@ const useImageStore = defineStore('image', () => {
 
       // 既存の図形の座標をリサイズに合わせて調整
       scaleShapes(ratio);
+      scaleDrawingLayer(ratio);
 
       toast.success(`画像を${newWidth}x${newHeight}pxにリサイズしました`);
     };
