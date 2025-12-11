@@ -1,7 +1,6 @@
 import { ref, computed, type Ref } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
 import { toast } from 'vue-sonner';
-import type { Shape } from '@/components/editor/types';
 import useLayerStore from './useLayerStore';
 
 /**
@@ -9,7 +8,7 @@ import useLayerStore from './useLayerStore';
  */
 const useImageStore = defineStore('image', () => {
   const layerStore = useLayerStore();
-  const { shapes } = layerStore;
+  const { resetShapes, scaleShapes } = layerStore;
 
   const imageUrl = ref<string>('');
   const originalImage = ref<HTMLImageElement | null>(null);
@@ -44,7 +43,7 @@ const useImageStore = defineStore('image', () => {
 
       // カウンターとshapes配列をリセット
       resetCounters();
-      shapes.value = [];
+      resetShapes();
 
       // ターゲット幅が指定されている場合はリサイズ
       if (targetWidth.value !== 'original' && img.width !== targetWidth.value) {
@@ -97,33 +96,7 @@ const useImageStore = defineStore('image', () => {
       layerScale.value = { x: 1, y: 1 };
 
       // 既存の図形の座標をリサイズに合わせて調整
-      shapes.value.forEach((shape) => {
-        if ('x' in shape && 'y' in shape) {
-          shape.x = shape.x * ratio;
-          shape.y = shape.y * ratio;
-          if ('width' in shape && 'height' in shape) {
-            shape.width = shape.width * ratio;
-            shape.height = shape.height * ratio;
-          }
-          if ('fontSize' in shape) {
-            shape.fontSize = Math.round(shape.fontSize * ratio);
-          }
-        }
-        if ('points' in shape && Array.isArray(shape.points)) {
-          // ArrowShapeのpointsは [x1, y1, x2, y2] のタプル型
-          const scaledPoints = shape.points.map((p) => p * ratio);
-          shape.points = [scaledPoints[0], scaledPoints[1], scaledPoints[2], scaledPoints[3]];
-        }
-        if ('strokeWidth' in shape) {
-          shape.strokeWidth = Math.max(1, Math.round(shape.strokeWidth * ratio));
-        }
-        if ('lines' in shape) {
-          shape.lines.forEach((line) => {
-            line.points = line.points.map((p) => p * ratio);
-            line.strokeWidth = Math.max(1, Math.round(line.strokeWidth * ratio));
-          });
-        }
-      });
+      scaleShapes(ratio);
 
       toast.success(`画像を${newWidth}x${newHeight}pxにリサイズしました`);
     };

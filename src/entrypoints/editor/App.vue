@@ -18,8 +18,9 @@ import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
 // Pinia stores
-const { shapes, selectLayer, addShape } = useLayerStore();
-const { getNextRectName, getNextArrowName, getNextTextName, resetCounters } = useCounterStore();
+const { selectLayer, addShape } = useLayerStore();
+const { getNextRectName, getNextArrowName, getNextTextName, resetCounters } =
+  useCounterStore();
 
 const {
   originalImage,

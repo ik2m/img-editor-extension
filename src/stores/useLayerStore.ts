@@ -21,6 +21,39 @@ const useLayerStore = defineStore('layer', () => {
     shapes.value.splice(index, 0, shape);
   };
 
+  const resetShapes = () => {
+    shapes.value = [];
+  };
+
+  const scaleShapes = (ratio: number) => {
+    shapes.value.forEach((shape) => {
+      if ('x' in shape && 'y' in shape) {
+        shape.x = shape.x * ratio;
+        shape.y = shape.y * ratio;
+        if ('width' in shape && 'height' in shape) {
+          shape.width = shape.width * ratio;
+          shape.height = shape.height * ratio;
+        }
+        if ('fontSize' in shape) {
+          shape.fontSize = Math.round(shape.fontSize * ratio);
+        }
+      }
+      if ('points' in shape && Array.isArray(shape.points)) {
+        const scaledPoints = shape.points.map((p) => p * ratio);
+        shape.points = [scaledPoints[0], scaledPoints[1], scaledPoints[2], scaledPoints[3]];
+      }
+      if ('strokeWidth' in shape) {
+        shape.strokeWidth = Math.max(1, Math.round(shape.strokeWidth * ratio));
+      }
+      if ('lines' in shape) {
+        shape.lines.forEach((line) => {
+          line.points = line.points.map((p) => p * ratio);
+          line.strokeWidth = Math.max(1, Math.round(line.strokeWidth * ratio));
+        });
+      }
+    });
+  };
+
   const moveLayerUp = (id: string) => {
     // お絵描きレイヤーは移動不可
     const shape = shapes.value.find((s) => s.id === id);
@@ -233,6 +266,8 @@ const useLayerStore = defineStore('layer', () => {
     selectLayer,
     addShape,
     addShapeAt,
+    resetShapes,
+    scaleShapes,
     moveLayerUp,
     moveLayerDown,
     deleteLayer,
