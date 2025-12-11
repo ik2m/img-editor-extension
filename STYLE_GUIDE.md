@@ -308,6 +308,50 @@ const { selectLayer } = store;
 - ラッパー関数内で `storeToRefs` を適用してから返す
 - これにより、使用側は単純な分割代入だけで使える
 
+**Store間の依存関係における注意点**:
+
+他のstoreに依存するstoreを実装する場合、初期化タイミングに注意が必要です。
+
+**❌ Avoid: defineStore内で他のstoreの値を分割代入**
+
+```typescript
+const useDrawingStore = defineStore('drawing', () => {
+  const imageStore = useImageStore();
+  const { layerScale } = imageStore;  // ❌ 初期化タイミングでundefinedになる可能性
+
+  const startDrawing = (pos: { x: number; y: number }) => {
+    currentLine.value = [
+      pos.x / layerScale.value.x,  // エラー: Cannot read properties of undefined
+      pos.y / layerScale.value.y,
+    ];
+  };
+
+  return { startDrawing };
+});
+```
+
+**✅ Good: 関数内で都度useStoreを呼び出す**
+
+```typescript
+const useDrawingStore = defineStore('drawing', () => {
+  const startDrawing = (pos: { x: number; y: number }) => {
+    const { layerScale } = useImageStore();  // ✅ 実行時に取得
+    currentLine.value = [
+      pos.x / layerScale.value.x,
+      pos.y / layerScale.value.y,
+    ];
+  };
+
+  return { startDrawing };
+});
+```
+
+**理由**:
+- `defineStore`内で他のstoreを呼び出すと、初期化順序によってはrefが正しく取得できない
+- カスタムエクスポートパターン `{ ...store, ...storeToRefs(store) }` により、分割代入した値がundefinedになる可能性がある
+- 関数実行時に都度`useStore()`を呼び出すことで、常に最新の状態を取得できる
+- わずかなオーバーヘッドはあるが、Piniaのstore取得は高速で実用上問題ない
+
 **外部から直接変更する必要がないStateはreadonlyで公開する**:
 - 外部から直接代入や変更をする必要がないStateは `readonly()` でラップして返す
 - 変更は必ずアクション経由で行うことを強制し、状態管理を一元化する
