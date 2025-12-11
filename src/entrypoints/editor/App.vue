@@ -26,49 +26,23 @@ const targetWidth = computed({
 });
 
 // Composables
-const {
-  rectCounter,
-  arrowCounter,
-  textCounter,
-  getNextRectName,
-  getNextArrowName,
-  getNextTextName,
-  resetCounters,
-} = useShapeNameCounters();
+const { getNextRectName, getNextArrowName, getNextTextName, resetCounters } =
+  useShapeNameCounters();
 
 // Pinia store
-const {
-  shapes,
-  selectedShapeId,
-  selectLayer,
-  moveLayerUp,
-  moveLayerDown,
-  deleteLayer,
-  reorderLayers,
-} = useLayerStore();
+const { shapes, selectLayer } = useLayerStore();
 
 const {
-  imageUrl,
   originalImage,
-  imageElement,
   stageWidth,
   stageHeight,
-  layerScale,
   isImageLoaded,
   handleImageUpload,
-  loadImageToStage,
   loadImageFromBlob,
   applyTargetWidth,
 } = useImageStore();
 
-const {
-  rectangleColor,
-  arrowColor,
-  textColor,
-  setRectangleColor,
-  setArrowColor,
-  setTextColor,
-} = useShapeColor();
+const { rectangleColor, arrowColor, textColor } = useShapeColor();
 
 const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
