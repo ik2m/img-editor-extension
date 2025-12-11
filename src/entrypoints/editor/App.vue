@@ -108,6 +108,35 @@ const handleTextCancel = () => {
   text.cancelAddText();
 };
 
+const handleUpdateArrowPoint = (
+  shapeId: string,
+  pointIndex: number,
+  x: number,
+  y: number
+) => {
+  const shapeIndex = layers.shapes.value.findIndex((s) => s.id === shapeId);
+  if (shapeIndex === -1) return;
+
+  const shape = layers.shapes.value[shapeIndex];
+  if (!('points' in shape)) return;
+
+  const newPoints = [...shape.points] as [number, number, number, number];
+  if (pointIndex === 0) {
+    newPoints[0] = x;
+    newPoints[1] = y;
+  } else if (pointIndex === 2) {
+    newPoints[2] = x;
+    newPoints[3] = y;
+  }
+
+  // 配列全体を更新してリアクティビティをトリガー
+  layers.shapes.value = [
+    ...layers.shapes.value.slice(0, shapeIndex),
+    { ...shape, points: newPoints },
+    ...layers.shapes.value.slice(shapeIndex + 1),
+  ];
+};
+
 const handleSaveImage = () => {
   const stage = canvasRef.value?.getStage();
   if (!stage) return;
@@ -186,6 +215,7 @@ const handleCopyImage = async () => {
         @start-drawing="drawing.startDrawing"
         @continue-drawing="drawing.continueDrawing"
         @finish-drawing="drawing.finishDrawing"
+        @update-arrow-point="handleUpdateArrowPoint"
       />
 
       <LayerPanel

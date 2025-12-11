@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import Konva from 'konva';
-import type { Shape, DrawingShape } from './types';
+import type { Shape, DrawingShape, ArrowShape } from './types';
 import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from './types';
 
 const props = defineProps<{
@@ -22,6 +22,7 @@ const emit = defineEmits<{
   startDrawing: [pos: { x: number; y: number }];
   continueDrawing: [pos: { x: number; y: number }];
   finishDrawing: [];
+  updateArrowPoint: [shapeId: string, pointIndex: number, x: number, y: number];
 }>();
 
 const transformer = ref<{ getNode(): Konva.Transformer } | null>(null);
@@ -40,6 +41,13 @@ const updateTransformer = () => {
     return;
   }
 
+  // 矢印が選択されている場合はトランスフォーマーを無効化（カスタムハンドラを使用）
+  const selectedShape = props.shapes.find((s) => s.id === props.selectedShapeId);
+  if (selectedShape && isArrowShape(selectedShape)) {
+    transformerNode.nodes([]);
+    return;
+  }
+
   const selectedNode = stage.findOne('.' + props.selectedShapeId);
   const currentNodes = transformerNode.nodes();
 
@@ -52,6 +60,25 @@ const updateTransformer = () => {
   } else {
     transformerNode.nodes([]);
   }
+};
+
+// 選択された矢印を取得
+const selectedArrow = computed(() => {
+  const shape = props.shapes.find((s) => s.id === props.selectedShapeId);
+  return shape && isArrowShape(shape) ? shape : null;
+});
+
+// 矢印ハンドラのドラッグ処理
+const handleArrowHandleDragMove = (e: any, shapeId: string, pointIndex: number) => {
+  const pos = e.target.position();
+  // レイヤースケールの影響を考慮せずに、そのまま座標を使用
+  // （ハンドラはレイヤーの子要素なので、既にスケールされた座標系にいる）
+  emit('updateArrowPoint', shapeId, pointIndex, pos.x, pos.y);
+};
+
+// ハンドラがクリックされたとき、ステージクリックイベントを防ぐ
+const handleArrowHandleMouseDown = (e: any) => {
+  e.cancelBubble = true;
 };
 
 const handleStageMouseDown = (e: any) => {
@@ -169,9 +196,8 @@ defineExpose({
               fill: shape.fill,
               pointerLength: shape.pointerLength,
               pointerWidth: shape.pointerWidth,
-              draggable: shape.draggable,
+              draggable: false,
             }"
-            @transformend="(e: any) => emit('transformEnd', e)"
           />
           <template v-else-if="isDrawingShape(shape)">
             <v-line
@@ -218,6 +244,37 @@ defineExpose({
             listening: false,
           }"
         />
+        <!-- 矢印の始点・終点ハンドラ -->
+        <template v-if="selectedArrow">
+          <v-circle
+            :config="{
+              name: `${selectedArrow.id}-handle-start`,
+              x: selectedArrow.points[0],
+              y: selectedArrow.points[1],
+              radius: 6,
+              fill: '#ffffff',
+              stroke: '#213FFF',
+              strokeWidth: 2,
+              draggable: true,
+            }"
+            @mousedown="handleArrowHandleMouseDown"
+            @dragmove="(e: any) => handleArrowHandleDragMove(e, selectedArrow.id, 0)"
+          />
+          <v-circle
+            :config="{
+              name: `${selectedArrow.id}-handle-end`,
+              x: selectedArrow.points[2],
+              y: selectedArrow.points[3],
+              radius: 6,
+              fill: '#ffffff',
+              stroke: '#213FFF',
+              strokeWidth: 2,
+              draggable: true,
+            }"
+            @mousedown="handleArrowHandleMouseDown"
+            @dragmove="(e: any) => handleArrowHandleDragMove(e, selectedArrow.id, 2)"
+          />
+        </template>
         <v-transformer ref="transformer" />
       </v-layer>
     </v-stage>
