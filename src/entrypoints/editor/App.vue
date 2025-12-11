@@ -18,10 +18,15 @@ import { useArrowShape } from '@/composables/editor/useArrowShape';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 import { useTextMode } from '@/composables/editor/useTextMode';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
+import { useSettings } from '@/composables/editor/useSettings';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 
-// Target width for image resizing
-const targetWidth = ref<number | 'original'>('original');
+// Settings
+const { settings, updateSetting } = useSettings();
+const targetWidth = computed({
+  get: () => settings.value.targetWidth,
+  set: (value: number | 'original') => updateSetting('targetWidth', value),
+});
 
 // Composables（Phase 1-4 完全版）
 const nameCounters = useShapeNameCounters();

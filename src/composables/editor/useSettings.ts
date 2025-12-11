@@ -7,6 +7,7 @@ export interface EditorSettings {
   rectangleColor: string;
   arrowColor: string;
   textColor: string;
+  targetWidth: number | 'original';
 }
 
 /**
@@ -16,6 +17,7 @@ const DEFAULT_SETTINGS: EditorSettings = {
   rectangleColor: '#FF3333',
   arrowColor: '#FF3333',
   textColor: '#000000',
+  targetWidth: 640,
 };
 
 /**
