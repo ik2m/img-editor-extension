@@ -193,6 +193,7 @@ defineExpose({
               fill: shape.fill,
               stroke: shape.stroke,
               strokeWidth: shape.strokeWidth,
+              cornerRadius: shape.cornerRadius || 0,
               draggable: false,
             }"
           />

@@ -8,6 +8,7 @@ export type RectShape = {
   fill: string;
   stroke: string;
   strokeWidth: number;
+  cornerRadius?: number;
   draggable: true;
 };
 

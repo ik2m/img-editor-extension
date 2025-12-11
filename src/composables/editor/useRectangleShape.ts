@@ -35,6 +35,7 @@ export function useRectangleShape(
       fill: fillColor,
       stroke: color,
       strokeWidth: 3,
+      cornerRadius: 10,
       draggable: true,
     };
     shapes.value.push(rect);
