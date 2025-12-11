@@ -6,7 +6,7 @@ import ColorPicker from './ColorPicker.vue';
 import SizeSelector from './SizeSelector.vue';
 import useImageStore from '@/stores/useImageStore';
 import useSettingsStore from '@/stores/useSettingsStore';
-import { useDrawingMode } from '@/composables/editor/useDrawingMode';
+import useDrawingStore from '@/stores/useDrawingStore';
 
 const emit = defineEmits<{
   openImageSourceModal: [];
@@ -17,7 +17,7 @@ const emit = defineEmits<{
   addText: [];
 }>();
 
-// Stores and composables
+// Stores
 const { imageUrl } = useImageStore();
 const {
   rectangleColor,
@@ -29,7 +29,7 @@ const {
   setTextColor,
   setTargetWidth,
 } = useSettingsStore();
-const { drawingMode, toggleDrawingMode } = useDrawingMode();
+const { drawingMode, toggleDrawingMode } = useDrawingStore();
 
 const targetWidthModel = computed({
   get: () => targetWidth.value,

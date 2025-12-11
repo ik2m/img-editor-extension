@@ -4,13 +4,13 @@ import LayerItem from './LayerItem.vue';
 import { isDrawingShape, isTextShape } from './types';
 import useLayerStore from '@/stores/useLayerStore';
 import useImageStore from '@/stores/useImageStore';
-import { useDrawingMode } from '@/composables/editor/useDrawingMode';
+import useDrawingStore from '@/stores/useDrawingStore';
 
-// Stores and composables
+// Stores
 const { shapes, selectedShapeId, selectLayer, moveLayerUp, moveLayerDown, deleteLayer, reorderLayers } =
   useLayerStore();
 const { imageUrl } = useImageStore();
-const { drawingMode } = useDrawingMode();
+const { drawingMode } = useDrawingStore();
 
 // お絵描きレイヤー以外のレイヤーをフィルタ
 const editableLayers = computed(() => {

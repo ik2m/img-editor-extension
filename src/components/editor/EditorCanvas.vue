@@ -1,17 +1,16 @@
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import Konva from 'konva';
-import type { DrawingShape } from './types';
 import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from './types';
 import useLayerStore from '@/stores/useLayerStore';
 import useImageStore from '@/stores/useImageStore';
-import { useDrawingMode } from '@/composables/editor/useDrawingMode';
+import useDrawingStore from '@/stores/useDrawingStore';
 
-// Stores and composables
+// Stores
 const { shapes, selectedShapeId, selectLayer } = useLayerStore();
 const { imageElement, stageWidth, stageHeight, layerScale, originalImage } = useImageStore();
 const { drawingMode, currentDrawing, startDrawing, continueDrawing, finishDrawing } =
-  useDrawingMode();
+  useDrawingStore();
 
 const transformer = ref<{ getNode(): Konva.Transformer } | null>(null);
 const stage = ref<{ getNode(): Konva.Stage } | null>(null);

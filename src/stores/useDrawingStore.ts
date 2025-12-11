@@ -1,18 +1,24 @@
-import { ref, computed, type Ref } from 'vue';
-import type { DrawingShape, DrawingLine, Shape } from '@/components/editor/types';
+import { ref, computed } from 'vue';
+import { defineStore, storeToRefs } from 'pinia';
+import type { DrawingShape, DrawingLine } from '@/components/editor/types';
 import { isDrawingShape } from '@/components/editor/types';
+import useLayerStore from './useLayerStore';
+import useImageStore from './useImageStore';
 
 /**
- * お絵描きモード（フリーハンド描画）を管理するcomposable
+ * お絵描きモード（フリーハンド描画）を管理するstore
  */
-export function useDrawingMode(
-  shapes: Ref<Shape[]>,
-  selectLayer: (id: string) => void,
-  layerScale: Ref<{ x: number; y: number }>
-) {
+const useDrawingStore = defineStore('drawing', () => {
+  const layerStore = useLayerStore();
+  const imageStore = useImageStore();
+  const { shapes, selectLayer } = layerStore;
+  const { layerScale } = imageStore;
+
+  // State
   const drawingMode = ref<boolean>(false);
   const currentLine = ref<number[]>([]);
 
+  // Getters
   // お絵描きレイヤーを取得または作成
   const drawingLayer = computed(() => {
     return shapes.value.find(isDrawingShape);
@@ -36,6 +42,16 @@ export function useDrawingMode(
     return layer;
   };
 
+  const currentDrawing = computed(() => {
+    if (currentLine.value.length === 0) return null;
+    return {
+      points: currentLine.value,
+      stroke: '#000000',
+      strokeWidth: 2,
+    };
+  });
+
+  // Actions
   const toggleDrawingMode = () => {
     drawingMode.value = !drawingMode.value;
     if (!drawingMode.value) {
@@ -50,10 +66,7 @@ export function useDrawingMode(
 
   const continueDrawing = (pos: { x: number; y: number }) => {
     if (currentLine.value.length === 0) return;
-    currentLine.value.push(
-      pos.x / layerScale.value.x,
-      pos.y / layerScale.value.y
-    );
+    currentLine.value.push(pos.x / layerScale.value.x, pos.y / layerScale.value.y);
   };
 
   const finishDrawing = () => {
@@ -73,21 +86,25 @@ export function useDrawingMode(
     currentLine.value = [];
   };
 
-  const currentDrawingLine = computed(() => {
-    if (currentLine.value.length === 0) return null;
-    return {
-      points: currentLine.value,
-      stroke: '#000000',
-      strokeWidth: 2,
-    };
-  });
-
   return {
+    // State
     drawingMode,
-    currentDrawing: currentDrawingLine,
+    currentLine,
+    // Getters
+    currentDrawing,
+    // Actions
     toggleDrawingMode,
     startDrawing,
     continueDrawing,
     finishDrawing,
   };
-}
+});
+
+/**
+ * お絵描きストアを使用する
+ * stateとactionsを分割代入可能な形で返す
+ */
+export default () => {
+  const store = useDrawingStore();
+  return { ...store, ...storeToRefs(store) };
+};
