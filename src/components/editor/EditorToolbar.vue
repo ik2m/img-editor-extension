@@ -1,17 +1,13 @@
 <script lang="ts" setup>
+import { computed } from 'vue';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseSection from '@/components/common/BaseSection.vue';
 import ColorPicker from './ColorPicker.vue';
 import SizeSelector from './SizeSelector.vue';
-
-defineProps<{
-  imageUrl: string;
-  drawingMode: boolean;
-  rectangleColor: string;
-  arrowColor: string;
-  textColor: string;
-  targetWidth: number | 'original';
-}>();
+import useImageStore from '@/stores/useImageStore';
+import { useShapeColor } from '@/composables/editor/useShapeColor';
+import { useDrawingMode } from '@/composables/editor/useDrawingMode';
+import { useSettings } from '@/composables/editor/useSettings';
 
 const emit = defineEmits<{
   openImageSourceModal: [];
@@ -19,13 +15,20 @@ const emit = defineEmits<{
   copyImage: [];
   addRectangle: [];
   addArrow: [];
-  toggleDrawingMode: [];
   addText: [];
-  selectRectangleColor: [color: string];
-  selectArrowColor: [color: string];
-  selectTextColor: [color: string];
-  selectTargetWidth: [width: number | 'original'];
 }>();
+
+// Stores and composables
+const { imageUrl } = useImageStore();
+const { rectangleColor, arrowColor, textColor, setRectangleColor, setArrowColor, setTextColor } =
+  useShapeColor();
+const { drawingMode, toggleDrawingMode } = useDrawingMode();
+const { settings, updateSetting } = useSettings();
+
+const targetWidth = computed({
+  get: () => settings.value.targetWidth,
+  set: (value: number | 'original') => updateSetting('targetWidth', value),
+});
 </script>
 
 <template>
@@ -37,10 +40,7 @@ const emit = defineEmits<{
         📁 画像を開く
       </BaseButton>
 
-      <SizeSelector
-        :model-value="targetWidth"
-        @update:model-value="emit('selectTargetWidth', $event)"
-      />
+      <SizeSelector v-model="targetWidth" />
 
       <div class="flex gap-2">
         <BaseButton :disabled="!imageUrl" @click="emit('saveImage')">
@@ -60,7 +60,7 @@ const emit = defineEmits<{
       <BaseButton
         :color="drawingMode ? 'primary' : 'tertiary'"
         :disabled="!imageUrl"
-        @click="emit('toggleDrawingMode')"
+        @click="toggleDrawingMode"
       >
         🖊️ {{ drawingMode ? 'ペン (ON)' : 'ペン' }}
       </BaseButton>
@@ -75,10 +75,7 @@ const emit = defineEmits<{
         >
           A テキスト
         </BaseButton>
-        <ColorPicker
-          :selected-color="textColor"
-          @select-color="emit('selectTextColor', $event)"
-        />
+        <ColorPicker :selected-color="textColor" @select-color="setTextColor" />
       </div>
       <div class="flex items-center gap-2">
         <BaseButton
@@ -90,7 +87,7 @@ const emit = defineEmits<{
         </BaseButton>
         <ColorPicker
           :selected-color="rectangleColor"
-          @select-color="emit('selectRectangleColor', $event)"
+          @select-color="setRectangleColor"
         />
       </div>
       <div class="flex items-center gap-2">
@@ -101,10 +98,7 @@ const emit = defineEmits<{
         >
           ➜ 矢印
         </BaseButton>
-        <ColorPicker
-          :selected-color="arrowColor"
-          @select-color="emit('selectArrowColor', $event)"
-        />
+        <ColorPicker :selected-color="arrowColor" @select-color="setArrowColor" />
       </div>
     </BaseSection>
   </aside>

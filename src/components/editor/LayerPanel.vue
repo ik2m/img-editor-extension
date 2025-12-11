@@ -1,40 +1,30 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
-import BaseButton from '@/components/common/BaseButton.vue';
 import LayerItem from './LayerItem.vue';
-import type { Shape } from './types';
 import { isDrawingShape, isTextShape } from './types';
+import useLayerStore from '@/stores/useLayerStore';
+import useImageStore from '@/stores/useImageStore';
+import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 
-const props = defineProps<{
-  shapes: Shape[];
-  selectedShapeId: string;
-  imageUrl: string;
-  drawingMode: boolean;
-}>();
-
-const emit = defineEmits<{
-  addRectangle: [];
-  selectLayer: [id: string];
-  moveLayerUp: [id: string];
-  moveLayerDown: [id: string];
-  deleteLayer: [id: string];
-  reorderLayers: [fromIndex: number, toIndex: number];
-  updateTextFontSize: [id: string, fontSize: number];
-}>();
+// Stores and composables
+const { shapes, selectedShapeId, selectLayer, moveLayerUp, moveLayerDown, deleteLayer, reorderLayers } =
+  useLayerStore();
+const { imageUrl } = useImageStore();
+const { drawingMode } = useDrawingMode();
 
 // お絵描きレイヤー以外のレイヤーをフィルタ
 const editableLayers = computed(() => {
-  return props.shapes.filter((s) => !isDrawingShape(s));
+  return shapes.value.filter((s) => !isDrawingShape(s));
 });
 
 // お絵描きレイヤーの存在チェック
 const drawingLayer = computed(() => {
-  return props.shapes.find(isDrawingShape);
+  return shapes.value.find(isDrawingShape);
 });
 
 // 選択されたテキストレイヤーを取得
 const selectedTextLayer = computed(() => {
-  const shape = props.shapes.find((s) => s.id === props.selectedShapeId);
+  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
   return shape && isTextShape(shape) ? shape : null;
 });
 
@@ -43,7 +33,17 @@ const draggedIndex = ref<number | null>(null);
 const handleFontSizeChange = (delta: number) => {
   if (!selectedTextLayer.value) return;
   const newSize = Math.max(8, Math.min(200, selectedTextLayer.value.fontSize + delta));
-  emit('updateTextFontSize', selectedTextLayer.value.id, newSize);
+
+  // shapes配列を更新してリアクティビティをトリガー
+  const shapeIndex = shapes.value.findIndex((s) => s.id === selectedTextLayer.value!.id);
+  if (shapeIndex === -1) return;
+
+  const shape = shapes.value[shapeIndex];
+  shapes.value = [
+    ...shapes.value.slice(0, shapeIndex),
+    { ...shape, fontSize: newSize },
+    ...shapes.value.slice(shapeIndex + 1),
+  ];
 };
 
 const handleDragStart = (index: number) => {
@@ -57,7 +57,7 @@ const handleDragOver = (event: DragEvent, index: number) => {
 
 const handleDrop = (index: number) => {
   if (draggedIndex.value === null || draggedIndex.value === index) return;
-  emit('reorderLayers', draggedIndex.value, index);
+  reorderLayers(draggedIndex.value, index);
   draggedIndex.value = null;
 };
 
@@ -118,10 +118,10 @@ const handleDragEnd = () => {
         :is-last="editableLayers[editableLayers.length - 1].id === s.id"
         :is-being-dragged="draggedIndex === editableLayers.length - 1 - reversedIndex"
         :disabled="drawingMode"
-        @select="emit('selectLayer', $event)"
-        @move-up="emit('moveLayerUp', $event)"
-        @move-down="emit('moveLayerDown', $event)"
-        @delete="emit('deleteLayer', $event)"
+        @select="selectLayer"
+        @move-up="moveLayerUp"
+        @move-down="moveLayerDown"
+        @delete="deleteLayer"
         @drag-start="handleDragStart(editableLayers.length - 1 - reversedIndex)"
         @drag-over="handleDragOver($event, editableLayers.length - 1 - reversedIndex)"
         @drop="handleDrop(editableLayers.length - 1 - reversedIndex)"

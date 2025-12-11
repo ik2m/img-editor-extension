@@ -1,33 +1,17 @@
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import Konva from 'konva';
-import type { Shape, DrawingShape, ArrowShape } from './types';
+import type { DrawingShape } from './types';
 import { isRectShape, isArrowShape, isDrawingShape, isTextShape } from './types';
+import useLayerStore from '@/stores/useLayerStore';
+import useImageStore from '@/stores/useImageStore';
+import { useDrawingMode } from '@/composables/editor/useDrawingMode';
 
-const props = defineProps<{
-  imageElement: HTMLImageElement | null;
-  stageWidth: number;
-  stageHeight: number;
-  layerScale: { x: number; y: number };
-  shapes: Shape[];
-  selectedShapeId: string;
-  originalImage: HTMLImageElement | null;
-  drawingMode: boolean;
-  currentDrawing: DrawingShape | null;
-}>();
-
-const emit = defineEmits<{
-  transformEnd: [e: any];
-  stageClick: [targetId: string];
-  startDrawing: [pos: { x: number; y: number }];
-  continueDrawing: [pos: { x: number; y: number }];
-  finishDrawing: [];
-  updateArrowPoint: [shapeId: string, pointIndex: number, x: number, y: number];
-  updateRectCorner: [shapeId: string, corner: string, x: number, y: number];
-  updateTextPosition: [shapeId: string, x: number, y: number];
-  updateRectPosition: [shapeId: string, x: number, y: number];
-  updateArrowPosition: [shapeId: string, deltaX: number, deltaY: number];
-}>();
+// Stores and composables
+const { shapes, selectedShapeId, selectLayer } = useLayerStore();
+const { imageElement, stageWidth, stageHeight, layerScale, originalImage } = useImageStore();
+const { drawingMode, currentDrawing, startDrawing, continueDrawing, finishDrawing } =
+  useDrawingMode();
 
 const transformer = ref<{ getNode(): Konva.Transformer } | null>(null);
 const stage = ref<{ getNode(): Konva.Stage } | null>(null);
@@ -40,19 +24,19 @@ const updateTransformer = () => {
   if (!stage) return;
 
   // お絵描きモード時はトランスフォーマーを無効化
-  if (props.drawingMode) {
+  if (drawingMode.value) {
     transformerNode.nodes([]);
     return;
   }
 
   // 矢印、矩形、テキストが選択されている場合はトランスフォーマーを無効化（カスタム操作を使用）
-  const selectedShape = props.shapes.find((s) => s.id === props.selectedShapeId);
+  const selectedShape = shapes.value.find((s) => s.id === selectedShapeId.value);
   if (selectedShape && (isArrowShape(selectedShape) || isRectShape(selectedShape) || isTextShape(selectedShape))) {
     transformerNode.nodes([]);
     return;
   }
 
-  const selectedNode = stage.findOne('.' + props.selectedShapeId);
+  const selectedNode = stage.findOne('.' + selectedShapeId.value);
   const currentNodes = transformerNode.nodes();
 
   if (currentNodes.length === 1 && selectedNode === currentNodes[0]) {
@@ -68,39 +52,111 @@ const updateTransformer = () => {
 
 // 選択された矢印を取得
 const selectedArrow = computed(() => {
-  const shape = props.shapes.find((s) => s.id === props.selectedShapeId);
+  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
   return shape && isArrowShape(shape) ? shape : null;
 });
 
 // 選択された矩形を取得
 const selectedRect = computed(() => {
-  const shape = props.shapes.find((s) => s.id === props.selectedShapeId);
+  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
   return shape && isRectShape(shape) ? shape : null;
 });
 
 // 選択されたテキストを取得
 const selectedText = computed(() => {
-  const shape = props.shapes.find((s) => s.id === props.selectedShapeId);
+  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
   return shape && isTextShape(shape) ? shape : null;
 });
 
 // 矢印ハンドラのドラッグ処理
 const handleArrowHandleDragMove = (e: any, shapeId: string, pointIndex: number) => {
   const pos = e.target.position();
-  emit('updateArrowPoint', shapeId, pointIndex, pos.x, pos.y);
+
+  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
+  if (shapeIndex === -1) return;
+
+  const shape = shapes.value[shapeIndex];
+  if (!('points' in shape)) return;
+
+  const newPoints = [...shape.points] as [number, number, number, number];
+  if (pointIndex === 0) {
+    newPoints[0] = pos.x;
+    newPoints[1] = pos.y;
+  } else if (pointIndex === 2) {
+    newPoints[2] = pos.x;
+    newPoints[3] = pos.y;
+  }
+
+  shapes.value = [
+    ...shapes.value.slice(0, shapeIndex),
+    { ...shape, points: newPoints },
+    ...shapes.value.slice(shapeIndex + 1),
+  ];
 };
 
 // 矩形ハンドラのドラッグ処理
 const handleRectHandleDragMove = (e: any, shapeId: string, corner: string) => {
   const pos = e.target.position();
-  emit('updateRectCorner', shapeId, corner, pos.x, pos.y);
+
+  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
+  if (shapeIndex === -1) return;
+
+  const shape = shapes.value[shapeIndex];
+  if (!('width' in shape && 'height' in shape)) return;
+
+  let newX = shape.x;
+  let newY = shape.y;
+  let newWidth = shape.width;
+  let newHeight = shape.height;
+
+  switch (corner) {
+    case 'tl':
+      newWidth = shape.x + shape.width - pos.x;
+      newHeight = shape.y + shape.height - pos.y;
+      newX = pos.x;
+      newY = pos.y;
+      break;
+    case 'tr':
+      newWidth = pos.x - shape.x;
+      newHeight = shape.y + shape.height - pos.y;
+      newY = pos.y;
+      break;
+    case 'bl':
+      newWidth = shape.x + shape.width - pos.x;
+      newHeight = pos.y - shape.y;
+      newX = pos.x;
+      break;
+    case 'br':
+      newWidth = pos.x - shape.x;
+      newHeight = pos.y - shape.y;
+      break;
+  }
+
+  if (newWidth < 10) newWidth = 10;
+  if (newHeight < 10) newHeight = 10;
+
+  shapes.value = [
+    ...shapes.value.slice(0, shapeIndex),
+    { ...shape, x: newX, y: newY, width: newWidth, height: newHeight },
+    ...shapes.value.slice(shapeIndex + 1),
+  ];
 };
 
 // テキスト移動ハンドラのドラッグ処理
 const handleTextHandleDragMove = (e: any, shapeId: string) => {
   const pos = e.target.position();
-  // offsetを使っているので、posがそのままテキストの中心座標
-  emit('updateTextPosition', shapeId, pos.x, pos.y);
+
+  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
+  if (shapeIndex === -1) return;
+
+  const shape = shapes.value[shapeIndex];
+  if (!('text' in shape)) return;
+
+  shapes.value = [
+    ...shapes.value.slice(0, shapeIndex),
+    { ...shape, x: pos.x, y: pos.y },
+    ...shapes.value.slice(shapeIndex + 1),
+  ];
 };
 
 // 矩形移動ハンドラのドラッグ処理
@@ -115,13 +171,21 @@ const handleRectMoveHandleMouseDown = (e: any, shapeId: string) => {
 const handleRectMoveHandleDragMove = (e: any, shapeId: string) => {
   if (!rectMoveHandleStartPos.value) return;
   const pos = e.target.position();
-  const shape = props.shapes.find((s) => s.id === shapeId);
+  const shape = shapes.value.find((s) => s.id === shapeId);
   if (!shape || !isRectShape(shape)) return;
 
   // ハンドルは中央にあるので、矩形の左上座標を計算
   const rectX = pos.x - shape.width / 2;
   const rectY = pos.y - shape.height / 2;
-  emit('updateRectPosition', shapeId, rectX, rectY);
+
+  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
+  if (shapeIndex === -1) return;
+
+  shapes.value = [
+    ...shapes.value.slice(0, shapeIndex),
+    { ...shape, x: rectX, y: rectY },
+    ...shapes.value.slice(shapeIndex + 1),
+  ];
 };
 
 // 矢印移動ハンドラのドラッグ処理
@@ -141,7 +205,24 @@ const handleArrowMoveHandleDragMove = (e: any, shapeId: string) => {
   const deltaX = pos.x - arrowMoveHandleStartPos.value.x;
   const deltaY = pos.y - arrowMoveHandleStartPos.value.y;
 
-  emit('updateArrowPosition', shapeId, deltaX, deltaY);
+  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
+  if (shapeIndex === -1) return;
+
+  const shape = shapes.value[shapeIndex];
+  if (!('points' in shape)) return;
+
+  const newPoints: [number, number, number, number] = [
+    shape.points[0] + deltaX,
+    shape.points[1] + deltaY,
+    shape.points[2] + deltaX,
+    shape.points[3] + deltaY,
+  ];
+
+  shapes.value = [
+    ...shapes.value.slice(0, shapeIndex),
+    { ...shape, points: newPoints },
+    ...shapes.value.slice(shapeIndex + 1),
+  ];
 
   // 次のドラッグのために現在位置を保存
   arrowMoveHandleStartPos.value = { x: pos.x, y: pos.y };
@@ -154,16 +235,16 @@ const handleHandleMouseDown = (e: any) => {
 
 const handleStageMouseDown = (e: any) => {
   // 描画モードの場合
-  if (props.drawingMode) {
+  if (drawingMode.value) {
     const stage = e.target.getStage();
     const pos = stage.getPointerPosition();
-    emit('startDrawing', { x: pos.x, y: pos.y });
+    startDrawing({ x: pos.x, y: pos.y });
     return;
   }
 
   // 通常モード（選択モード）
   if (e.target === e.target.getStage()) {
-    emit('stageClick', '');
+    selectLayer('');
     return;
   }
 
@@ -173,25 +254,25 @@ const handleStageMouseDown = (e: any) => {
   }
 
   const name = e.target.name();
-  const shape = props.shapes.find((s) => s.id === name);
-  emit('stageClick', shape ? name : '');
+  const shape = shapes.value.find((s) => s.id === name);
+  selectLayer(shape ? name : '');
 };
 
 const handleStageMouseMove = (e: any) => {
-  if (!props.currentDrawing) return;
+  if (!currentDrawing.value) return;
   const stage = e.target.getStage();
   const pos = stage.getPointerPosition();
-  emit('continueDrawing', { x: pos.x, y: pos.y });
+  continueDrawing({ x: pos.x, y: pos.y });
 };
 
 const handleStageMouseUp = () => {
-  if (!props.currentDrawing) return;
-  emit('finishDrawing');
+  if (!currentDrawing.value) return;
+  finishDrawing();
 };
 
 // selectedShapeIdまたはdrawingModeが変わったらtransformerを更新
 watch(
-  () => [props.selectedShapeId, props.drawingMode],
+  () => [selectedShapeId.value, drawingMode.value],
   () => {
     updateTransformer();
   }
