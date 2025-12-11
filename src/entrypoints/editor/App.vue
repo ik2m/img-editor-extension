@@ -44,10 +44,11 @@ const imageSourceModal = useImageSourceModal(
 );
 
 // Text modal
-const { open: openTextModal, close: closeTextModal } = useModal({
+const { open: openTextModal, close: closeTextModal } = useModal<
+  typeof TextInputModal
+>({
   component: TextInputModal,
   attrs: {
-    isOpen: true,
     onClose() {
       closeTextModal();
     },

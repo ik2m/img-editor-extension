@@ -3,10 +3,6 @@ import { ref, watch, computed } from 'vue';
 import { VueFinalModal } from 'vue-final-modal';
 import BaseButton from '@/components/common/BaseButton.vue';
 
-const props = defineProps<{
-  isOpen: boolean;
-}>();
-
 const emit = defineEmits<{
   close: [];
   submit: [text: string];
@@ -15,31 +11,15 @@ const emit = defineEmits<{
 const inputText = ref('');
 const inputRef = ref<HTMLInputElement | null>(null);
 
-const open = computed({
-  get: () => props.isOpen,
-  set: (value) => {
-    if (!value) emit('close');
-  },
-});
-
-watch(
-  () => props.isOpen,
-  (isOpen) => {
-    if (isOpen) {
-      inputText.value = 'テキスト';
-      setTimeout(() => {
-        inputRef.value?.focus();
-        inputRef.value?.select();
-      }, 100);
-    }
-  }
-);
-
 const handleSubmit = () => {
   if (inputText.value.trim()) {
     emit('submit', inputText.value);
     emit('close');
   }
+};
+
+const handleCancel = () => {
+  emit('close');
 };
 
 const handleKeydown = (event: KeyboardEvent) => {
@@ -52,7 +32,6 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 <template>
   <VueFinalModal
-    v-model="open"
     class="flex items-center justify-center"
     content-class="bg-dark-panel border-dark-border w-full max-w-md rounded-lg border p-6 shadow-lg"
     overlay-transition="vfm-fade"
@@ -74,7 +53,7 @@ const handleKeydown = (event: KeyboardEvent) => {
         OK
       </BaseButton>
 
-      <BaseButton color="tertiary" @click="open = false" class="flex-1">
+      <BaseButton color="tertiary" @click="handleCancel" class="flex-1">
         キャンセル
       </BaseButton>
     </div>
