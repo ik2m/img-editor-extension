@@ -74,6 +74,152 @@ const useLayerStore = defineStore('layer', () => {
     shapes.value.splice(toIndex, 0, removed);
   };
 
+  // 図形更新のアクション
+  const updateArrowPoint = (
+    shapeId: string,
+    pointIndex: number,
+    x: number,
+    y: number
+  ) => {
+    const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
+    if (shapeIndex === -1) return;
+
+    const shape = shapes.value[shapeIndex];
+    if (!('points' in shape)) return;
+
+    const newPoints = [...shape.points] as [number, number, number, number];
+    if (pointIndex === 0) {
+      newPoints[0] = x;
+      newPoints[1] = y;
+    } else if (pointIndex === 2) {
+      newPoints[2] = x;
+      newPoints[3] = y;
+    }
+
+    shapes.value = [
+      ...shapes.value.slice(0, shapeIndex),
+      { ...shape, points: newPoints },
+      ...shapes.value.slice(shapeIndex + 1),
+    ];
+  };
+
+  const updateRectCorner = (
+    shapeId: string,
+    corner: string,
+    x: number,
+    y: number
+  ) => {
+    const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
+    if (shapeIndex === -1) return;
+
+    const shape = shapes.value[shapeIndex];
+    if (!('width' in shape && 'height' in shape)) return;
+
+    let newX = shape.x;
+    let newY = shape.y;
+    let newWidth = shape.width;
+    let newHeight = shape.height;
+
+    switch (corner) {
+      case 'tl':
+        newWidth = shape.x + shape.width - x;
+        newHeight = shape.y + shape.height - y;
+        newX = x;
+        newY = y;
+        break;
+      case 'tr':
+        newWidth = x - shape.x;
+        newHeight = shape.y + shape.height - y;
+        newY = y;
+        break;
+      case 'bl':
+        newWidth = shape.x + shape.width - x;
+        newHeight = y - shape.y;
+        newX = x;
+        break;
+      case 'br':
+        newWidth = x - shape.x;
+        newHeight = y - shape.y;
+        break;
+    }
+
+    if (newWidth < 10) newWidth = 10;
+    if (newHeight < 10) newHeight = 10;
+
+    shapes.value = [
+      ...shapes.value.slice(0, shapeIndex),
+      { ...shape, x: newX, y: newY, width: newWidth, height: newHeight },
+      ...shapes.value.slice(shapeIndex + 1),
+    ];
+  };
+
+  const updateTextPosition = (shapeId: string, x: number, y: number) => {
+    const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
+    if (shapeIndex === -1) return;
+
+    const shape = shapes.value[shapeIndex];
+    if (!('text' in shape)) return;
+
+    shapes.value = [
+      ...shapes.value.slice(0, shapeIndex),
+      { ...shape, x, y },
+      ...shapes.value.slice(shapeIndex + 1),
+    ];
+  };
+
+  const updateRectPosition = (shapeId: string, x: number, y: number) => {
+    const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
+    if (shapeIndex === -1) return;
+
+    const shape = shapes.value[shapeIndex];
+    if (!('width' in shape && 'height' in shape)) return;
+
+    shapes.value = [
+      ...shapes.value.slice(0, shapeIndex),
+      { ...shape, x, y },
+      ...shapes.value.slice(shapeIndex + 1),
+    ];
+  };
+
+  const updateArrowPosition = (
+    shapeId: string,
+    deltaX: number,
+    deltaY: number
+  ) => {
+    const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
+    if (shapeIndex === -1) return;
+
+    const shape = shapes.value[shapeIndex];
+    if (!('points' in shape)) return;
+
+    const newPoints: [number, number, number, number] = [
+      shape.points[0] + deltaX,
+      shape.points[1] + deltaY,
+      shape.points[2] + deltaX,
+      shape.points[3] + deltaY,
+    ];
+
+    shapes.value = [
+      ...shapes.value.slice(0, shapeIndex),
+      { ...shape, points: newPoints },
+      ...shapes.value.slice(shapeIndex + 1),
+    ];
+  };
+
+  const updateTextFontSize = (shapeId: string, fontSize: number) => {
+    const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
+    if (shapeIndex === -1) return;
+
+    const shape = shapes.value[shapeIndex];
+    if (!('fontSize' in shape)) return;
+
+    shapes.value = [
+      ...shapes.value.slice(0, shapeIndex),
+      { ...shape, fontSize },
+      ...shapes.value.slice(shapeIndex + 1),
+    ];
+  };
+
   return {
     shapes,
     selectedShapeId,
@@ -82,6 +228,12 @@ const useLayerStore = defineStore('layer', () => {
     moveLayerDown,
     deleteLayer,
     reorderLayers,
+    updateArrowPoint,
+    updateRectCorner,
+    updateTextPosition,
+    updateRectPosition,
+    updateArrowPosition,
+    updateTextFontSize,
   };
 });
 

@@ -7,8 +7,16 @@ import useImageStore from '@/stores/useImageStore';
 import useDrawingStore from '@/stores/useDrawingStore';
 
 // Stores
-const { shapes, selectedShapeId, selectLayer, moveLayerUp, moveLayerDown, deleteLayer, reorderLayers } =
-  useLayerStore();
+const {
+  shapes,
+  selectedShapeId,
+  selectLayer,
+  moveLayerUp,
+  moveLayerDown,
+  deleteLayer,
+  reorderLayers,
+  updateTextFontSize,
+} = useLayerStore();
 const { imageUrl } = useImageStore();
 const { drawingMode } = useDrawingStore();
 
@@ -33,17 +41,7 @@ const draggedIndex = ref<number | null>(null);
 const handleFontSizeChange = (delta: number) => {
   if (!selectedTextLayer.value) return;
   const newSize = Math.max(8, Math.min(200, selectedTextLayer.value.fontSize + delta));
-
-  // shapes配列を更新してリアクティビティをトリガー
-  const shapeIndex = shapes.value.findIndex((s) => s.id === selectedTextLayer.value!.id);
-  if (shapeIndex === -1) return;
-
-  const shape = shapes.value[shapeIndex];
-  shapes.value = [
-    ...shapes.value.slice(0, shapeIndex),
-    { ...shape, fontSize: newSize },
-    ...shapes.value.slice(shapeIndex + 1),
-  ];
+  updateTextFontSize(selectedTextLayer.value.id, newSize);
 };
 
 const handleDragStart = (index: number) => {

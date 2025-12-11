@@ -7,7 +7,16 @@ import useImageStore from '@/stores/useImageStore';
 import useDrawingStore from '@/stores/useDrawingStore';
 
 // Stores
-const { shapes, selectedShapeId, selectLayer } = useLayerStore();
+const {
+  shapes,
+  selectedShapeId,
+  selectLayer,
+  updateArrowPoint,
+  updateRectCorner,
+  updateTextPosition,
+  updateRectPosition,
+  updateArrowPosition,
+} = useLayerStore();
 const { imageElement, stageWidth, stageHeight, layerScale, originalImage } = useImageStore();
 const { drawingMode, currentDrawing, startDrawing, continueDrawing, finishDrawing } =
   useDrawingStore();
@@ -70,92 +79,19 @@ const selectedText = computed(() => {
 // 矢印ハンドラのドラッグ処理
 const handleArrowHandleDragMove = (e: any, shapeId: string, pointIndex: number) => {
   const pos = e.target.position();
-
-  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
-  if (shapeIndex === -1) return;
-
-  const shape = shapes.value[shapeIndex];
-  if (!('points' in shape)) return;
-
-  const newPoints = [...shape.points] as [number, number, number, number];
-  if (pointIndex === 0) {
-    newPoints[0] = pos.x;
-    newPoints[1] = pos.y;
-  } else if (pointIndex === 2) {
-    newPoints[2] = pos.x;
-    newPoints[3] = pos.y;
-  }
-
-  shapes.value = [
-    ...shapes.value.slice(0, shapeIndex),
-    { ...shape, points: newPoints },
-    ...shapes.value.slice(shapeIndex + 1),
-  ];
+  updateArrowPoint(shapeId, pointIndex, pos.x, pos.y);
 };
 
 // 矩形ハンドラのドラッグ処理
 const handleRectHandleDragMove = (e: any, shapeId: string, corner: string) => {
   const pos = e.target.position();
-
-  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
-  if (shapeIndex === -1) return;
-
-  const shape = shapes.value[shapeIndex];
-  if (!('width' in shape && 'height' in shape)) return;
-
-  let newX = shape.x;
-  let newY = shape.y;
-  let newWidth = shape.width;
-  let newHeight = shape.height;
-
-  switch (corner) {
-    case 'tl':
-      newWidth = shape.x + shape.width - pos.x;
-      newHeight = shape.y + shape.height - pos.y;
-      newX = pos.x;
-      newY = pos.y;
-      break;
-    case 'tr':
-      newWidth = pos.x - shape.x;
-      newHeight = shape.y + shape.height - pos.y;
-      newY = pos.y;
-      break;
-    case 'bl':
-      newWidth = shape.x + shape.width - pos.x;
-      newHeight = pos.y - shape.y;
-      newX = pos.x;
-      break;
-    case 'br':
-      newWidth = pos.x - shape.x;
-      newHeight = pos.y - shape.y;
-      break;
-  }
-
-  if (newWidth < 10) newWidth = 10;
-  if (newHeight < 10) newHeight = 10;
-
-  shapes.value = [
-    ...shapes.value.slice(0, shapeIndex),
-    { ...shape, x: newX, y: newY, width: newWidth, height: newHeight },
-    ...shapes.value.slice(shapeIndex + 1),
-  ];
+  updateRectCorner(shapeId, corner, pos.x, pos.y);
 };
 
 // テキスト移動ハンドラのドラッグ処理
 const handleTextHandleDragMove = (e: any, shapeId: string) => {
   const pos = e.target.position();
-
-  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
-  if (shapeIndex === -1) return;
-
-  const shape = shapes.value[shapeIndex];
-  if (!('text' in shape)) return;
-
-  shapes.value = [
-    ...shapes.value.slice(0, shapeIndex),
-    { ...shape, x: pos.x, y: pos.y },
-    ...shapes.value.slice(shapeIndex + 1),
-  ];
+  updateTextPosition(shapeId, pos.x, pos.y);
 };
 
 // 矩形移動ハンドラのドラッグ処理
@@ -176,15 +112,7 @@ const handleRectMoveHandleDragMove = (e: any, shapeId: string) => {
   // ハンドルは中央にあるので、矩形の左上座標を計算
   const rectX = pos.x - shape.width / 2;
   const rectY = pos.y - shape.height / 2;
-
-  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
-  if (shapeIndex === -1) return;
-
-  shapes.value = [
-    ...shapes.value.slice(0, shapeIndex),
-    { ...shape, x: rectX, y: rectY },
-    ...shapes.value.slice(shapeIndex + 1),
-  ];
+  updateRectPosition(shapeId, rectX, rectY);
 };
 
 // 矢印移動ハンドラのドラッグ処理
@@ -204,24 +132,7 @@ const handleArrowMoveHandleDragMove = (e: any, shapeId: string) => {
   const deltaX = pos.x - arrowMoveHandleStartPos.value.x;
   const deltaY = pos.y - arrowMoveHandleStartPos.value.y;
 
-  const shapeIndex = shapes.value.findIndex((s) => s.id === shapeId);
-  if (shapeIndex === -1) return;
-
-  const shape = shapes.value[shapeIndex];
-  if (!('points' in shape)) return;
-
-  const newPoints: [number, number, number, number] = [
-    shape.points[0] + deltaX,
-    shape.points[1] + deltaY,
-    shape.points[2] + deltaX,
-    shape.points[3] + deltaY,
-  ];
-
-  shapes.value = [
-    ...shapes.value.slice(0, shapeIndex),
-    { ...shape, points: newPoints },
-    ...shapes.value.slice(shapeIndex + 1),
-  ];
+  updateArrowPosition(shapeId, deltaX, deltaY);
 
   // 次のドラッグのために現在位置を保存
   arrowMoveHandleStartPos.value = { x: pos.x, y: pos.y };
