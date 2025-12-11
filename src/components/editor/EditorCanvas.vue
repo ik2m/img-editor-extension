@@ -284,6 +284,8 @@ defineExpose({
               fill: shape.fill,
               pointerLength: shape.pointerLength,
               pointerWidth: shape.pointerWidth,
+              lineCap: shape.lineCap || 'round',
+              lineJoin: shape.lineJoin || 'round',
               draggable: false,
             }"
           />

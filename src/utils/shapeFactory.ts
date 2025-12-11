@@ -58,6 +58,8 @@ export function createArrow(
     fill: hexToRgba(color, 0.7),
     pointerLength: 20,
     pointerWidth: 20,
+    lineCap: 'round',
+    lineJoin: 'round',
     draggable: true,
   };
 }

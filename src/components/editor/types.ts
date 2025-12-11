@@ -23,6 +23,8 @@ export type ArrowShape = {
   fill: string;
   pointerLength: number;
   pointerWidth: number;
+  lineCap?: 'butt' | 'round' | 'square';
+  lineJoin?: 'miter' | 'round' | 'bevel';
   draggable: true;
 };
 
