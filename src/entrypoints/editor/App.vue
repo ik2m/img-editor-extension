@@ -12,18 +12,14 @@ import TextInputModal from '@/components/editor/TextInputModal.vue';
 import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
 import { useShapeNameCounters } from '@/composables/editor/useShapeNameCounters';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
-import { useSettings } from '@/composables/editor/useSettings';
 import useLayerStore from '@/stores/useLayerStore';
 import useImageStore from '@/stores/useImageStore';
+import useSettingsStore from '@/stores/useSettingsStore';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 import { createRectangle, createArrow, createText } from '@/utils/shapeFactory';
 
 // Settings
-const { settings, updateSetting } = useSettings();
-const targetWidth = computed({
-  get: () => settings.value.targetWidth,
-  set: (value: number | 'original') => updateSetting('targetWidth', value),
-});
+const { targetWidth, setTargetWidth } = useSettingsStore();
 
 // Composables
 const { getNextRectName, getNextArrowName, getNextTextName, resetCounters } =

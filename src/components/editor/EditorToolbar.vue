@@ -5,9 +5,9 @@ import BaseSection from '@/components/common/BaseSection.vue';
 import ColorPicker from './ColorPicker.vue';
 import SizeSelector from './SizeSelector.vue';
 import useImageStore from '@/stores/useImageStore';
+import useSettingsStore from '@/stores/useSettingsStore';
 import { useShapeColor } from '@/composables/editor/useShapeColor';
 import { useDrawingMode } from '@/composables/editor/useDrawingMode';
-import { useSettings } from '@/composables/editor/useSettings';
 
 const emit = defineEmits<{
   openImageSourceModal: [];
@@ -23,11 +23,11 @@ const { imageUrl } = useImageStore();
 const { rectangleColor, arrowColor, textColor, setRectangleColor, setArrowColor, setTextColor } =
   useShapeColor();
 const { drawingMode, toggleDrawingMode } = useDrawingMode();
-const { settings, updateSetting } = useSettings();
+const { targetWidth, setTargetWidth } = useSettingsStore();
 
-const targetWidth = computed({
-  get: () => settings.value.targetWidth,
-  set: (value: number | 'original') => updateSetting('targetWidth', value),
+const targetWidthModel = computed({
+  get: () => targetWidth.value,
+  set: (value: number | 'original') => setTargetWidth(value),
 });
 </script>
 
@@ -40,7 +40,7 @@ const targetWidth = computed({
         📁 画像を開く
       </BaseButton>
 
-      <SizeSelector v-model="targetWidth" />
+      <SizeSelector v-model="targetWidthModel" />
 
       <div class="flex gap-2">
         <BaseButton :disabled="!imageUrl" @click="emit('saveImage')">
