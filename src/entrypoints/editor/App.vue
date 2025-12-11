@@ -8,6 +8,7 @@ import EditorToolbar from '@/components/editor/EditorToolbar.vue';
 import EditorCanvas from '@/components/editor/EditorCanvas.vue';
 import LayerPanel from '@/components/editor/LayerPanel.vue';
 import InfoPanel from '@/components/editor/InfoPanel.vue';
+import FloatingControl from '@/components/editor/FloatingControl.vue';
 import TextInputModal from '@/components/editor/TextInputModal.vue';
 import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
 import useShapeStore from '@/stores/useShapeStore';
@@ -17,10 +18,13 @@ import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 
 // Pinia stores
 const {
+  shapes,
+  selectedShapeId,
   selectLayer,
   addRectShape,
   addArrowShape,
   addTextShape,
+  updateTextFontSize,
 } = useShapeStore();
 
 const {
@@ -38,6 +42,18 @@ const { rectangleColor, arrowColor, textColor, targetWidth, setTargetWidth } =
 
 const canvasRef = ref<{ getStage: () => Konva.Stage | undefined } | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
+
+// 選択されたテキストレイヤーを取得
+const selectedTextLayer = computed(() => {
+  const shape = shapes.value.find((s) => s.id === selectedShapeId.value);
+  return shape && shape.type === 'text' ? shape : null;
+});
+
+const handleFontSizeChange = (delta: number) => {
+  if (!selectedTextLayer.value) return;
+  const newSize = Math.max(8, Math.min(200, selectedTextLayer.value.fontSize + delta));
+  updateTextFontSize(selectedTextLayer.value.id, newSize);
+};
 
 // Image source modal
 const { open: openImageSourceModal, close: closeImageSourceModal } = useModal<
@@ -174,6 +190,17 @@ const handleCopyImage = async () => {
     <Toaster position="top-center" />
 
     <InfoPanel :width="stageWidth" :height="stageHeight" />
+
+    <FloatingControl
+      v-if="selectedTextLayer"
+      label="フォントサイズ"
+      :value="selectedTextLayer.fontSize"
+      unit="px"
+      decrease-title="サイズを小さく"
+      increase-title="サイズを大きく"
+      :step="2"
+      @change="handleFontSizeChange"
+    />
 
     <ModalsContainer />
   </div>
