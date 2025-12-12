@@ -4,6 +4,7 @@ import Konva from 'konva';
 import useShapeStore from '@/stores/useShapeStore';
 import useImageStore from '@/stores/useImageStore';
 import useDrawingStore from '@/stores/useDrawingStore';
+import useRectDragStore from '@/stores/useRectDragStore';
 
 // Stores
 const {
@@ -26,6 +27,13 @@ const {
   continueDrawing,
   finishDrawing,
 } = useDrawingStore();
+const {
+  rectDragMode,
+  currentRectDrag,
+  startRectDrag,
+  continueRectDrag,
+  finishRectDrag,
+} = useRectDragStore();
 
 // 全レイヤー（お絵描きレイヤー + shapes）
 const allLayers = computed(() => {
@@ -46,8 +54,8 @@ const updateTransformer = () => {
   const stage = transformerNode.getStage();
   if (!stage) return;
 
-  // お絵描きモード時はトランスフォーマーを無効化
-  if (drawingMode.value) {
+  // お絵描きモードまたは矩形ドラッグモード時はトランスフォーマーを無効化
+  if (drawingMode.value || rectDragMode.value) {
     transformerNode.nodes([]);
     return;
   }
@@ -178,6 +186,14 @@ const handleStageMouseDown = (e: any) => {
     return;
   }
 
+  // 矩形ドラッグモードの場合
+  if (rectDragMode.value) {
+    const stage = e.target.getStage();
+    const pos = stage.getPointerPosition();
+    startRectDrag({ x: pos.x, y: pos.y });
+    return;
+  }
+
   // 通常モード（選択モード）
   if (e.target === e.target.getStage()) {
     selectLayer('');
@@ -195,20 +211,40 @@ const handleStageMouseDown = (e: any) => {
 };
 
 const handleStageMouseMove = (e: any) => {
-  if (!currentDrawing.value) return;
-  const stage = e.target.getStage();
-  const pos = stage.getPointerPosition();
-  continueDrawing({ x: pos.x, y: pos.y });
+  // お絵描きモード
+  if (currentDrawing.value) {
+    const stage = e.target.getStage();
+    const pos = stage.getPointerPosition();
+    continueDrawing({ x: pos.x, y: pos.y });
+    return;
+  }
+
+  // 矩形ドラッグモード
+  if (currentRectDrag.value) {
+    const stage = e.target.getStage();
+    const pos = stage.getPointerPosition();
+    continueRectDrag({ x: pos.x, y: pos.y });
+    return;
+  }
 };
 
 const handleStageMouseUp = () => {
-  if (!currentDrawing.value) return;
-  finishDrawing();
+  // お絵描きモード
+  if (currentDrawing.value) {
+    finishDrawing();
+    return;
+  }
+
+  // 矩形ドラッグモード
+  if (currentRectDrag.value) {
+    finishRectDrag();
+    return;
+  }
 };
 
-// selectedShapeIdまたはdrawingModeが変わったらtransformerを更新
+// selectedShapeId、drawingMode、rectDragModeが変わったらtransformerを更新
 watch(
-  () => [selectedShapeId.value, drawingMode.value],
+  () => [selectedShapeId.value, drawingMode.value, rectDragMode.value],
   () => {
     updateTransformer();
   }
@@ -233,7 +269,7 @@ defineExpose({
       :config="{ width: stageWidth, height: stageHeight }"
       :class="[
         'shadow-[0_4px_20px_rgba(0,0,0,0.5)]',
-        drawingMode ? 'cursor-crosshair' : '',
+        drawingMode || rectDragMode ? 'cursor-crosshair' : '',
       ]"
       @mousedown="handleStageMouseDown"
       @mousemove="handleStageMouseMove"
@@ -332,6 +368,21 @@ defineExpose({
             tension: currentDrawing.tension,
             lineCap: currentDrawing.lineCap,
             lineJoin: currentDrawing.lineJoin,
+            listening: false,
+          }"
+        />
+        <!-- 矩形ドラッグ中の一時表示 -->
+        <v-rect
+          v-if="currentRectDrag"
+          :config="{
+            x: currentRectDrag.x,
+            y: currentRectDrag.y,
+            width: currentRectDrag.width,
+            height: currentRectDrag.height,
+            fill: currentRectDrag.fill,
+            stroke: currentRectDrag.stroke,
+            strokeWidth: currentRectDrag.strokeWidth,
+            cornerRadius: currentRectDrag.cornerRadius,
             listening: false,
           }"
         />

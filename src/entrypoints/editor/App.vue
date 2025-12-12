@@ -14,6 +14,7 @@ import ImageSourceModal from '@/components/editor/ImageSourceModal.vue';
 import useShapeStore from '@/stores/useShapeStore';
 import useImageStore from '@/stores/useImageStore';
 import useSettingsStore from '@/stores/useSettingsStore';
+import useRectDragStore from '@/stores/useRectDragStore';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 
 // Pinia stores
@@ -21,7 +22,6 @@ const {
   shapes,
   selectedShapeId,
   selectLayer,
-  addRectShape,
   addArrowShape,
   addTextShape,
   updateTextFontSize,
@@ -29,6 +29,8 @@ const {
   updateArrowColor,
   updateRectColor,
 } = useShapeStore();
+
+const { toggleRectDragMode } = useRectDragStore();
 
 const {
   originalImage,
@@ -129,8 +131,7 @@ const { open: openTextModal, close: closeTextModal } = useModal<
 // Shape creation handlers
 const handleAddRectangle = () => {
   if (!isImageLoaded.value) return;
-  const rect = addRectShape(rectangleColor.value);
-  selectLayer(rect.id);
+  toggleRectDragMode();
 };
 
 const handleAddArrow = () => {

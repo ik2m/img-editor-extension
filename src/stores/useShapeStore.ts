@@ -35,6 +35,18 @@ const useShapeStore = defineStore('shape', () => {
     return rect;
   };
 
+  const addRectShapeWithPosition = (
+    color: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ) => {
+    const rect = createRectangle(getNextRectName(), color, x, y, width, height);
+    shapes.value.push(rect);
+    return rect;
+  };
+
   const addArrowShape = (color: string) => {
     const arrow = createArrow(getNextArrowName(), color);
     shapes.value.push(arrow);
@@ -274,6 +286,7 @@ const useShapeStore = defineStore('shape', () => {
     textCounter,
     selectLayer,
     addRectShape,
+    addRectShapeWithPosition,
     addArrowShape,
     addTextShape,
     resetShapes,
