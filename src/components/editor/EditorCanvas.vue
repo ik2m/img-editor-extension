@@ -56,6 +56,14 @@ const transformer = ref<{ getNode(): Konva.Transformer } | null>(null);
 const stage = ref<{ getNode(): Konva.Stage } | null>(null);
 const stageBgFill = computed(() => '#ffffff');
 
+// モードに応じたカーソルスタイルを計算
+const cursorStyle = computed(() => {
+  if (drawingMode.value) return 'crosshair';
+  if (rectDragMode.value) return 'crosshair';
+  if (arrowDragMode.value) return 'crosshair';
+  return 'default';
+});
+
 const updateTransformer = () => {
   if (!transformer.value) return;
   const transformerNode = transformer.value.getNode();
@@ -302,10 +310,8 @@ defineExpose({
       v-if="imageElement"
       ref="stage"
       :config="{ width: stageWidth, height: stageHeight }"
-      :class="[
-        'shadow-[0_4px_20px_rgba(0,0,0,0.5)]',
-        drawingMode || rectDragMode || arrowDragMode ? 'cursor-crosshair' : '',
-      ]"
+      :style="{ cursor: cursorStyle }"
+      class="shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
       @mousedown="handleStageMouseDown"
       @mousemove="handleStageMouseMove"
       @mouseup="handleStageMouseUp"
