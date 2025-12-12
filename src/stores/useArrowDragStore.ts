@@ -31,7 +31,7 @@ const useArrowDragStore = defineStore('arrowDrag', () => {
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     };
 
-    const rgba = hexToRgba(arrowColor.value, 0.7);
+    const rgba = hexToRgba(arrowColor.value, 1.0);
 
     return {
       points: [

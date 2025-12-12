@@ -278,7 +278,7 @@ const useShapeStore = defineStore('shape', () => {
     const shape = shapes.value.find((s) => s.id === shapeId);
     if (!shape || shape.type !== 'arrow') return;
 
-    const rgba = hexToRgba(color, 0.7);
+    const rgba = hexToRgba(color, 1.0);
     replaceShape(shapeId, { stroke: rgba, fill: rgba });
   };
 
