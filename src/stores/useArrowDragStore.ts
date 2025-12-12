@@ -103,6 +103,9 @@ const useArrowDragStore = defineStore('arrowDrag', () => {
     // リセット
     dragStartPos.value = null;
     dragCurrentPos.value = null;
+
+    // モードを解除して通常モードに戻す
+    arrowDragMode.value = false;
   };
 
   return {

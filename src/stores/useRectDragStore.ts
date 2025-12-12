@@ -110,6 +110,9 @@ const useRectDragStore = defineStore('rectDrag', () => {
     // リセット
     dragStartPos.value = null;
     dragCurrentPos.value = null;
+
+    // モードを解除して通常モードに戻す
+    rectDragMode.value = false;
   };
 
   return {
