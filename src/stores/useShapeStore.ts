@@ -53,6 +53,18 @@ const useShapeStore = defineStore('shape', () => {
     return arrow;
   };
 
+  const addArrowShapeWithPosition = (
+    color: string,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number
+  ) => {
+    const arrow = createArrow(getNextArrowName(), color, x1, y1, x2, y2);
+    shapes.value.push(arrow);
+    return arrow;
+  };
+
   const addTextShape = (inputText: string, color: string, x: number, y: number) => {
     const text = createText(getNextTextName(), inputText, color, x, y);
     shapes.value.push(text);
@@ -288,6 +300,7 @@ const useShapeStore = defineStore('shape', () => {
     addRectShape,
     addRectShapeWithPosition,
     addArrowShape,
+    addArrowShapeWithPosition,
     addTextShape,
     resetShapes,
     resetCounters,

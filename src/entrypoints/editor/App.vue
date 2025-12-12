@@ -15,6 +15,7 @@ import useShapeStore from '@/stores/useShapeStore';
 import useImageStore from '@/stores/useImageStore';
 import useSettingsStore from '@/stores/useSettingsStore';
 import useRectDragStore from '@/stores/useRectDragStore';
+import useArrowDragStore from '@/stores/useArrowDragStore';
 import { downloadImage, copyImageToClipboard } from '@/utils/imageExport';
 
 // Pinia stores
@@ -22,7 +23,6 @@ const {
   shapes,
   selectedShapeId,
   selectLayer,
-  addArrowShape,
   addTextShape,
   updateTextFontSize,
   updateTextColor,
@@ -30,7 +30,8 @@ const {
   updateRectColor,
 } = useShapeStore();
 
-const { toggleRectDragMode } = useRectDragStore();
+const { toggleRectDragMode, rectDragMode } = useRectDragStore();
+const { toggleArrowDragMode, arrowDragMode } = useArrowDragStore();
 
 const {
   originalImage,
@@ -131,13 +132,16 @@ const { open: openTextModal, close: closeTextModal } = useModal<
 // Shape creation handlers
 const handleAddRectangle = () => {
   if (!isImageLoaded.value) return;
+  // 矢印モードが有効なら無効化
+  if (arrowDragMode.value) toggleArrowDragMode();
   toggleRectDragMode();
 };
 
 const handleAddArrow = () => {
   if (!isImageLoaded.value) return;
-  const arrow = addArrowShape(arrowColor.value);
-  selectLayer(arrow.id);
+  // 矩形モードが有効なら無効化
+  if (rectDragMode.value) toggleRectDragMode();
+  toggleArrowDragMode();
 };
 
 // targetWidthの変更を監視して、画像が読み込まれている場合はリサイズ

@@ -5,6 +5,7 @@ import useShapeStore from '@/stores/useShapeStore';
 import useImageStore from '@/stores/useImageStore';
 import useDrawingStore from '@/stores/useDrawingStore';
 import useRectDragStore from '@/stores/useRectDragStore';
+import useArrowDragStore from '@/stores/useArrowDragStore';
 
 // Stores
 const {
@@ -34,6 +35,13 @@ const {
   continueRectDrag,
   finishRectDrag,
 } = useRectDragStore();
+const {
+  arrowDragMode,
+  currentArrowDrag,
+  startArrowDrag,
+  continueArrowDrag,
+  finishArrowDrag,
+} = useArrowDragStore();
 
 // 全レイヤー（お絵描きレイヤー + shapes）
 const allLayers = computed(() => {
@@ -54,8 +62,8 @@ const updateTransformer = () => {
   const stage = transformerNode.getStage();
   if (!stage) return;
 
-  // お絵描きモードまたは矩形ドラッグモード時はトランスフォーマーを無効化
-  if (drawingMode.value || rectDragMode.value) {
+  // お絵描きモード、矩形ドラッグモード、矢印ドラッグモード時はトランスフォーマーを無効化
+  if (drawingMode.value || rectDragMode.value || arrowDragMode.value) {
     transformerNode.nodes([]);
     return;
   }
@@ -194,6 +202,14 @@ const handleStageMouseDown = (e: any) => {
     return;
   }
 
+  // 矢印ドラッグモードの場合
+  if (arrowDragMode.value) {
+    const stage = e.target.getStage();
+    const pos = stage.getPointerPosition();
+    startArrowDrag({ x: pos.x, y: pos.y });
+    return;
+  }
+
   // 通常モード（選択モード）
   if (e.target === e.target.getStage()) {
     selectLayer('');
@@ -226,6 +242,14 @@ const handleStageMouseMove = (e: any) => {
     continueRectDrag({ x: pos.x, y: pos.y });
     return;
   }
+
+  // 矢印ドラッグモード
+  if (currentArrowDrag.value) {
+    const stage = e.target.getStage();
+    const pos = stage.getPointerPosition();
+    continueArrowDrag({ x: pos.x, y: pos.y });
+    return;
+  }
 };
 
 const handleStageMouseUp = () => {
@@ -240,11 +264,22 @@ const handleStageMouseUp = () => {
     finishRectDrag();
     return;
   }
+
+  // 矢印ドラッグモード
+  if (currentArrowDrag.value) {
+    finishArrowDrag();
+    return;
+  }
 };
 
-// selectedShapeId、drawingMode、rectDragModeが変わったらtransformerを更新
+// selectedShapeId、drawingMode、rectDragMode、arrowDragModeが変わったらtransformerを更新
 watch(
-  () => [selectedShapeId.value, drawingMode.value, rectDragMode.value],
+  () => [
+    selectedShapeId.value,
+    drawingMode.value,
+    rectDragMode.value,
+    arrowDragMode.value,
+  ],
   () => {
     updateTransformer();
   }
@@ -269,7 +304,7 @@ defineExpose({
       :config="{ width: stageWidth, height: stageHeight }"
       :class="[
         'shadow-[0_4px_20px_rgba(0,0,0,0.5)]',
-        drawingMode || rectDragMode ? 'cursor-crosshair' : '',
+        drawingMode || rectDragMode || arrowDragMode ? 'cursor-crosshair' : '',
       ]"
       @mousedown="handleStageMouseDown"
       @mousemove="handleStageMouseMove"
@@ -383,6 +418,21 @@ defineExpose({
             stroke: currentRectDrag.stroke,
             strokeWidth: currentRectDrag.strokeWidth,
             cornerRadius: currentRectDrag.cornerRadius,
+            listening: false,
+          }"
+        />
+        <!-- 矢印ドラッグ中の一時表示 -->
+        <v-arrow
+          v-if="currentArrowDrag"
+          :config="{
+            points: currentArrowDrag.points,
+            stroke: currentArrowDrag.stroke,
+            strokeWidth: currentArrowDrag.strokeWidth,
+            fill: currentArrowDrag.fill,
+            pointerLength: currentArrowDrag.pointerLength,
+            pointerWidth: currentArrowDrag.pointerWidth,
+            lineCap: currentArrowDrag.lineCap,
+            lineJoin: currentArrowDrag.lineJoin,
             listening: false,
           }"
         />
