@@ -7,6 +7,8 @@ import SizeSelector from './SizeSelector.vue';
 import useImageStore from '@/stores/useImageStore';
 import useSettingsStore from '@/stores/useSettingsStore';
 import useDrawingStore from '@/stores/useDrawingStore';
+import useRectDragStore from '@/stores/useRectDragStore';
+import useArrowDragStore from '@/stores/useArrowDragStore';
 
 const emit = defineEmits<{
   openImageSourceModal: [];
@@ -30,6 +32,8 @@ const {
   setTargetWidth,
 } = useSettingsStore();
 const { drawingMode, toggleDrawingMode } = useDrawingStore();
+const { rectDragMode } = useRectDragStore();
+const { arrowDragMode } = useArrowDragStore();
 
 const targetWidthModel = computed({
   get: () => targetWidth.value,
@@ -85,11 +89,12 @@ const targetWidthModel = computed({
       </div>
       <div class="flex items-center gap-2">
         <BaseButton
+          :color="rectDragMode ? 'primary' : 'tertiary'"
           :disabled="!imageUrl || drawingMode"
           @click="emit('addRectangle')"
           class="flex-1"
         >
-          ▭ 矩形
+          ▭ {{ rectDragMode ? '矩形 (ON)' : '矩形' }}
         </BaseButton>
         <ColorPicker
           :selected-color="rectangleColor"
@@ -98,11 +103,12 @@ const targetWidthModel = computed({
       </div>
       <div class="flex items-center gap-2">
         <BaseButton
+          :color="arrowDragMode ? 'primary' : 'tertiary'"
           :disabled="!imageUrl || drawingMode"
           @click="emit('addArrow')"
           class="flex-1"
         >
-          ➜ 矢印
+          ➜ {{ arrowDragMode ? '矢印 (ON)' : '矢印' }}
         </BaseButton>
         <ColorPicker :selected-color="arrowColor" @select-color="setArrowColor" />
       </div>
