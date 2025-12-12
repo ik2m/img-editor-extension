@@ -3,6 +3,7 @@ import { defineStore, storeToRefs } from 'pinia';
 import type { DrawingShape, DrawingLine } from '@/components/editor/types';
 import useShapeStore from './useShapeStore';
 import useImageStore from './useImageStore';
+import useToolModeStore from './useToolModeStore';
 
 /**
  * お絵描きモード（フリーハンド描画）を管理するstore
@@ -10,9 +11,10 @@ import useImageStore from './useImageStore';
 const useDrawingStore = defineStore('drawing', () => {
   const shapeStore = useShapeStore();
   const { selectLayer } = shapeStore;
+  const toolModeStore = useToolModeStore();
+  const { isDrawingMode } = toolModeStore;
 
   // State
-  const drawingMode = ref<boolean>(false);
   const currentLine = ref<number[]>([]);
   const drawingLayer = ref<DrawingShape | null>(null);
 
@@ -60,14 +62,14 @@ const useDrawingStore = defineStore('drawing', () => {
 
   // Actions
   const toggleDrawingMode = () => {
-    drawingMode.value = !drawingMode.value;
-    if (!drawingMode.value) {
+    toolModeStore.toggleDrawingMode();
+    if (!isDrawingMode.value) {
       currentLine.value = [];
     }
   };
 
   const startDrawing = (pos: { x: number; y: number }) => {
-    if (!drawingMode.value) return;
+    if (!isDrawingMode.value) return;
     const { layerScale } = useImageStore();
     currentLine.value = [
       pos.x / layerScale.value.x,
@@ -103,7 +105,7 @@ const useDrawingStore = defineStore('drawing', () => {
 
   return {
     // State
-    drawingMode,
+    drawingMode: isDrawingMode,
     currentLine,
     drawingLayer,
     // Getters

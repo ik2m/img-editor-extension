@@ -3,6 +3,7 @@ import { defineStore, storeToRefs } from 'pinia';
 import useShapeStore from './useShapeStore';
 import useSettingsStore from './useSettingsStore';
 import useImageStore from './useImageStore';
+import useToolModeStore from './useToolModeStore';
 
 /**
  * 矩形ドラッグ作成モードを管理するstore
@@ -11,9 +12,10 @@ const useRectDragStore = defineStore('rectDrag', () => {
   const shapeStore = useShapeStore();
   const { addRectShapeWithPosition, selectLayer } = shapeStore;
   const { rectangleColor } = useSettingsStore();
+  const toolModeStore = useToolModeStore();
+  const { isRectMode } = toolModeStore;
 
   // State
-  const rectDragMode = ref<boolean>(false);
   const dragStartPos = ref<{ x: number; y: number } | null>(null);
   const dragCurrentPos = ref<{ x: number; y: number } | null>(null);
 
@@ -54,15 +56,15 @@ const useRectDragStore = defineStore('rectDrag', () => {
 
   // Actions
   const toggleRectDragMode = () => {
-    rectDragMode.value = !rectDragMode.value;
-    if (!rectDragMode.value) {
+    toolModeStore.toggleRectMode();
+    if (!isRectMode.value) {
       dragStartPos.value = null;
       dragCurrentPos.value = null;
     }
   };
 
   const startRectDrag = (pos: { x: number; y: number }) => {
-    if (!rectDragMode.value) return;
+    if (!isRectMode.value) return;
     const { layerScale } = useImageStore();
     dragStartPos.value = {
       x: pos.x / layerScale.value.x,
@@ -112,12 +114,12 @@ const useRectDragStore = defineStore('rectDrag', () => {
     dragCurrentPos.value = null;
 
     // モードを解除して通常モードに戻す
-    rectDragMode.value = false;
+    toolModeStore.clearMode();
   };
 
   return {
     // State
-    rectDragMode,
+    rectDragMode: isRectMode,
     dragStartPos,
     dragCurrentPos,
     // Getters

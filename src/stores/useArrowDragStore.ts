@@ -3,6 +3,7 @@ import { defineStore, storeToRefs } from 'pinia';
 import useShapeStore from './useShapeStore';
 import useSettingsStore from './useSettingsStore';
 import useImageStore from './useImageStore';
+import useToolModeStore from './useToolModeStore';
 
 /**
  * 矢印ドラッグ作成モードを管理するstore
@@ -11,9 +12,10 @@ const useArrowDragStore = defineStore('arrowDrag', () => {
   const shapeStore = useShapeStore();
   const { addArrowShapeWithPosition, selectLayer } = shapeStore;
   const { arrowColor } = useSettingsStore();
+  const toolModeStore = useToolModeStore();
+  const { isArrowMode } = toolModeStore;
 
   // State
-  const arrowDragMode = ref<boolean>(false);
   const dragStartPos = ref<{ x: number; y: number } | null>(null);
   const dragCurrentPos = ref<{ x: number; y: number } | null>(null);
 
@@ -50,15 +52,15 @@ const useArrowDragStore = defineStore('arrowDrag', () => {
 
   // Actions
   const toggleArrowDragMode = () => {
-    arrowDragMode.value = !arrowDragMode.value;
-    if (!arrowDragMode.value) {
+    toolModeStore.toggleArrowMode();
+    if (!isArrowMode.value) {
       dragStartPos.value = null;
       dragCurrentPos.value = null;
     }
   };
 
   const startArrowDrag = (pos: { x: number; y: number }) => {
-    if (!arrowDragMode.value) return;
+    if (!isArrowMode.value) return;
     const { layerScale } = useImageStore();
     dragStartPos.value = {
       x: pos.x / layerScale.value.x,
@@ -105,12 +107,12 @@ const useArrowDragStore = defineStore('arrowDrag', () => {
     dragCurrentPos.value = null;
 
     // モードを解除して通常モードに戻す
-    arrowDragMode.value = false;
+    toolModeStore.clearMode();
   };
 
   return {
     // State
-    arrowDragMode,
+    arrowDragMode: isArrowMode,
     dragStartPos,
     dragCurrentPos,
     // Getters

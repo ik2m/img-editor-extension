@@ -30,8 +30,8 @@ const {
   updateRectColor,
 } = useShapeStore();
 
-const { toggleRectDragMode, rectDragMode } = useRectDragStore();
-const { toggleArrowDragMode, arrowDragMode } = useArrowDragStore();
+const { toggleRectDragMode } = useRectDragStore();
+const { toggleArrowDragMode } = useArrowDragStore();
 
 const {
   originalImage,
@@ -132,15 +132,11 @@ const { open: openTextModal, close: closeTextModal } = useModal<
 // Shape creation handlers
 const handleAddRectangle = () => {
   if (!isImageLoaded.value) return;
-  // 矢印モードが有効なら無効化
-  if (arrowDragMode.value) toggleArrowDragMode();
   toggleRectDragMode();
 };
 
 const handleAddArrow = () => {
   if (!isImageLoaded.value) return;
-  // 矩形モードが有効なら無効化
-  if (rectDragMode.value) toggleRectDragMode();
   toggleArrowDragMode();
 };
 
